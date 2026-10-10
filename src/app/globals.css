@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@theme {
+  --color-laranja: #f25c05;
+  --color-laranja-forte: #c2410c; /* fundo de botão: contraste AA com texto branco */
+  --color-laranja-escuro: #9a3412;
+  --color-laranja-claro: #fff1e8;
+  --color-tinta: #1d2126;
+  --color-cinza: #5b636e;
+  --color-linha: #e2e4e8;
+  --color-fundo: #f3f4f6;
+  --font-titulo: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+html {
+  background: var(--color-fundo);
+  color: var(--color-tinta);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-laranja);
+  outline-offset: 2px;
+}
+
+/* Etiqueta de desconto: o recorte lembra a etiqueta de preço pendurada no produto. */
+.etiqueta {
+  clip-path: polygon(0.55rem 0, 100% 0, 100% 100%, 0.55rem 100%, 0 50%);
+  padding-left: 0.95rem;
+}
+
+.preco {
+  font-family: var(--font-titulo);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+@layer components {
+  .botao {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-laranja-forte px-4 py-2.5 text-sm font-semibold text-white hover:bg-laranja-escuro disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .botao-secundario {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-linha bg-white px-4 py-2.5 text-sm font-semibold text-tinta hover:border-cinza disabled:opacity-60;
+  }
+  .campo {
+    @apply block w-full rounded-md border border-linha bg-white px-3 py-2.5 text-base text-tinta placeholder:text-cinza/70;
+  }
+  .rotulo {
+    @apply mb-1 block text-sm font-semibold text-tinta;
+  }
+  .prosa h2 {
+    @apply mt-8 mb-2 font-titulo text-xl font-bold;
+  }
+  .prosa p,
+  .prosa ul {
+    @apply mb-3 leading-relaxed text-tinta;
+  }
+  .prosa ul {
+    @apply list-disc pl-5;
+  }
+  .prosa a {
+    @apply text-laranja-forte underline;
+  }
+}
