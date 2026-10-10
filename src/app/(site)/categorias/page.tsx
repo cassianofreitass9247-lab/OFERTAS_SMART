@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { listarCategorias } from "@/lib/dados";
 
-export const revalidate = 300;
+// Dados ao vivo: a página é montada a cada acesso (não é gerada no build).
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Categorias", description: "Ofertas da Shopee organizadas por categoria.", alternates: { canonical: "/categorias" } };
 
 export default async function PaginaCategorias() {

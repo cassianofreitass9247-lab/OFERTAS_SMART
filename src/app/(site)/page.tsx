@@ -2,7 +2,8 @@ import Link from "next/link";
 import { GradeProdutos } from "@/components/CartaoProduto";
 import { listarCategorias, listarProdutos } from "@/lib/dados";
 
-export const revalidate = 300;
+// Dados ao vivo: a página é montada a cada acesso (não é gerada no build).
+export const dynamic = "force-dynamic";
 
 export default async function PaginaInicial() {
   const [categorias, destaques, promocoes, recentes] = await Promise.all([

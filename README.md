@@ -19,7 +19,7 @@ Portal de ofertas da Shopee com links de afiliado, painel administrativo e impor
 | Publicação no Telegram, Instagram, Facebook e Pinterest | Etapas seguintes |
 | Cupons | Etapa seguinte |
 | Vendas e comissões | Só com a API da Shopee |
-| Publicação do site na internet | Próximo passo, junto com você |
+| Publicação do site na internet | Configuração da Cloudflare pronta e testada localmente; falta o deploy (veja abaixo) |
 
 ## Regra do preço anterior ("de/por")
 
@@ -95,3 +95,30 @@ npm run verificar            # lint + tipos + testes + build
 - Os testes do banco usam PostgreSQL em memória com os papéis do Supabase imitados. O primeiro uso em um projeto Supabase real ainda precisa ser conferido.
 - O contador de cliques não tem limite de requisições: alguém mal-intencionado pode inflar os números. Será tratado na etapa de automação.
 - As páginas de privacidade e termos são um ponto de partida e não substituem a revisão de um advogado.
+
+## Publicação na Cloudflare Workers
+
+O projeto já está configurado (`wrangler.jsonc`, `open-next.config.ts`, adaptador `@opennextjs/cloudflare`).
+O build da Cloudflare e as 27 verificações do navegador passaram no ambiente local `wrangler dev` (workerd), contra um banco de teste.
+
+Medidas do build: pacote de 1,4 MB compactado (6,9 MiB no total). O limite atual documentado pela Cloudflare é de 64 MiB descompactado.
+
+Comandos (para quem usa terminal): `npm run preview` testa no ambiente da Cloudflare e `npm run deploy` publica.
+
+### Passo a passo pelo painel da Cloudflare
+
+Os nomes das telas podem mudar. Esta parte não foi conferida na documentação oficial.
+
+1. Crie a conta em https://dash.cloudflare.com e abra **Workers & Pages**.
+2. Clique em **Create** e escolha importar um repositório do GitHub. Autorize a Cloudflare e selecione `OFERTAS_SMART`.
+3. Nome do Worker: `ofertasmart` (precisa ser igual ao campo `name` do `wrangler.jsonc`).
+4. Comando de build: `npx opennextjs-cloudflare build`. Comando de deploy: `npx opennextjs-cloudflare deploy`.
+5. Em **Build variables and secrets**, cadastre as cinco variáveis do `.env.example`. A chave pública do Supabase deve usar o nome `NEXT_PUBLIC_SUPABASE_ANON_KEY`. As variáveis `NEXT_PUBLIC_` são gravadas no site durante o build, então precisam estar cadastradas antes do primeiro deploy.
+6. Salve e faça o deploy. O site fica em um endereço `ofertasmart.<sua-conta>.workers.dev`.
+7. Volte ao Supabase, em **Authentication > URL Configuration**, e informe esse endereço.
+8. Atualize `NEXT_PUBLIC_SITE_URL` com o endereço final e faça um novo deploy.
+
+### O que ainda não foi medido
+
+- O consumo de CPU por requisição (limite de 10 ms no plano grátis) só pode ser medido no ambiente real da Cloudflare.
+  As páginas com dados ao vivo consultam o banco a cada acesso. Se estourar, o plano pago custa a partir de US$ 5/mês.

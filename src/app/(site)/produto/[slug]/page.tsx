@@ -6,12 +6,9 @@ import { Preco } from "@/components/Preco";
 import { historicoDePrecos, listarCategorias, obterProduto } from "@/lib/dados";
 import { formatarData, formatarDataHora, formatarPreco } from "@/lib/texto";
 
-export const revalidate = 300;
+// Dados ao vivo: a página é montada a cada acesso (não é gerada no build).
+export const dynamic = "force-dynamic";
 
-// Páginas de produto são geradas no primeiro acesso e ficam em cache por 5 minutos.
-export async function generateStaticParams() {
-  return [];
-}
 
 type Props = { params: Promise<{ slug: string }> };
 

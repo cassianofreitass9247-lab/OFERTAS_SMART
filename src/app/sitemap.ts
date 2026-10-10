@@ -2,7 +2,8 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/config";
 import { slugsParaSitemap } from "@/lib/dados";
 
-export const revalidate = 3600;
+// Dados ao vivo: a página é montada a cada acesso (não é gerada no build).
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { produtos, categorias } = await slugsParaSitemap();
