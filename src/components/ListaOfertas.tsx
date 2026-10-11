@@ -9,7 +9,7 @@ const um = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?
 type Props = {
   caminho: string;
   parametros: Busca;
-  fixos?: Pick<Filtros, "categoriaId" | "soPromocoes">;
+  fixos?: Pick<Filtros, "categoriaId" | "soPromocoes" | "soDestaques">;
   vazio: string;
 };
 

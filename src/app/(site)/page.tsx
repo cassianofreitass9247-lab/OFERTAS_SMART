@@ -23,8 +23,9 @@ import { formatarDataHora, formatarPreco } from "@/lib/texto";
 export const dynamic = "force-dynamic";
 
 export default async function PaginaInicial() {
-  const [categorias, promocoes, recentes] = await Promise.all([
+  const [categorias, destaques, promocoes, recentes] = await Promise.all([
     listarCategorias(),
+    listarProdutos({ soDestaques: true, limite: 8 }),
     listarProdutos({ soPromocoes: true, ordenar: "maior-desconto", limite: 5 }),
     listarProdutos({ limite: 24 }),
   ]);
@@ -109,6 +110,31 @@ export default async function PaginaInicial() {
           ))}
         </div>
       </div>
+
+      {/* Em destaque (produtos marcados no painel) */}
+      {destaques.itens.length > 0 && (
+        <section id="destaques" className="mx-auto max-w-7xl scroll-mt-48 px-4 pt-16 pb-4 sm:px-8 lg:pt-24">
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
+            <div>
+              <h2 className="vm-titulo flex items-center gap-3">
+                <IconeEstrela tamanho={34} />
+                Em destaque
+              </h2>
+              <p className="mt-3 max-w-[52ch] text-lg text-cinza">Os achadinhos que a Moni separou para você olhar primeiro.</p>
+            </div>
+            {destaques.total > destaques.itens.length && (
+              <Link href="/destaques" className="text-[17px] font-bold underline decoration-neon decoration-[3px] underline-offset-4">
+                Ver todos os destaques
+              </Link>
+            )}
+          </div>
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+            {destaques.itens.map((p) => (
+              <CartaoProduto key={p.id} produto={p} categoria={p.categoria_id ? nomes.get(p.categoria_id) : undefined} />
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* Preço caiu hoje */}
       {principal && (
