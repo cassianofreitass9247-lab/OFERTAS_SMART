@@ -80,6 +80,10 @@ html {
 .vm-busca input { outline: none; }
 .vm-sem-barra { scrollbar-width: none; }
 .vm-sem-barra::-webkit-scrollbar { display: none; }
+/* celular: o menu rola de lado e a borda direita esmaece, avisando que há mais itens */
+@media (max-width: 767px) {
+  .vm-nav-fade { mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .vm-flutua, .vm-faixa, .vm-pulso, .vm-logo:hover .vm-marca { animation: none; }

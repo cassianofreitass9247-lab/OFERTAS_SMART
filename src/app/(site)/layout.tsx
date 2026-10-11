@@ -15,16 +15,19 @@ import { bancoConfigurado, INSTAGRAM_URL, NOME_SITE, TELEGRAM_URL } from "@/lib/
 import type { Categoria } from "@/lib/database.types";
 import { listarCategorias } from "@/lib/dados";
 
-async function categoriasDoMenu(): Promise<Categoria[]> {
+const MAX_CATEGORIAS_NO_MENU = 8;
+
+async function categoriasDoMenu(): Promise<{ lista: Categoria[]; temMais: boolean }> {
   try {
-    return (await listarCategorias()).slice(0, 6);
+    const todas = await listarCategorias();
+    return { lista: todas.slice(0, MAX_CATEGORIAS_NO_MENU), temMais: todas.length > MAX_CATEGORIAS_NO_MENU };
   } catch {
-    return []; // o menu não derruba a página se o banco oscilar
+    return { lista: [], temMais: false }; // o menu não derruba a página se o banco oscilar
   }
 }
 
 export default async function LayoutSite({ children }: { children: React.ReactNode }) {
-  const categorias = await categoriasDoMenu();
+  const { lista: categorias, temMais } = await categoriasDoMenu();
   const chamada = TELEGRAM_URL
     ? { href: TELEGRAM_URL, rotulo: "Receber ofertas", icone: <IconeSino /> }
     : { href: INSTAGRAM_URL, rotulo: "Seguir no Instagram", icone: <IconeInstagram tamanho={18} /> };
@@ -108,7 +111,7 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
               </a>
             </div>
 
-            <nav aria-label="Principal" className="vm-sem-barra -mx-1 flex basis-full gap-2 overflow-x-auto px-1 pt-1 pb-3.5">
+            <nav aria-label="Principal" className="vm-sem-barra vm-nav-fade -mx-1 flex basis-full gap-2 overflow-x-auto px-1 pt-1 pb-3.5 md:flex-wrap md:overflow-visible">
               <Link
                 href="/promocoes"
                 className="vm-btn inline-flex min-h-11 flex-none items-center gap-2.5 rounded-full border-[2.5px] border-tinta bg-tinta px-4 text-[15px] font-bold text-white no-underline"
@@ -126,6 +129,14 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
                   {c.nome}
                 </Link>
               ))}
+              {temMais && (
+                <Link
+                  href="/categorias"
+                  className="vm-navlink inline-flex min-h-11 flex-none items-center gap-2 rounded-full border-[2.5px] border-tinta bg-white px-4 text-[15px] font-bold text-tinta no-underline"
+                >
+                  Todas as categorias
+                </Link>
+              )}
               <Link
                 href="/ofertas?ate=50"
                 className="vm-navlink inline-flex min-h-11 flex-none items-center gap-2 rounded-full border-[2.5px] border-tinta bg-sol px-4 text-[15px] font-extrabold text-tinta no-underline"
