@@ -51,11 +51,34 @@ export function lerCsv(textoBruto: string): string[][] {
   return linhas.filter((l) => l.some((v) => v.trim() !== ""));
 }
 
-/** Arquivos do Excel no Brasil costumam vir em Windows-1252; tenta UTF-8 primeiro. */
+/** Bytes 0x80–0xFF da página de código CP850 (DOS/OEM), usada por "CSV (MS-DOS)" e alguns conversores. */
+const CP850_ALTO = 'ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜø£Ø×ƒáíóúñÑªº¿®¬½¼¡«»░▒▓│┤ÁÂÀ©╣║╗╝¢¥┐└┴┬├─┼ãÃ╚╔╩╦╠═╬¤ðÐÊËÈıÍÎÏ┘┌█▄¦Ì▀ÓßÔÒõÕµþÞÚÛÙýÝ¯´\xad±‗¾¶§÷¸°¨·¹³²■\xa0';
+
+const LETRAS_PT = new Set("áàâãéêíóôõúçÁÀÂÃÉÊÍÓÔÕÚÇ");
+
+function decodificarCp850(bytes: Uint8Array): string {
+  let r = "";
+  for (const b of bytes) r += b < 0x80 ? String.fromCharCode(b) : CP850_ALTO[b - 0x80];
+  return r;
+}
+
+function pontuarAcentos(texto: string): number {
+  let n = 0;
+  for (const c of texto) if (LETRAS_PT.has(c)) n++;
+  return n;
+}
+
+/**
+ * Tenta UTF-8 primeiro. Se não for, o arquivo é de página de código antiga: decide entre Windows-1252
+ * (padrão do Excel no Brasil) e CP850 pelo número de letras acentuadas do português que cada leitura produz.
+ * Em empate, vale Windows-1252.
+ */
 export function decodificarArquivo(bytes: ArrayBuffer): string {
   try {
     return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   } catch {
-    return new TextDecoder("windows-1252").decode(bytes);
+    const w1252 = new TextDecoder("windows-1252").decode(bytes);
+    const cp850 = decodificarCp850(new Uint8Array(bytes));
+    return pontuarAcentos(cp850) > pontuarAcentos(w1252) ? cp850 : w1252;
   }
 }

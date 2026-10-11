@@ -15,6 +15,13 @@ describe("lerCsv", () => {
     expect(decodificarArquivo(bytes.buffer)).toBe("Preço");
     expect(decodificarArquivo(new TextEncoder().encode("Preço").buffer as ArrayBuffer)).toBe("Preço");
   });
+  const FRASE = 'Sofá Baú Retrátil; Casa e construção; Eletrônicos; Eletrodomésticos';
+  it("reconhece arquivo em CP850 (CSV MS-DOS) em vez de embaralhar os acentos", () => {
+    expect(decodificarArquivo(new Uint8Array([83, 111, 102, 160, 32, 66, 97, 163, 32, 82, 101, 116, 114, 160, 116, 105, 108, 59, 32, 67, 97, 115, 97, 32, 101, 32, 99, 111, 110, 115, 116, 114, 117, 135, 198, 111, 59, 32, 69, 108, 101, 116, 114, 147, 110, 105, 99, 111, 115, 59, 32, 69, 108, 101, 116, 114, 111, 100, 111, 109, 130, 115, 116, 105, 99, 111, 115]).buffer)).toBe(FRASE);
+  });
+  it("mantém Windows-1252 quando o texto tem acentos típicos dele", () => {
+    expect(decodificarArquivo(new Uint8Array([83, 111, 102, 225, 32, 66, 97, 250, 32, 82, 101, 116, 114, 225, 116, 105, 108, 59, 32, 67, 97, 115, 97, 32, 101, 32, 99, 111, 110, 115, 116, 114, 117, 231, 227, 111, 59, 32, 69, 108, 101, 116, 114, 244, 110, 105, 99, 111, 115, 59, 32, 69, 108, 101, 116, 114, 111, 100, 111, 109, 233, 115, 116, 105, 99, 111, 115]).buffer)).toBe(FRASE);
+  });
 });
 
 describe("link de afiliado", () => {
