@@ -114,7 +114,7 @@ Os nomes das telas podem mudar. Esta parte não foi conferida na documentação 
 3. Nome do Worker: `ofertasmart` (precisa ser igual ao campo `name` do `wrangler.jsonc`).
 4. Comando de build: `npx opennextjs-cloudflare build`. Comando de deploy: `npx opennextjs-cloudflare deploy`.
 5. Em **Build variables and secrets**, cadastre as cinco variáveis do `.env.example`. A chave pública do Supabase deve usar o nome `NEXT_PUBLIC_SUPABASE_ANON_KEY`. As variáveis `NEXT_PUBLIC_` são gravadas no site durante o build, então precisam estar cadastradas antes do primeiro deploy.
-6. Salve e faça o deploy. O site fica em um endereço `vitrine.<sua-conta>.workers.dev`.
+6. Salve e faça o deploy. O site fica em um endereço `ofertasmart.<sua-conta>.workers.dev`.
 7. Volte ao Supabase, em **Authentication > URL Configuration**, e informe esse endereço.
 8. Atualize `NEXT_PUBLIC_SITE_URL` com o endereço final e faça um novo deploy.
 
