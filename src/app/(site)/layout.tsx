@@ -88,6 +88,14 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
             </form>
 
             <div className="ml-auto flex items-center gap-2.5">
+              <Link
+                href="/#moni"
+                className="vm-navlink hidden xl:inline-flex min-h-11 flex-none items-center gap-2.5 rounded-full border-[2.5px] border-tinta bg-white py-0 pr-4 pl-1 text-[15px] font-bold text-tinta no-underline"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/moni.jpg" alt="" width={32} height={32} className="size-8 rounded-full border-2 border-tinta object-cover object-[center_15%]" />
+                Quem é a Moni
+              </Link>
               <ContadorSalvos />
               <a
                 href={chamada.href}
@@ -100,7 +108,7 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
               </a>
             </div>
 
-            <nav aria-label="Principal" className="vm-sem-barra -mx-1 flex basis-full gap-2 overflow-x-auto px-1 pt-1 pb-3.5 lg:flex-wrap lg:overflow-visible">
+            <nav aria-label="Principal" className="vm-sem-barra -mx-1 flex basis-full gap-2 overflow-x-auto px-1 pt-1 pb-3.5">
               <Link
                 href="/promocoes"
                 className="vm-btn inline-flex min-h-11 flex-none items-center gap-2.5 rounded-full border-[2.5px] border-tinta bg-tinta px-4 text-[15px] font-bold text-white no-underline"
@@ -127,7 +135,7 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
               </Link>
               <Link
                 href="/#moni"
-                className="vm-navlink inline-flex min-h-11 flex-none items-center gap-2.5 rounded-full border-[2.5px] border-tinta bg-white py-0 pr-4 pl-1 lg:ml-auto text-[15px] font-bold text-tinta no-underline"
+                className="vm-navlink inline-flex xl:hidden min-h-11 flex-none items-center gap-2.5 rounded-full border-[2.5px] border-tinta bg-white py-0 pr-4 pl-1 text-[15px] font-bold text-tinta no-underline"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/moni.jpg" alt="" width={32} height={32} className="size-8 rounded-full border-2 border-tinta object-cover object-[center_15%]" />
