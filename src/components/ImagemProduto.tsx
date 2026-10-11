@@ -1,9 +1,12 @@
 /* eslint-disable @next/next/no-img-element -- imagens externas sem otimizador pago */
-export function ImagemProduto({ url, nome, prioridade }: { url: string | null; nome: string; prioridade?: boolean }) {
+import { IconeFoto } from "./site/Icones";
+
+export function ImagemProduto({ url, nome, prioridade, compacto }: { url: string | null; nome: string; prioridade?: boolean; compacto?: boolean }) {
   if (!url) {
     return (
-      <div className="flex aspect-square w-full items-center justify-center bg-fundo text-sm text-cinza" role="img" aria-label={`${nome} (sem imagem)`}>
-        Sem imagem
+      <div className="flex aspect-square w-full flex-col items-center justify-center gap-1.5 text-sm font-semibold text-cinza" role="img" aria-label={`${nome} (sem imagem)`}>
+        <IconeFoto tamanho={compacto ? 24 : 34} />
+        {!compacto && "Sem imagem"}
       </div>
     );
   }
@@ -16,7 +19,7 @@ export function ImagemProduto({ url, nome, prioridade }: { url: string | null; n
       loading={prioridade ? "eager" : "lazy"}
       decoding="async"
       referrerPolicy="no-referrer"
-      className="aspect-square w-full bg-fundo object-contain"
+      className="aspect-square w-full bg-white object-contain"
     />
   );
 }

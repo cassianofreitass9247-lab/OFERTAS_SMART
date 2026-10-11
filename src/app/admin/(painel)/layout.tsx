@@ -5,7 +5,7 @@ import { bancoConfigurado } from "@/lib/config";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { sair } from "../acoes";
 
-export const metadata: Metadata = { title: { default: "Painel", template: "%s | Painel OfertaSmart" }, robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: { default: "Painel", template: "%s | Painel Vitrine da Moni" }, robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 const MENU = [
@@ -43,7 +43,7 @@ export default async function LayoutPainel({ children }: { children: React.React
     <>
       <header className="border-b border-linha bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-          <Link href="/admin" className="font-titulo text-xl font-extrabold">Painel OfertaSmart</Link>
+          <Link href="/admin" className="font-titulo text-xl font-extrabold">Painel Vitrine da Moni</Link>
           <nav aria-label="Painel" className="flex flex-wrap gap-4 text-sm font-semibold">
             {MENU.map((m) => (
               <Link key={m.href} href={m.href} className="py-1 hover:text-laranja-forte">{m.rotulo}</Link>

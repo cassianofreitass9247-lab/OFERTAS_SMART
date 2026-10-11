@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Entrar no painel", robots: { index: 
 export default function PaginaLogin() {
   return (
     <main className="mx-auto max-w-sm px-4 py-16">
-      <h1 className="font-titulo text-3xl font-extrabold">Painel do OfertaSmart</h1>
+      <h1 className="font-titulo text-3xl font-extrabold">Painel da Vitrine da Moni</h1>
       {bancoConfigurado() ? (
         <FormularioLogin />
       ) : (

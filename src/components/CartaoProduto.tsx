@@ -1,34 +1,57 @@
 import Link from "next/link";
 import type { ProdutoCartao } from "@/lib/dados";
 import { ImagemProduto } from "./ImagemProduto";
-import { Preco } from "./Preco";
+import { Preco, SeloDesconto } from "./Preco";
+import { BotaoSalvar } from "./site/Salvos";
+
+const FUNDOS = ["bg-pessego", "bg-[#fff3b8]", "bg-[#ffe0ea]", "bg-[#e2f0ff]"];
+const fundo = (id: string) => FUNDOS[id.charCodeAt(0) % FUNDOS.length];
 
 export function CartaoProduto({ produto, categoria }: { produto: ProdutoCartao; categoria?: string }) {
+  const desconto = produto.preco_anterior !== null && produto.desconto_percentual ? produto.desconto_percentual : null;
   return (
-    <li className="relative flex flex-col overflow-hidden rounded-lg border border-linha bg-white focus-within:border-laranja hover:border-cinza">
-      <ImagemProduto url={produto.imagem_url} nome={produto.nome} />
-      <div className="flex flex-1 flex-col gap-2 p-3">
-        {produto.ficticio && (
-          <p className="self-start rounded bg-tinta px-1.5 py-0.5 text-xs font-semibold text-white">Demonstração: dado fictício</p>
+    <li className="vm-cartao relative flex flex-col gap-2.5 rounded-3xl border-[2.5px] border-tinta bg-white p-3">
+      <div className={`relative overflow-hidden rounded-2xl ${produto.imagem_url ? "bg-white" : fundo(produto.id)}`}>
+        <ImagemProduto url={produto.imagem_url} nome={produto.nome} />
+        {desconto && (
+          <span className="absolute top-2.5 left-2.5">
+            <SeloDesconto desconto={desconto} />
+          </span>
         )}
-        {categoria && <p className="text-xs text-cinza">{categoria}</p>}
-        <h3 className="line-clamp-2 text-sm leading-snug font-medium">
-          <Link href={`/produto/${produto.slug}`} className="after:absolute after:inset-0 focus-visible:outline-none">
-            {produto.nome}
-          </Link>
-        </h3>
-        <div className="mt-auto pt-1">
-          <Preco atual={produto.preco_atual} anterior={produto.preco_anterior} desconto={produto.desconto_percentual} />
-        </div>
-        {produto.disponibilidade === "indisponivel" && <p className="text-xs font-semibold text-cinza">Indisponível na última verificação</p>}
+        <span className="absolute top-2 right-2 z-10">
+          <BotaoSalvar id={produto.id} nome={produto.nome} />
+        </span>
       </div>
+      {produto.ficticio && (
+        <p className="self-start rounded-md bg-tinta px-2 py-0.5 text-xs font-bold text-white">Demonstração: dado fictício</p>
+      )}
+      {categoria && <p className="text-[13px] font-bold text-cinza">{categoria}</p>}
+      <h3 className="line-clamp-2 min-h-[2.6em] text-[15px] leading-snug font-semibold">
+        <Link href={`/produto/${produto.slug}`} className="after:absolute after:inset-0 after:rounded-3xl focus-visible:outline-none">
+          {produto.nome}
+        </Link>
+      </h3>
+      <div className="mt-auto">
+        <Preco atual={produto.preco_atual} anterior={produto.preco_anterior} desconto={produto.desconto_percentual} />
+      </div>
+      {produto.disponibilidade === "indisponivel" && <p className="text-xs font-bold text-cinza">Indisponível na última verificação</p>}
     </li>
   );
 }
 
-export function GradeProdutos({ produtos, nomesCategorias }: { produtos: ProdutoCartao[]; nomesCategorias?: Map<string, string> }) {
+export function GradeProdutos({
+  produtos,
+  nomesCategorias,
+  colunas = "auto",
+}: {
+  produtos: ProdutoCartao[];
+  nomesCategorias?: Map<string, string>;
+  colunas?: "auto" | "duas";
+}) {
+  const classe =
+    colunas === "duas" ? "grid grid-cols-2 gap-3 sm:gap-5" : "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4";
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+    <ul className={classe}>
       {produtos.map((p) => (
         <CartaoProduto key={p.id} produto={p} categoria={p.categoria_id ? nomesCategorias?.get(p.categoria_id) : undefined} />
       ))}

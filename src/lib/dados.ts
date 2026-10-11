@@ -13,7 +13,7 @@ export const ORDENACOES = {
 } as const;
 export type Ordenacao = keyof typeof ORDENACOES;
 
-const COLUNAS_CARTAO =
+export const COLUNAS_CARTAO =
   "id, nome, slug, imagem_url, categoria_id, preco_atual, preco_anterior, preco_anterior_em, desconto_percentual, ficticio, disponibilidade, destaque" as const;
 
 export type ProdutoCartao = Pick<
@@ -27,6 +27,7 @@ export type Filtros = {
   categoriaId?: string;
   soPromocoes?: boolean;
   soDestaques?: boolean;
+  precoMax?: number;
   ordenar?: Ordenacao;
   pagina?: number;
   limite?: number;
@@ -57,6 +58,7 @@ export async function listarProdutos(f: Filtros = {}): Promise<{ itens: ProdutoC
   if (f.categoriaId) q = q.eq("categoria_id", f.categoriaId);
   if (f.soPromocoes) q = q.not("desconto_percentual", "is", null);
   if (f.soDestaques) q = q.eq("destaque", true);
+  if (f.precoMax && f.precoMax > 0) q = q.lte("preco_atual", f.precoMax);
 
   if (f.ordenar === "menor-preco") q = q.order("preco_atual", { ascending: true });
   else if (f.ordenar === "maior-desconto") q = q.order("desconto_percentual", { ascending: false, nullsFirst: false });

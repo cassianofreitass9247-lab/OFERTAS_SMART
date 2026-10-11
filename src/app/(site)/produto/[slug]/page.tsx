@@ -1,14 +1,16 @@
+/* eslint-disable @next/next/no-img-element -- foto local, sem otimizador pago */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ImagemProduto } from "@/components/ImagemProduto";
-import { Preco } from "@/components/Preco";
+import { Preco, SeloDesconto } from "@/components/Preco";
+import { IconeSaida } from "@/components/site/Icones";
+import { BotaoSalvar } from "@/components/site/Salvos";
 import { historicoDePrecos, listarCategorias, obterProduto } from "@/lib/dados";
 import { formatarData, formatarDataHora, formatarPreco } from "@/lib/texto";
 
 // Dados ao vivo: a página é montada a cada acesso (não é gerada no build).
 export const dynamic = "force-dynamic";
-
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -31,34 +33,44 @@ export default async function PaginaProduto({ params }: Props) {
   const [historico, categorias] = await Promise.all([historicoDePrecos(produto.id), listarCategorias()]);
   const categoria = categorias.find((c) => c.id === produto.categoria_id);
   const indisponivel = produto.disponibilidade === "indisponivel";
+  const desconto = produto.preco_anterior !== null && produto.desconto_percentual ? produto.desconto_percentual : null;
 
   return (
-    <article>
-      <nav aria-label="Você está em" className="mb-4 text-sm text-cinza">
-        <Link href="/ofertas" className="underline">Ofertas</Link>
+    <article className="mx-auto max-w-7xl px-4 py-8 sm:px-8 lg:py-12">
+      <nav aria-label="Você está em" className="mb-6 flex flex-wrap gap-2 text-sm font-semibold">
+        <Link href="/ofertas" className="rounded-full border-2 border-tinta bg-white px-3 py-1 text-tinta no-underline">Ofertas</Link>
         {categoria && (
-          <>
-            {" / "}
-            <Link href={`/categorias/${categoria.slug}`} className="underline">{categoria.nome}</Link>
-          </>
+          <Link href={`/categorias/${categoria.slug}`} className="rounded-full border-2 border-tinta bg-white px-3 py-1 text-tinta no-underline">
+            {categoria.nome}
+          </Link>
         )}
       </nav>
 
       {produto.ficticio && (
-        <p role="note" className="mb-4 rounded-lg bg-tinta p-4 font-semibold text-white">
+        <p role="note" className="mb-6 rounded-2xl bg-tinta p-4 font-bold text-white">
           Este é um produto fictício, criado apenas para demonstrar o site. Ele não existe e não está à venda.
         </p>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="overflow-hidden rounded-lg border border-linha bg-white">
-          <ImagemProduto url={produto.imagem_url} nome={produto.nome} prioridade />
+      <div className="grid gap-8 md:grid-cols-2 md:gap-12">
+        <div className="relative self-start rounded-[30px] border-[3px] border-tinta bg-pessego p-4 shadow-duro">
+          <div className="overflow-hidden rounded-[22px] border-2 border-tinta bg-white">
+            <ImagemProduto url={produto.imagem_url} nome={produto.nome} prioridade />
+          </div>
+          {desconto && (
+            <span className="absolute -top-5 -right-4">
+              <SeloDesconto desconto={desconto} grande />
+            </span>
+          )}
         </div>
 
         <div>
-          <h1 className="font-titulo text-2xl leading-tight font-bold sm:text-3xl">{produto.nome}</h1>
+          <div className="flex items-start justify-between gap-4">
+            <h1 className="font-titulo text-3xl leading-tight font-extrabold tracking-[-0.03em] sm:text-4xl">{produto.nome}</h1>
+            <BotaoSalvar id={produto.id} nome={produto.nome} grande />
+          </div>
 
-          <div className="mt-5">
+          <div className="mt-6">
             <Preco atual={produto.preco_atual} anterior={produto.preco_anterior} desconto={produto.desconto_percentual} grande />
           </div>
           <p className="mt-2 text-sm text-cinza">
@@ -68,42 +80,56 @@ export default async function PaginaProduto({ params }: Props) {
             )}
           </p>
 
-          <div className="mt-6">
+          <div className="mt-7">
             {produto.ficticio ? (
-              <p className="rounded-md border border-linha bg-white p-3 text-sm">Sem link de compra: produto de demonstração.</p>
+              <p className="rounded-2xl border-[2.5px] border-tinta bg-white p-4 text-sm font-semibold">Sem link de compra: produto de demonstração.</p>
             ) : (
               <>
-                {indisponivel && <p className="mb-2 text-sm font-semibold">Na última verificação este produto estava indisponível.</p>}
-                <a href={`/ir/${produto.id}`} target="_blank" rel="nofollow sponsored noopener" className="botao w-full px-6 py-3.5 text-base sm:w-auto">
+                {indisponivel && <p className="mb-3 text-sm font-bold">Na última verificação este produto estava indisponível.</p>}
+                <a
+                  href={`/ir/${produto.id}`}
+                  target="_blank"
+                  rel="nofollow sponsored noopener"
+                  className="vm-btn vm-pilula min-h-[60px] w-full bg-neon px-8 text-lg font-extrabold text-tinta shadow-duro-p sm:w-auto"
+                >
                   Ver preço atual na Shopee
+                  <IconeSaida />
                 </a>
-                <p className="mt-3 max-w-[60ch] text-sm text-cinza">
-                  Link de afiliado: se você comprar, o site pode receber uma comissão, sem custo extra para você. Confira o preço final na Shopee, pois ele
-                  pode ter mudado desde o nosso último registro.
+                <p className="mt-4 max-w-[60ch] text-sm text-cinza">
+                  Link de afiliado: se você comprar, posso receber uma comissão, sem custo extra para você. Confira o preço final na Shopee, pois ele pode
+                  ter mudado desde o último registro.
                 </p>
               </>
             )}
           </div>
 
+          <div className="mt-8 flex items-center gap-3 rounded-2xl border-[2.5px] border-tinta bg-pessego p-3">
+            <img src="/moni.jpg" alt="" width={48} height={48} className="size-12 flex-none rounded-full border-2 border-tinta object-cover object-[center_15%]" />
+            <p className="text-[15px] font-semibold">
+              Achadinho garimpado pela Moni.{" "}
+              <Link href="/#moni" className="text-tinta underline decoration-neon decoration-2">Quem é a Moni</Link>
+            </p>
+          </div>
+
           {produto.descricao && (
-            <section className="mt-8" aria-labelledby="t-descricao">
-              <h2 id="t-descricao" className="mb-2 font-titulo text-lg font-bold">Sobre o produto</h2>
-              <p className="max-w-[70ch] leading-relaxed whitespace-pre-line">{produto.descricao}</p>
+            <section className="mt-9" aria-labelledby="t-descricao">
+              <h2 id="t-descricao" className="mb-2 font-titulo text-xl font-bold">Sobre o produto</h2>
+              <p className="max-w-[70ch] text-lg leading-relaxed whitespace-pre-line">{produto.descricao}</p>
             </section>
           )}
 
           {historico.length > 0 && (
-            <section className="mt-8" aria-labelledby="t-historico">
-              <h2 id="t-historico" className="mb-2 font-titulo text-lg font-bold">Preços registrados pelo site</h2>
-              <table className="w-full max-w-sm text-sm">
+            <section className="mt-9" aria-labelledby="t-historico">
+              <h2 id="t-historico" className="mb-3 font-titulo text-xl font-bold">Preços registrados pelo site</h2>
+              <table className="w-full max-w-sm overflow-hidden rounded-2xl border-[2.5px] border-tinta bg-white text-sm">
                 <thead className="sr-only">
                   <tr><th>Data</th><th>Preço</th></tr>
                 </thead>
                 <tbody>
                   {historico.map((h) => (
-                    <tr key={h.id} className="border-b border-linha last:border-0">
-                      <td className="py-2 text-cinza">{formatarDataHora(h.registrado_em)}</td>
-                      <td className="preco py-2 text-right font-bold">{formatarPreco(h.preco)}</td>
+                    <tr key={h.id} className="border-b-2 border-pessego last:border-0">
+                      <td className="px-4 py-2.5 text-cinza">{formatarDataHora(h.registrado_em)}</td>
+                      <td className="preco px-4 py-2.5 text-right text-base font-extrabold">{formatarPreco(h.preco)}</td>
                     </tr>
                   ))}
                 </tbody>

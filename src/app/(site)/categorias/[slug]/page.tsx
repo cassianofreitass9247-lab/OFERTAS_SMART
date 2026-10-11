@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Cabecalho, Conteudo } from "@/components/site/Cabecalho";
+import { IconeCategoria } from "@/components/site/Icones";
 import { notFound } from "next/navigation";
 import { ListaOfertas } from "@/components/ListaOfertas";
 import { listarCategorias } from "@/lib/dados";
@@ -24,16 +26,19 @@ export default async function PaginaCategoria({ params, searchParams }: Props) {
   if (!categoria) notFound();
   return (
     <>
-      <h1 className="font-titulo text-3xl font-extrabold">{categoria.nome}</h1>
-      {categoria.descricao && <p className="mt-1 max-w-[70ch] text-cinza">{categoria.descricao}</p>}
-      <div className="mt-4">
+      <Cabecalho titulo={categoria.nome} subtitulo={categoria.descricao ?? undefined}>
+        <span className="mb-4 inline-flex size-14 items-center justify-center rounded-2xl border-[2.5px] border-tinta bg-white shadow-duro-p">
+          <IconeCategoria slug={categoria.slug} tamanho={28} />
+        </span>
+      </Cabecalho>
+      <Conteudo>
         <ListaOfertas
           caminho={`/categorias/${categoria.slug}`}
           parametros={await searchParams}
           fixos={{ categoriaId: categoria.id }}
           vazio="Ainda não há ofertas publicadas nesta categoria."
         />
-      </div>
+      </Conteudo>
     </>
   );
 }

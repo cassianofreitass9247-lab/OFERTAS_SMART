@@ -1,6 +1,6 @@
-# OfertaSmart
+# Vitrine da Moni
 
-Portal de ofertas da Shopee com links de afiliado, painel administrativo e importação por planilha.
+Vitrine da Moni: portal de ofertas da Shopee com links de afiliado, painel administrativo e importação por planilha.
 
 ## O que já funciona (etapas 1 e 2 do plano)
 

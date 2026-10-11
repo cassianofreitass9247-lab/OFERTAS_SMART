@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Cabecalho, Conteudo } from "@/components/site/Cabecalho";
 import Link from "next/link";
 import { NOME_SITE } from "@/lib/config";
 
@@ -6,13 +7,15 @@ export const metadata: Metadata = { title: "Termos de uso", alternates: { canoni
 
 export default function PaginaTermos() {
   return (
-    <div className="prosa max-w-[70ch]">
-      <h1 className="font-titulo text-3xl font-extrabold">Termos de uso</h1>
-      <p className="mt-3">Ao usar o {NOME_SITE}, você concorda com as condições abaixo.</p>
+    <>
+      <Cabecalho titulo="Termos de uso" />
+      <Conteudo estreito>
+      <div className="prosa">
+      <p>Ao usar a {NOME_SITE}, você concorda com as condições abaixo.</p>
 
       <h2>O que o site é</h2>
       <p>
-        O {NOME_SITE} divulga ofertas de produtos vendidos na Shopee. O site não vende produtos, não processa pagamentos e não faz entregas. Toda compra é
+        A {NOME_SITE} divulga ofertas de produtos vendidos na Shopee. O site não vende produtos, não processa pagamentos e não faz entregas. Toda compra é
         feita na Shopee, com as regras da Shopee e do vendedor.
       </p>
 
@@ -40,5 +43,7 @@ export default function PaginaTermos() {
         Encontrou uma informação errada? Avise pela página <Link href="/contato">Contato</Link>.
       </p>
     </div>
+      </Conteudo>
+    </>
   );
 }

@@ -1,41 +1,94 @@
 @import "tailwindcss";
 
 @theme {
-  --color-laranja: #f25c05;
-  --color-laranja-forte: #c2410c; /* fundo de botão: contraste AA com texto branco */
+  /* Vitrine da Moni */
+  --color-neon: #ff5b14;
+  --color-sol: #ffe14d;
+  --color-pessego: #ffe8db;
+  --color-rosa: #ff3d6e;
+  --color-tinta: #1e120c;
+  --color-cinza: #5a4a42;
+  --color-linha: #e8ddd6;
+  --color-fundo: #fff6f0;
+  /* Usadas no painel: botão com texto branco precisa de laranja mais escuro (contraste AA) */
+  --color-laranja: #ff5b14;
+  --color-laranja-forte: #c2410c;
   --color-laranja-escuro: #9a3412;
   --color-laranja-claro: #fff1e8;
-  --color-tinta: #1d2126;
-  --color-cinza: #5b636e;
-  --color-linha: #e2e4e8;
-  --color-fundo: #f3f4f6;
   --font-titulo: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Figtree Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --shadow-duro: 6px 6px 0 #1e120c;
+  --shadow-duro-p: 4px 4px 0 #1e120c;
+  --shadow-branco: 5px 5px 0 #ffffff;
 }
 
 html {
-  background: var(--color-fundo);
+  background: #ffffff;
   color: var(--color-tinta);
 }
 
 :focus-visible {
-  outline: 3px solid var(--color-laranja);
-  outline-offset: 2px;
-}
-
-/* Etiqueta de desconto: o recorte lembra a etiqueta de preço pendurada no produto. */
-.etiqueta {
-  clip-path: polygon(0.55rem 0, 100% 0, 100% 100%, 0.55rem 100%, 0 50%);
-  padding-left: 0.95rem;
+  outline: 3px solid var(--color-tinta);
+  outline-offset: 3px;
 }
 
 .preco {
   font-family: var(--font-titulo);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+}
+
+/* Movimento da vitrine */
+@keyframes vmFlutua {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-14px) rotate(var(--r, 0deg)); }
+}
+.vm-flutua { animation: vmFlutua 5.5s ease-in-out infinite; }
+.vm-d2 { animation-delay: -1.8s; }
+.vm-d3 { animation-delay: -3.6s; }
+
+@keyframes vmCorre {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.vm-faixa { animation: vmCorre 32s linear infinite; }
+
+@keyframes vmPulso {
+  0% { box-shadow: 0 0 0 0 rgba(255, 225, 77, 0.9); }
+  70% { box-shadow: 0 0 0 9px rgba(255, 225, 77, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 225, 77, 0); }
+}
+.vm-pulso { animation: vmPulso 1.8s ease-out infinite; }
+
+@keyframes vmBalanca {
+  0%, 100% { transform: rotate(0); }
+  50% { transform: rotate(-6deg); }
+}
+.vm-logo:hover .vm-marca { animation: vmBalanca 0.5s ease-in-out 2; }
+
+.vm-cartao { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.vm-cartao:hover, .vm-cartao:focus-within { transform: translateY(-6px) rotate(-0.6deg); box-shadow: 10px 10px 0 #1e120c; }
+.vm-btn { transition: transform 0.15s ease, background-color 0.15s ease; }
+.vm-btn:hover { transform: translateY(-2px); }
+.vm-btn:active { transform: translateY(1px); }
+.vm-coracao:active svg { transform: scale(1.25); }
+.vm-coracao svg { transition: transform 0.2s ease; }
+.vm-navlink { transition: background-color 0.15s ease; }
+.vm-navlink:hover { background: var(--color-pessego); }
+.vm-busca { transition: box-shadow 0.15s ease, transform 0.15s ease; }
+.vm-busca:focus-within { box-shadow: 4px 4px 0 #1e120c; transform: translate(-2px, -2px); }
+.vm-busca input { outline: none; }
+.vm-sem-barra { scrollbar-width: none; }
+.vm-sem-barra::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .vm-flutua, .vm-faixa, .vm-pulso, .vm-logo:hover .vm-marca { animation: none; }
+  .vm-cartao, .vm-btn, .vm-busca, .vm-navlink, .vm-coracao svg { transition: none; }
+  .vm-cartao:hover, .vm-cartao:focus-within, .vm-btn:hover { transform: none; }
 }
 
 @layer components {
+  /* Painel administrativo */
   .botao {
     @apply inline-flex items-center justify-center gap-2 rounded-md bg-laranja-forte px-4 py-2.5 text-sm font-semibold text-white hover:bg-laranja-escuro disabled:cursor-not-allowed disabled:opacity-60;
   }
@@ -48,17 +101,25 @@ html {
   .rotulo {
     @apply mb-1 block text-sm font-semibold text-tinta;
   }
+
+  /* Site público */
+  .vm-pilula {
+    @apply inline-flex min-h-12 items-center justify-center gap-2.5 rounded-full border-[2.5px] border-tinta px-6 font-bold no-underline;
+  }
+  .vm-titulo {
+    @apply font-titulo text-4xl leading-none font-extrabold tracking-[-0.035em] sm:text-5xl lg:text-6xl;
+  }
   .prosa h2 {
-    @apply mt-8 mb-2 font-titulo text-xl font-bold;
+    @apply mt-8 mb-2 font-titulo text-2xl font-bold;
   }
   .prosa p,
   .prosa ul {
-    @apply mb-3 leading-relaxed text-tinta;
+    @apply mb-3 text-lg leading-relaxed text-tinta;
   }
   .prosa ul {
     @apply list-disc pl-5;
   }
   .prosa a {
-    @apply text-laranja-forte underline;
+    @apply font-semibold text-tinta underline decoration-neon decoration-2 underline-offset-2;
   }
 }

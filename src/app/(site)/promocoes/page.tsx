@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Cabecalho, Conteudo } from "@/components/site/Cabecalho";
 import { ListaOfertas } from "@/components/ListaOfertas";
 
 export const metadata: Metadata = {
@@ -11,16 +12,18 @@ export default async function PaginaPromocoes({ searchParams }: { searchParams: 
   const parametros = await searchParams;
   return (
     <>
-      <h1 className="font-titulo text-3xl font-extrabold">Promoções</h1>
-      <p className="mt-1 mb-4 max-w-[70ch] text-cinza">
-        Só entram aqui produtos em que o site registrou uma queda de preço. O valor riscado é o último preço que nós mesmos anotamos antes da queda.
-      </p>
+      <Cabecalho
+        titulo="Preço caiu"
+        subtitulo="Só entram aqui produtos em que o site registrou uma queda de preço. O valor riscado é o último preço anotado antes da queda."
+      />
+      <Conteudo>
       <ListaOfertas
         caminho="/promocoes"
         parametros={{ ordenar: "maior-desconto", ...parametros }}
         fixos={{ soPromocoes: true }}
         vazio="Nenhuma queda de preço registrada no momento."
       />
+      </Conteudo>
     </>
   );
 }
