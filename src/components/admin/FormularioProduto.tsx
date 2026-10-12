@@ -66,8 +66,9 @@ export function FormularioProduto({ produto, categorias }: Props) {
         {p?.video_url && <input type="hidden" name="tinha_video" value="1" />}
         <input id="video_url" name="video_url" type="url" defaultValue={txt("video_url", p?.video_url)} placeholder="https://www.youtube.com/shorts/… ou link do Shopee Video" className="campo" aria-describedby="d-video" />
         <p id="d-video" className="mt-1 text-sm text-cinza">
-          YouTube, TikTok e Instagram tocam dentro do site. Shopee Video vira um botão que abre o vídeo na Shopee (a Shopee não permite tocar em outros
-          sites). Também aceita um arquivo .mp4 com endereço https.
+          Aceita YouTube, TikTok (inclusive o link curto do botão “Copiar link”), Instagram e Google Drive. Para vídeo do Drive, deixe o compartilhamento
+          como “Qualquer pessoa com o link”; senão ele não abre para os visitantes. Shopee Video vira um botão que abre na Shopee. Também aceita um
+          arquivo .mp4 com endereço https.
         </p>
       </div>
 

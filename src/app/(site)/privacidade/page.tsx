@@ -51,7 +51,7 @@ export default function PaginaPrivacidade() {
           <ul>
             <li>Não pede cadastro nem login de visitantes.</li>
             <li>
-              Não carrega vídeos de terceiros sem você pedir. Quando um produto tem vídeo do YouTube, TikTok ou Instagram, o player só é carregado se
+              Não carrega vídeos de terceiros sem você pedir. Quando um produto tem vídeo do YouTube, TikTok, Instagram ou Google Drive, o player só é carregado se
               você tocar em “Assistir ao vídeo”. A partir daí vale a política de privacidade desse serviço, que pode usar cookies.
             </li>
             <li>Não usa cookies de publicidade nem ferramentas de rastreamento de terceiros. O único cookie do site é o de login da administração.</li>

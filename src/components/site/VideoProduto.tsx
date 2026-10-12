@@ -11,6 +11,8 @@ const ROTULO: Record<Video["tipo"], string> = {
   instagram: "Instagram",
   arquivo: "vídeo",
   shopee: "Shopee Video",
+  drive: "Google Drive",
+  "tiktok-curto": "TikTok",
 };
 
 function Play() {
@@ -28,7 +30,7 @@ function Play() {
 export function VideoProduto({ video, nome, imagem }: { video: Video; nome: string; imagem: string | null }) {
   const [tocando, setTocando] = useState(false);
 
-  if (video.tipo === "shopee") {
+  if (video.tipo === "shopee" || video.tipo === "tiktok-curto") {
     return (
       <a
         href={video.link}
@@ -39,14 +41,14 @@ export function VideoProduto({ video, nome, imagem }: { video: Video; nome: stri
         <span className="flex size-8 items-center justify-center rounded-full bg-neon text-tinta">
           <Play />
         </span>
-        Ver o vídeo na Shopee Video
+        {video.tipo === "shopee" ? "Ver o vídeo na Shopee Video" : "Ver o vídeo no TikTok"}
         <IconeSaida />
       </a>
     );
   }
 
-  const proporcao = video.tipo !== "arquivo" && video.vertical ? "aspect-[9/16] max-w-[360px]" : "aspect-video";
-  const capa = video.tipo === "arquivo" ? imagem : (video.capa ?? imagem);
+  const proporcao = "vertical" in video && video.vertical ? "aspect-[9/16] max-w-[360px]" : "aspect-video";
+  const capa = "capa" in video ? (video.capa ?? imagem) : imagem;
 
   return (
     <figure className="m-0">

@@ -11,7 +11,7 @@ const COLUNAS = [
   ["categoria", "Opcional", "Nome da categoria. Se não existir, é criada."],
   ["descricao", "Opcional", "Texto sobre o produto."],
   ["imagem_url", "Opcional", "Endereço da imagem, começando com https://."],
-  ["video_url", "Opcional", "Link do vídeo: YouTube, TikTok, Instagram, Shopee Video ou arquivo .mp4."],
+  ["video_url", "Opcional", "Link do vídeo: YouTube, TikTok (inclusive link curto, até 10 por arquivo), Instagram, Google Drive, Shopee Video ou arquivo .mp4."],
   ["id_externo", "Opcional", "ID do produto na Shopee. Ajuda a reconhecer o mesmo produto quando o link muda."],
   ["publicar", "Opcional", "sim ou não. Vazio segue a opção escolhida abaixo."],
 ];

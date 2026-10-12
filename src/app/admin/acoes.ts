@@ -7,6 +7,7 @@ import type { Disponibilidade, Json, StatusPublicacao } from "@/lib/database.typ
 import { linkAfiliadoValido, primeiroErro, produtoSchema, validarCsv, type ErroLinha } from "@/lib/produto";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { EH_UUID, gerarSlugProduto, slugify } from "@/lib/texto";
+import { resolverVideo, resolverVideosDoCsv } from "@/lib/video-servidor";
 
 // Toda ação confere a sessão e a permissão de administrador antes de agir.
 // Mesmo que esta conferência falhasse, as políticas do banco (RLS) recusariam a gravação.
@@ -85,7 +86,13 @@ export async function salvarProduto(_: Estado, fd: FormData): Promise<Estado> {
   if (!r.success) return comErro(fd, primeiroErro(r.error));
   // Só envia a coluna de vídeo quando há vídeo (ou havia e foi apagado). Assim o cadastro
   // continua funcionando mesmo antes de a migração 0002 ser aplicada no banco.
-  const { video_url, ...dados } = r.data;
+  const { video_url: videoDigitado, ...dados } = r.data;
+  let video_url = videoDigitado;
+  if (videoDigitado) {
+    const rv = await resolverVideo(videoDigitado);
+    if ("erro" in rv) return comErro(fd, rv.erro);
+    video_url = rv.url; // link curto do TikTok vira o completo
+  }
   const comVideo = video_url !== null || fd.get("tinha_video") === "1" ? { video_url } : {};
 
   const categoria = texto(fd, "categoria_id");
@@ -206,8 +213,12 @@ export async function importarCsv(_: EstadoImportacao, fd: FormData): Promise<Es
   if (!(arquivo instanceof File) || arquivo.size === 0) return { erro: "Escolha um arquivo CSV." };
   if (arquivo.size > MAX_BYTES) return { erro: "Arquivo grande demais (limite de 1,5 MB). Divida em arquivos menores." };
 
-  const r = validarCsv(decodificarArquivo(await arquivo.arrayBuffer()), { publicarPorPadrao: fd.get("publicar") === "on" });
-  if (r.erroGeral) return { erro: r.erroGeral };
+  const lido = validarCsv(decodificarArquivo(await arquivo.arrayBuffer()), { publicarPorPadrao: fd.get("publicar") === "on" });
+  if (lido.erroGeral) return { erro: lido.erroGeral };
+
+  // Links curtos do TikTok viram completos; linha cujo link não abre é recusada, o resto segue.
+  const videos = await resolverVideosDoCsv(lido.itens, lido.linhas);
+  const r = { ...lido, itens: videos.itens, erros: [...lido.erros, ...videos.erros].sort((a, b) => a.linha - b.linha) };
 
   const base = { totalLinhas: r.totalLinhas, validos: r.itens.length, erros: r.erros, avisos: r.avisos };
   if (fd.get("so_validar") === "on" || r.itens.length === 0) {

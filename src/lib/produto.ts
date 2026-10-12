@@ -97,6 +97,8 @@ export type ErroLinha = { linha: number; motivo: string };
 
 export type ResultadoCsv = {
   itens: ItemImportacao[];
+  /** Número da linha do arquivo de cada item (mesma ordem de "itens"). */
+  linhas: number[];
   erros: ErroLinha[];
   avisos: string[];
   totalLinhas: number;
@@ -107,7 +109,7 @@ const SIM = new Set(["sim", "s", "1", "true", "x", "publicar", "publicado"]);
 const NAO = new Set(["", "nao", "n", "0", "false", "rascunho"]);
 
 export function validarCsv(texto: string, opcoes: { publicarPorPadrao?: boolean } = {}): ResultadoCsv {
-  const vazio: ResultadoCsv = { itens: [], erros: [], avisos: [], totalLinhas: 0 };
+  const vazio: ResultadoCsv = { itens: [], linhas: [], erros: [], avisos: [], totalLinhas: 0 };
   const linhas = lerCsv(texto);
   if (linhas.length === 0) return { ...vazio, erroGeral: "O arquivo está vazio." };
 
@@ -131,6 +133,7 @@ export function validarCsv(texto: string, opcoes: { publicarPorPadrao?: boolean 
   if (ignoradas.length) avisos.push(`Colunas não reconhecidas e ignoradas: ${ignoradas.join(", ")}.`);
 
   const itens: ItemImportacao[] = [];
+  const linhasItens: number[] = [];
   const erros: ErroLinha[] = [];
   const linksVistos = new Map<string, number>();
   const idsVistos = new Map<string, number>();
@@ -167,6 +170,7 @@ export function validarCsv(texto: string, opcoes: { publicarPorPadrao?: boolean 
     linksVistos.set(p.link_afiliado, numero);
     if (p.id_externo) idsVistos.set(p.id_externo, numero);
 
+    linhasItens.push(numero);
     itens.push({
       nome: p.nome,
       slug: gerarSlugProduto(p.nome),
@@ -182,5 +186,5 @@ export function validarCsv(texto: string, opcoes: { publicarPorPadrao?: boolean 
     });
   });
 
-  return { itens, erros, avisos, totalLinhas: dados.length };
+  return { itens, linhas: linhasItens, erros, avisos, totalLinhas: dados.length };
 }

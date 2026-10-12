@@ -8,10 +8,15 @@
  */
 export type Video =
   | { tipo: "youtube" | "tiktok" | "instagram"; embed: string; vertical: boolean; capa: string | null; link: string }
+  | { tipo: "drive"; embed: string; link: string }
   | { tipo: "arquivo"; arquivo: string; link: string }
-  | { tipo: "shopee"; link: string };
+  | { tipo: "shopee"; link: string }
+  /** Link curto do TikTok (vm.tiktok.com, vt.tiktok.com, tiktok.com/t/…). Ao salvar, vira o link completo (ver video-servidor.ts). */
+  | { tipo: "tiktok-curto"; link: string };
 
-export const SITES_DE_VIDEO = "YouTube, TikTok, Instagram, Shopee Video ou um arquivo .mp4";
+export const SITES_DE_VIDEO = "YouTube, TikTok, Instagram, Google Drive, Shopee Video ou um arquivo .mp4";
+
+const ID_DRIVE = /^[\w-]{15,80}$/;
 
 const ID_YOUTUBE = /^[\w-]{11}$/;
 
@@ -47,6 +52,12 @@ export function analisarVideo(valor: string | null | undefined): Video | null {
     };
   }
 
+  if (host === "vm.tiktok.com" || host === "vt.tiktok.com" || (host === "tiktok.com" && partes[0] === "t")) {
+    const codigo = host === "tiktok.com" ? partes[1] : partes[0];
+    if (!codigo || !/^[\w-]{5,30}$/.test(codigo)) return null;
+    return { tipo: "tiktok-curto", link };
+  }
+
   if (host === "tiktok.com") {
     const i = partes.indexOf("video");
     const id = i >= 0 ? partes[i + 1] : undefined;
@@ -59,6 +70,17 @@ export function analisarVideo(valor: string | null | undefined): Video | null {
     const codigo = partes[1];
     if (!codigo || !/^[\w-]{5,40}$/.test(codigo)) return null;
     return { tipo: "instagram", embed: `https://www.instagram.com/p/${codigo}/embed/`, vertical: true, capa: null, link };
+  }
+
+  if (host === "drive.google.com") {
+    // /file/d/ID/view, /file/u/0/d/ID/view, /open?id=ID, /uc?id=ID
+    let id: string | null = null;
+    if (partes[0] === "file") {
+      const i = partes.indexOf("d");
+      id = i >= 0 ? (partes[i + 1] ?? null) : null;
+    } else if (partes[0] === "open" || partes[0] === "uc") id = url.searchParams.get("id");
+    if (!id || !ID_DRIVE.test(id)) return null;
+    return { tipo: "drive", embed: `https://drive.google.com/file/d/${id}/preview`, link: `https://drive.google.com/file/d/${id}/view` };
   }
 
   if (host === "shopee.com.br" || host.endsWith(".shopee.com.br") || host === "shope.ee" || host === "shp.ee") {
