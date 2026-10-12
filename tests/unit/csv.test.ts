@@ -39,7 +39,7 @@ describe("link de afiliado", () => {
 describe("produtoSchema", () => {
   it("normaliza campos opcionais vazios para null", () => {
     const r = produtoSchema.parse({ nome: " Mouse ", link_afiliado: "https://s.shopee.com.br/m", preco_atual: "49,90", descricao: " ", imagem_url: "" });
-    expect(r).toEqual({ nome: "Mouse", link_afiliado: "https://s.shopee.com.br/m", preco_atual: 49.9, descricao: null, imagem_url: null, video_url: null, id_externo: null });
+    expect(r).toEqual({ nome: "Mouse", link_afiliado: "https://s.shopee.com.br/m", preco_atual: 49.9, descricao: null, imagem_url: null, id_externo: null });
   });
   it("recusa imagem sem https", () => {
     const r = produtoSchema.safeParse({ nome: "Mouse", link_afiliado: "https://s.shopee.com.br/m", preco_atual: "1", imagem_url: "http://x.com/a.jpg" });

@@ -6,10 +6,8 @@ import { ImagemProduto } from "@/components/ImagemProduto";
 import { Preco, SeloDesconto } from "@/components/Preco";
 import { IconeSaida } from "@/components/site/Icones";
 import { BotaoSalvar } from "@/components/site/Salvos";
-import { VideoProduto } from "@/components/site/VideoProduto";
 import { historicoDePrecos, listarCategorias, obterProduto } from "@/lib/dados";
 import { formatarData, formatarDataHora, formatarPreco } from "@/lib/texto";
-import { analisarVideo } from "@/lib/video";
 
 // Dados ao vivo: a página é montada a cada acesso (não é gerada no build).
 export const dynamic = "force-dynamic";
@@ -36,7 +34,6 @@ export default async function PaginaProduto({ params }: Props) {
   const categoria = categorias.find((c) => c.id === produto.categoria_id);
   const indisponivel = produto.disponibilidade === "indisponivel";
   const desconto = produto.preco_anterior !== null && produto.desconto_percentual ? produto.desconto_percentual : null;
-  const video = analisarVideo(produto.video_url);
 
   return (
     <article className="mx-auto max-w-7xl px-4 py-8 sm:px-8 lg:py-12">
@@ -56,8 +53,7 @@ export default async function PaginaProduto({ params }: Props) {
       )}
 
       <div className="grid gap-8 md:grid-cols-2 md:gap-12">
-        <div className="flex flex-col gap-7 self-start">
-        <div className="relative rounded-[30px] border-[3px] border-tinta bg-pessego p-4 shadow-duro">
+        <div className="relative self-start rounded-[30px] border-[3px] border-tinta bg-pessego p-4 shadow-duro">
           <div className="overflow-hidden rounded-[22px] border-2 border-tinta bg-white">
             <ImagemProduto url={produto.imagem_url} nome={produto.nome} prioridade />
           </div>
@@ -66,8 +62,6 @@ export default async function PaginaProduto({ params }: Props) {
               <SeloDesconto desconto={desconto} grande />
             </span>
           )}
-        </div>
-        {video && <VideoProduto video={video} nome={produto.nome} imagem={produto.imagem_url} />}
         </div>
 
         <div>

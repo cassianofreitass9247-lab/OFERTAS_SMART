@@ -13,8 +13,6 @@ export function FormularioProduto({ produto, categorias }: Props) {
   const v = estado.valores;
   const txt = (campo: string, original: string | null | undefined) => (v ? (v[campo] ?? "") : (original ?? ""));
   const marcado = (campo: string, original: boolean | undefined) => (v ? v[campo] === "on" : original);
-  // Os <select> recebem "key" com o valor: depois de um erro o React limpa o formulário e,
-  // sem remontar, a lista voltaria ao valor inicial (ex.: "Publicado" virava "Rascunho").
   return (
     <form action={acao} className="max-w-2xl space-y-5">
       {p && <input type="hidden" name="id" value={p.id} />}
@@ -40,7 +38,7 @@ export function FormularioProduto({ produto, categorias }: Props) {
         </div>
         <div>
           <label htmlFor="categoria_id" className="rotulo">Categoria</label>
-          <select key={txt("categoria_id", p?.categoria_id)} id="categoria_id" name="categoria_id" defaultValue={txt("categoria_id", p?.categoria_id)} className="campo">
+          <select id="categoria_id" name="categoria_id" defaultValue={txt("categoria_id", p?.categoria_id)} className="campo">
             <option value="">Sem categoria</option>
             {categorias.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select>
@@ -62,16 +60,6 @@ export function FormularioProduto({ produto, categorias }: Props) {
       </div>
 
       <div>
-        <label htmlFor="video_url" className="rotulo">Link do vídeo (opcional)</label>
-        {p?.video_url && <input type="hidden" name="tinha_video" value="1" />}
-        <input id="video_url" name="video_url" type="url" defaultValue={txt("video_url", p?.video_url)} placeholder="https://www.youtube.com/shorts/… ou link do Shopee Video" className="campo" aria-describedby="d-video" />
-        <p id="d-video" className="mt-1 text-sm text-cinza">
-          YouTube, TikTok e Instagram tocam dentro do site. Shopee Video vira um botão que abre o vídeo na Shopee (a Shopee não permite tocar em outros
-          sites). Também aceita um arquivo .mp4 com endereço https.
-        </p>
-      </div>
-
-      <div>
         <label htmlFor="descricao" className="rotulo">Descrição (opcional)</label>
         <textarea id="descricao" name="descricao" rows={5} maxLength={5000} defaultValue={txt("descricao", p?.descricao)} className="campo" />
       </div>
@@ -79,7 +67,7 @@ export function FormularioProduto({ produto, categorias }: Props) {
       <div className="grid gap-5 sm:grid-cols-3">
         <div>
           <label htmlFor="status_publicacao" className="rotulo">Situação no site</label>
-          <select key={txt("status_publicacao", p?.status_publicacao ?? "rascunho")} id="status_publicacao" name="status_publicacao" defaultValue={txt("status_publicacao", p?.status_publicacao ?? "rascunho")} className="campo">
+          <select id="status_publicacao" name="status_publicacao" defaultValue={txt("status_publicacao", p?.status_publicacao ?? "rascunho")} className="campo">
             <option value="rascunho">Rascunho (não aparece)</option>
             <option value="publicado">Publicado</option>
             <option value="despublicado">Despublicado</option>
@@ -87,7 +75,7 @@ export function FormularioProduto({ produto, categorias }: Props) {
         </div>
         <div>
           <label htmlFor="disponibilidade" className="rotulo">Disponibilidade</label>
-          <select key={txt("disponibilidade", p?.disponibilidade ?? "desconhecido")} id="disponibilidade" name="disponibilidade" defaultValue={txt("disponibilidade", p?.disponibilidade ?? "desconhecido")} className="campo">
+          <select id="disponibilidade" name="disponibilidade" defaultValue={txt("disponibilidade", p?.disponibilidade ?? "desconhecido")} className="campo">
             <option value="desconhecido">Não verificada</option>
             <option value="disponivel">Disponível</option>
             <option value="indisponivel">Indisponível</option>

@@ -11,7 +11,6 @@ export const dynamic = "force-dynamic";
 const MENU = [
   { href: "/admin", rotulo: "Resumo" },
   { href: "/admin/produtos", rotulo: "Produtos" },
-  { href: "/admin/pedidos", rotulo: "Pedidos" },
   { href: "/admin/importar", rotulo: "Importar CSV" },
   { href: "/admin/categorias", rotulo: "Categorias" },
 ];
@@ -23,11 +22,6 @@ export default async function LayoutPainel({ children }: { children: React.React
   const { data } = await sb.auth.getUser();
   if (!data.user) redirect("/admin/login");
   const { data: admin } = await sb.rpc("eh_admin");
-
-  // Contador de pedidos novos no menu (fica oculto se a migração 0002 ainda não foi aplicada).
-  const { count: novos } = admin
-    ? await sb.from("pedidos").select("id", { count: "exact", head: true }).eq("status", "novo")
-    : { count: null };
 
   const botaoSair = (
     <form action={sair}>
@@ -52,12 +46,7 @@ export default async function LayoutPainel({ children }: { children: React.React
           <Link href="/admin" className="font-titulo text-xl font-extrabold">Painel Vitrine da Moni</Link>
           <nav aria-label="Painel" className="flex flex-wrap gap-4 text-sm font-semibold">
             {MENU.map((m) => (
-              <Link key={m.href} href={m.href} className="inline-flex items-center gap-1.5 py-1 hover:text-laranja-forte">
-                {m.rotulo}
-                {m.href === "/admin/pedidos" && !!novos && (
-                  <span className="rounded-full bg-laranja-forte px-1.5 text-xs leading-5 text-white" aria-label={`${novos} novos`}>{novos}</span>
-                )}
-              </Link>
+              <Link key={m.href} href={m.href} className="py-1 hover:text-laranja-forte">{m.rotulo}</Link>
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-4">
