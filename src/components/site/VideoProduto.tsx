@@ -83,15 +83,20 @@ export function VideoProduto({ video, nome, imagem }: { video: Video; nome: stri
           </button>
         )}
       </div>
-      {video.tipo !== "arquivo" && (
-        <figcaption className="mt-2 text-xs text-cinza">
-          {tocando
-            ? `Vídeo do ${ROTULO[video.tipo]}.`
-            : `Ao tocar, o vídeo é carregado do ${ROTULO[video.tipo]}, que tem a própria política de privacidade.`}{" "}
-          <a href={video.link} target="_blank" rel="nofollow noopener" className="underline">
-            Abrir no {ROTULO[video.tipo]}
-          </a>
-        </figcaption>
+      {/* Vídeo do Google Drive (arquivo próprio): não mostra o caminho do arquivo. O aviso de terceiros fica só antes do play. */}
+      {video.tipo === "drive" ? (
+        !tocando && <p className="mt-2 text-xs text-cinza">Ao tocar, o vídeo é carregado do Google Drive, que tem a própria política de privacidade.</p>
+      ) : (
+        video.tipo !== "arquivo" && (
+          <figcaption className="mt-2 text-xs text-cinza">
+            {tocando
+              ? `Vídeo do ${ROTULO[video.tipo]}.`
+              : `Ao tocar, o vídeo é carregado do ${ROTULO[video.tipo]}, que tem a própria política de privacidade.`}{" "}
+            <a href={video.link} target="_blank" rel="nofollow noopener" className="underline">
+              Abrir no {ROTULO[video.tipo]}
+            </a>
+          </figcaption>
+        )
       )}
     </figure>
   );
