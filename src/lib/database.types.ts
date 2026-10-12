@@ -23,6 +23,8 @@ export type Produto = {
   slug: string;
   descricao: string | null;
   imagem_url: string | null;
+  /** Ausente até a migração 0002 ser aplicada. */
+  video_url?: string | null;
   categoria_id: string | null;
   preco_atual: number;
   preco_anterior: number | null;
@@ -49,6 +51,7 @@ type ProdutoGravavel = {
   link_afiliado: string;
   descricao?: string | null;
   imagem_url?: string | null;
+  video_url?: string | null;
   categoria_id?: string | null;
   id_externo?: string | null;
   origem?: OrigemProduto;
@@ -81,6 +84,20 @@ export type Importacao = {
   criado_em: string;
 };
 
+export type StatusPedido = "novo" | "respondido" | "arquivado";
+export type Pedido = {
+  id: string;
+  nome: string;
+  whatsapp: string;
+  descricao: string;
+  referencia_url: string | null;
+  status: StatusPedido;
+  produto_id: string | null;
+  link_enviado: string | null;
+  respondido_em: string | null;
+  criado_em: string;
+};
+
 type SomenteLeitura<R> = { Row: R; Insert: never; Update: never; Relationships: [] };
 
 export type Database = {
@@ -98,6 +115,12 @@ export type Database = {
       historico_alteracoes: SomenteLeitura<HistoricoAlteracao>;
       cliques: SomenteLeitura<Clique>;
       importacoes: SomenteLeitura<Importacao>;
+      pedidos: {
+        Row: Pedido;
+        Insert: never;
+        Update: { status?: StatusPedido; produto_id?: string | null; link_enviado?: string | null; respondido_em?: string | null };
+        Relationships: [];
+      };
     };
     Views: Record<never, never>;
     Functions: {
@@ -112,6 +135,7 @@ export type Database = {
         Returns: { produto_id: string; nome: string; slug: string; cliques: number }[];
       };
       cliques_por_canal: { Args: { p_dias?: number }; Returns: { canal: string; campanha: string; cliques: number }[] };
+      criar_pedido: { Args: { p_nome: string; p_whatsapp: string; p_descricao: string; p_referencia?: string | null }; Returns: string };
       carregar_dados_demo: { Args: Record<PropertyKey, never>; Returns: number };
       remover_dados_demo: { Args: Record<PropertyKey, never>; Returns: number };
     };

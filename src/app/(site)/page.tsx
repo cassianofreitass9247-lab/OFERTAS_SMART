@@ -221,6 +221,22 @@ export default async function PaginaInicial() {
         )}
       </section>
 
+      {/* Pede pra Moni */}
+      <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-x-10 gap-y-6 rounded-[30px] border-[3px] border-tinta bg-sol p-8 shadow-duro sm:p-10">
+          <div className="min-w-0 flex-[1_1_420px]">
+            <h2 className="font-titulo text-3xl leading-tight font-extrabold tracking-[-0.03em] sm:text-4xl">Não achou o que queria?</h2>
+            <p className="mt-3 max-w-[52ch] text-lg leading-relaxed font-medium">
+              Me conta o que você procura. Eu garimpo na Shopee e mando o link direto no seu WhatsApp.
+            </p>
+          </div>
+          <Link href="/pedir" className="vm-btn vm-pilula min-h-14 bg-tinta px-7 text-lg font-extrabold text-white shadow-[5px_5px_0_#ffffff]">
+            <IconeWhatsapp tamanho={22} />
+            Pede pra Moni
+          </Link>
+        </div>
+      </section>
+
       {/* Quem é a Moni */}
       <section id="moni" className="scroll-mt-48 border-y-[3px] border-tinta bg-pessego">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-14 px-4 py-16 sm:px-8 lg:py-24">

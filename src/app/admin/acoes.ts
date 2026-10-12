@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { decodificarArquivo } from "@/lib/csv";
 import type { Disponibilidade, Json, StatusPublicacao } from "@/lib/database.types";
-import { primeiroErro, produtoSchema, validarCsv, type ErroLinha } from "@/lib/produto";
+import { linkAfiliadoValido, primeiroErro, produtoSchema, validarCsv, type ErroLinha } from "@/lib/produto";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { EH_UUID, gerarSlugProduto, slugify } from "@/lib/texto";
 
@@ -79,9 +79,14 @@ export async function salvarProduto(_: Estado, fd: FormData): Promise<Estado> {
     preco_atual: texto(fd, "preco_atual"),
     descricao: texto(fd, "descricao"),
     imagem_url: texto(fd, "imagem_url"),
+    video_url: texto(fd, "video_url"),
     id_externo: texto(fd, "id_externo"),
   });
   if (!r.success) return comErro(fd, primeiroErro(r.error));
+  // Só envia a coluna de vídeo quando há vídeo (ou havia e foi apagado). Assim o cadastro
+  // continua funcionando mesmo antes de a migração 0002 ser aplicada no banco.
+  const { video_url, ...dados } = r.data;
+  const comVideo = video_url !== null || fd.get("tinha_video") === "1" ? { video_url } : {};
 
   const categoria = texto(fd, "categoria_id");
   const status = texto(fd, "status_publicacao") as StatusPublicacao;
@@ -90,7 +95,8 @@ export async function salvarProduto(_: Estado, fd: FormData): Promise<Estado> {
   if (!STATUS.includes(status) || !DISPONIBILIDADES.includes(disponibilidade)) return comErro(fd, "Situação inválida.");
 
   const campos = {
-    ...r.data,
+    ...dados,
+    ...comVideo,
     categoria_id: categoria || null,
     status_publicacao: status,
     disponibilidade,
@@ -103,6 +109,7 @@ export async function salvarProduto(_: Estado, fd: FormData): Promise<Estado> {
 
   if (error) {
     if (error.code === "23505") return comErro(fd, "Já existe outro produto com este link de afiliado ou com este ID da Shopee.");
+    if (error.message.includes("video_url")) return comErro(fd, "Para salvar vídeo, aplique antes a migração 0002 no Supabase (veja o README).");
     return comErro(fd, `Não foi possível salvar: ${error.message}`);
   }
 
@@ -242,4 +249,46 @@ export async function removerDemo() {
   if (error) voltar("/admin", "erro", `Não foi possível remover: ${error.message}`);
   atualizarSite();
   voltar("/admin", "ok", `${data ?? 0} produtos fictícios removidos.`);
+}
+
+// ---------------------------------------------------------------------------
+// Pedidos de visitantes ("Pede pra Moni")
+// ---------------------------------------------------------------------------
+const STATUS_PEDIDO = ["novo", "respondido", "arquivado"] as const;
+
+/** Chamada pelo botão do WhatsApp: registra a resposta (o envio em si acontece no WhatsApp da Moni). */
+export async function registrarRespostaPedido(id: string, dados: { produtoId: string | null; link: string | null }): Promise<{ erro?: string }> {
+  const sb = await exigirAdmin();
+  if (!EH_UUID.test(id) || (dados.produtoId && !EH_UUID.test(dados.produtoId))) return { erro: "Pedido inválido." };
+  if (dados.link && (dados.link.length > 2000 || !linkAfiliadoValido(dados.link))) return { erro: "Link de afiliado inválido." };
+  const { error } = await sb
+    .from("pedidos")
+    .update({ status: "respondido", produto_id: dados.produtoId, link_enviado: dados.link, respondido_em: new Date().toISOString() })
+    .eq("id", id);
+  if (error) return { erro: `Não foi possível marcar como respondido: ${error.message}` };
+  revalidatePath("/admin", "layout");
+  return {};
+}
+
+export async function alterarStatusPedido(fd: FormData) {
+  const sb = await exigirAdmin();
+  const id = texto(fd, "id");
+  const status = texto(fd, "status") as (typeof STATUS_PEDIDO)[number];
+  const volta = texto(fd, "voltar").startsWith("/admin/pedidos") ? texto(fd, "voltar") : "/admin/pedidos";
+  if (!EH_UUID.test(id) || !STATUS_PEDIDO.includes(status)) voltar(volta, "erro", "Pedido inválido.");
+  const { error } = await sb.from("pedidos").update({ status }).eq("id", id);
+  if (error) voltar(volta, "erro", `Não foi possível alterar: ${error.message}`);
+  revalidatePath("/admin", "layout");
+  voltar(volta, "ok", status === "arquivado" ? "Pedido arquivado." : status === "novo" ? "Pedido reaberto." : "Pedido marcado como respondido.");
+}
+
+export async function excluirPedido(fd: FormData) {
+  const sb = await exigirAdmin();
+  const id = texto(fd, "id");
+  const volta = texto(fd, "voltar").startsWith("/admin/pedidos") ? texto(fd, "voltar") : "/admin/pedidos";
+  if (!EH_UUID.test(id)) voltar(volta, "erro", "Pedido inválido.");
+  const { error } = await sb.from("pedidos").delete().eq("id", id);
+  if (error) voltar(volta, "erro", `Não foi possível excluir: ${error.message}`);
+  revalidatePath("/admin", "layout");
+  voltar(volta, "ok", "Pedido excluído, com os dados da pessoa.");
 }

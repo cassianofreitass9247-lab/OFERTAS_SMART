@@ -32,6 +32,12 @@ export default function PaginaPrivacidade() {
               origem (por exemplo, “instagram”). Não guardamos endereço IP, nome, e-mail nem identificador do seu aparelho junto com o clique.
             </li>
             <li>
+              <strong>Pedidos de produto (“Pede pra Moni”):</strong> se você fizer um pedido, guardamos seu nome, seu WhatsApp, a descrição do produto e o
+              link de exemplo, se você mandar. Servem só para a Moni procurar o produto e responder você no WhatsApp, inclusive com link de afiliado da
+              Shopee. A base é o seu consentimento, dado na caixa de autorização do formulário. Só a administração do site vê esses dados, que não são
+              vendidos nem repassados, e são apagados automaticamente em até 90 dias. Você pode pedir a exclusão antes disso pelo canal de contato.
+            </li>
+            <li>
               <strong>Produtos salvos (coração):</strong> a lista fica guardada só no seu navegador. Ela não é enviada para o site e some se você limpar os
               dados do navegador.
             </li>
@@ -44,11 +50,15 @@ export default function PaginaPrivacidade() {
           <h2>O que o site não faz</h2>
           <ul>
             <li>Não pede cadastro nem login de visitantes.</li>
+            <li>
+              Não carrega vídeos de terceiros sem você pedir. Quando um produto tem vídeo do YouTube, TikTok ou Instagram, o player só é carregado se
+              você tocar em “Assistir ao vídeo”. A partir daí vale a política de privacidade desse serviço, que pode usar cookies.
+            </li>
             <li>Não usa cookies de publicidade nem ferramentas de rastreamento de terceiros. O único cookie do site é o de login da administração.</li>
             <li>Não vende nem compartilha dados de visitantes.</li>
           </ul>
 
-          <h2>Ao sair para a Shopee, o Instagram ou o WhatsApp</h2>
+          <h2>Ao sair para a Shopee, o Instagram, o WhatsApp ou um vídeo</h2>
           <p>
             Esses serviços têm as próprias políticas de privacidade. A Shopee pode usar cookies para identificar que a visita veio de um link de afiliado.
             O que acontece lá é de responsabilidade de cada serviço.
@@ -56,8 +66,8 @@ export default function PaginaPrivacidade() {
 
           <h2>Seus direitos</h2>
           <p>
-            Você pode pedir confirmação, acesso, correção ou exclusão de dados pessoais pelo canal de contato. Como os cliques são guardados sem
-            identificação, normalmente não há dados pessoais seus armazenados pelo site.
+            Você pode pedir confirmação, acesso, correção ou exclusão de dados pessoais pelo canal de contato, e pode retirar o consentimento a qualquer
+            momento. Os cliques são guardados sem identificação; os únicos dados pessoais que o site guarda são os de pedidos de produto, por até 90 dias.
           </p>
 
           <h2>Mudanças nesta política</h2>
