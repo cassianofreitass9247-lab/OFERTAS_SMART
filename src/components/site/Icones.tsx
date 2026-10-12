@@ -98,23 +98,25 @@ export function IconeCategoria({ slug, tamanho = 18 }: { slug: string; tamanho?:
   return <IconeEtiqueta tamanho={tamanho} />;
 }
 
-/** Marca da Vitrine: selo com toldo listrado e o "M" de Moni. */
+/** Marca da Vitrine: selo com a sacola de compras, estrela e coração. Mesmo desenho de src/app/icon.svg. */
 export function Marca({ tamanho = 56 }: P) {
   return (
     <svg width={tamanho} height={tamanho} viewBox="0 0 56 56" aria-hidden="true">
       <rect x="2" y="2" width="52" height="52" rx="16" fill="#ffffff" stroke="#1e120c" strokeWidth="3" />
-      <rect x="9" y="10" width="38" height="4" rx="2" fill="#1e120c" />
-      <rect x="10" y="14" width="9" height="9" fill="#ff5b14" />
-      <rect x="19" y="14" width="9" height="9" fill="#ffe14d" />
-      <rect x="28" y="14" width="9" height="9" fill="#ff5b14" />
-      <rect x="37" y="14" width="9" height="9" fill="#ffe14d" />
-      <circle cx="14.5" cy="23" r="4.5" fill="#ff5b14" />
-      <circle cx="23.5" cy="23" r="4.5" fill="#ffe14d" />
-      <circle cx="32.5" cy="23" r="4.5" fill="#ff5b14" />
-      <circle cx="41.5" cy="23" r="4.5" fill="#ffe14d" />
-      <path d="M10 14h36v9H10z" fill="none" stroke="#1e120c" strokeWidth="2" />
-      <path d="M17 47V36l6.5 7 6.5-7v11" fill="none" stroke="#1e120c" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="38" cy="44.5" r="2.6" fill="#ff3d6e" />
+      <path d="M37 24l7 3 1 18-6 2z" fill="#c2410c" stroke="#1e120c" strokeWidth="2.6" strokeLinejoin="round" />
+      <path d="M13 24h24l2 23H11z" fill="#ff5b14" stroke="#1e120c" strokeWidth="2.6" strokeLinejoin="round" />
+      <circle cx="18" cy="28" r="1.9" fill="#1e120c" />
+      <circle cx="30" cy="28" r="1.9" fill="#1e120c" />
+      <path d="M18 28v-8a6 6 0 0 1 12 0v8" fill="none" stroke="#1e120c" strokeWidth="2.8" strokeLinecap="round" />
+      <path
+        transform="translate(12.5 14) scale(5.6)"
+        d="M0,-1L.265,-.364L.951,-.309L.428,.139L.588,.809L0,.45L-.588,.809L-.428,.139L-.951,-.309L-.265,-.364Z"
+        fill="#ffe14d"
+        stroke="#1e120c"
+        strokeWidth="0.3"
+        strokeLinejoin="round"
+      />
+      <path transform="translate(38.5 7.5) scale(0.46)" d={CAMINHO_CORACAO} fill="#ff3d6e" stroke="#1e120c" strokeWidth="3.6" strokeLinejoin="round" />
     </svg>
   );
 }
