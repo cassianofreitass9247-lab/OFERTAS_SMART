@@ -176,6 +176,7 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
               pertence à Shopee.
             </p>
             <nav aria-label="Institucional" className="flex flex-wrap gap-x-6 gap-y-3 text-[15px]">
+              <Link href="/pedir" className="text-white underline">Pede pra Moni</Link>
               <Link href="/afiliados" className="text-white underline">Links de afiliado</Link>
               <Link href="/privacidade" className="text-white underline">Política de privacidade</Link>
               <Link href="/termos" className="text-white underline">Termos de uso</Link>

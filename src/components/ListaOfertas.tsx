@@ -71,11 +71,18 @@ export async function ListaOfertas({ caminho, parametros, fixos, vazio }: Props)
       {itens.length === 0 ? (
         <div className="rounded-3xl border-[2.5px] border-dashed border-tinta bg-pessego p-10 text-center">
           <p className="font-titulo text-xl font-bold">{busca ? `Nenhuma oferta encontrada para “${busca}”.` : vazio}</p>
-          {(busca || ate > 0 || pagina > 1) && (
-            <Link href={caminho} className="vm-btn vm-pilula mt-5 bg-white">
-              Ver todas as ofertas desta página
-            </Link>
-          )}
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
+            {(busca || ate > 0 || pagina > 1) && (
+              <Link href={caminho} className="vm-btn vm-pilula bg-white">
+                Ver todas as ofertas desta página
+              </Link>
+            )}
+            {busca && (
+              <Link href={`/pedir?q=${encodeURIComponent(busca)}`} className="vm-btn vm-pilula bg-neon font-extrabold">
+                Pedir “{busca}” pra Moni
+              </Link>
+            )}
+          </div>
         </div>
       ) : (
         <GradeProdutos produtos={itens} nomesCategorias={nomes} />

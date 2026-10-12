@@ -1,0 +1,48 @@
+"use server";
+
+import { pedidoSchema } from "@/lib/pedido";
+import { clientePublico } from "@/lib/supabase/publico";
+
+export type EstadoPedido = { ok?: boolean; erro?: string; valores?: Record<string, string> };
+
+const texto = (fd: FormData, campo: string) => {
+  const v = fd.get(campo);
+  return typeof v === "string" ? v : "";
+};
+
+function comErro(fd: FormData, erro: string): EstadoPedido {
+  const valores: Record<string, string> = {};
+  for (const [campo, valor] of fd) if (typeof valor === "string") valores[campo] = valor;
+  return { erro, valores };
+}
+
+export async function enviarPedido(_: EstadoPedido, fd: FormData): Promise<EstadoPedido> {
+  // Armadilha para robôs: campo invisível para pessoas. Se vier preenchido, finge sucesso e descarta.
+  if (texto(fd, "empresa")) return { ok: true };
+
+  const r = pedidoSchema.safeParse({
+    nome: texto(fd, "nome"),
+    whatsapp: texto(fd, "whatsapp"),
+    descricao: texto(fd, "descricao"),
+    referencia: texto(fd, "referencia"),
+    consentimento: fd.get("consentimento") === "on",
+  });
+  if (!r.success) return comErro(fd, r.error.issues[0]?.message ?? "Confira os dados do pedido.");
+
+  const sb = clientePublico();
+  if (!sb) return comErro(fd, "Os pedidos ainda não estão funcionando. Tente mais tarde.");
+
+  const { error } = await sb.rpc("criar_pedido", {
+    p_nome: r.data.nome,
+    p_whatsapp: r.data.whatsapp,
+    p_descricao: r.data.descricao,
+    p_referencia: r.data.referencia,
+  });
+  if (error) {
+    if (error.hint === "limite_numero") return comErro(fd, "Você já fez 3 pedidos hoje com este número. A Moni responde esses primeiro; tente de novo amanhã.");
+    if (error.hint === "limite_geral") return comErro(fd, "Muitos pedidos chegaram agora. Tente de novo daqui a pouco.");
+    if (error.code === "22023") return comErro(fd, error.message);
+    return comErro(fd, "Não foi possível enviar o pedido agora. Tente de novo em instantes.");
+  }
+  return { ok: true };
+}
