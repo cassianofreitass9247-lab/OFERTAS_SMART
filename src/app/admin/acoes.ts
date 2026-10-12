@@ -80,13 +80,14 @@ export async function salvarProduto(_: Estado, fd: FormData): Promise<Estado> {
     preco_atual: texto(fd, "preco_atual"),
     descricao: texto(fd, "descricao"),
     imagem_url: texto(fd, "imagem_url"),
+    imagens: String(fd.get("imagens") ?? ""),
     video_url: texto(fd, "video_url"),
     id_externo: texto(fd, "id_externo"),
   });
   if (!r.success) return comErro(fd, primeiroErro(r.error));
   // Só envia a coluna de vídeo quando há vídeo (ou havia e foi apagado). Assim o cadastro
   // continua funcionando mesmo antes de a migração 0002 ser aplicada no banco.
-  const { video_url: videoDigitado, ...dados } = r.data;
+  const { video_url: videoDigitado, imagens, ...dados } = r.data;
   let video_url = videoDigitado;
   if (videoDigitado) {
     const rv = await resolverVideo(videoDigitado);
@@ -94,6 +95,8 @@ export async function salvarProduto(_: Estado, fd: FormData): Promise<Estado> {
     video_url = rv.url; // link curto do TikTok vira o completo
   }
   const comVideo = video_url !== null || fd.get("tinha_video") === "1" ? { video_url } : {};
+  // Mesmo cuidado com a galeria: só envia a coluna quando há fotos (ou havia) — vale antes da migração 0003.
+  const comImagens = imagens.length > 0 || fd.get("tinha_imagens") === "1" ? { imagens } : {};
 
   const categoria = texto(fd, "categoria_id");
   const status = texto(fd, "status_publicacao") as StatusPublicacao;
@@ -104,6 +107,7 @@ export async function salvarProduto(_: Estado, fd: FormData): Promise<Estado> {
   const campos = {
     ...dados,
     ...comVideo,
+    ...comImagens,
     categoria_id: categoria || null,
     status_publicacao: status,
     disponibilidade,
@@ -116,6 +120,7 @@ export async function salvarProduto(_: Estado, fd: FormData): Promise<Estado> {
 
   if (error) {
     if (error.code === "23505") return comErro(fd, "Já existe outro produto com este link de afiliado ou com este ID da Shopee.");
+    if (error.message.includes("imagens")) return comErro(fd, "Para salvar fotos adicionais, aplique antes a migração 0003 no Supabase (veja o README).");
     if (error.message.includes("video_url")) return comErro(fd, "Para salvar vídeo, aplique antes a migração 0002 no Supabase (veja o README).");
     return comErro(fd, `Não foi possível salvar: ${error.message}`);
   }

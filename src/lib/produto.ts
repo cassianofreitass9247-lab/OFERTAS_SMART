@@ -39,6 +39,24 @@ const textoOpcional = (max: number, rotulo: string) =>
     .optional()
     .transform((v) => v ?? null);
 
+/** Capa + até 7 imagens adicionais = 8 fotos por produto. */
+export const MAX_IMAGENS_EXTRAS = 7;
+
+/**
+ * Imagens adicionais: um endereço por linha no painel, ou separados por "|" no CSV.
+ * Endereço não tem espaço, então qualquer espaço, quebra de linha ou "|" separa. Repetidos são descartados.
+ */
+const listaDeImagens = z
+  .string()
+  .optional()
+  .transform((v) => [...new Set((v ?? "").split(/[\s|]+/).filter(Boolean))])
+  .pipe(
+    z
+      .array(z.string().max(2000, "Imagens: endereço muito longo"))
+      .max(MAX_IMAGENS_EXTRAS, `Imagens adicionais: no máximo ${MAX_IMAGENS_EXTRAS} (com a capa, 8 fotos)`)
+      .refine((l) => l.every(urlHttps), "Imagens adicionais: todos os endereços precisam começar com https://"),
+  );
+
 export const produtoSchema = z.object({
   nome: z.string().trim().min(3, "Nome: mínimo de 3 caracteres").max(200, "Nome: máximo de 200 caracteres"),
   link_afiliado: z
@@ -52,6 +70,7 @@ export const produtoSchema = z.object({
     .refine((v): v is number => v !== null, "Preço: valor inválido (exemplos aceitos: 59,90 ou 1.234,56)"),
   descricao: textoOpcional(5000, "Descrição"),
   imagem_url: textoOpcional(2000, "Imagem").refine((v) => v === null || urlHttps(v), "Imagem: o endereço precisa começar com https://"),
+  imagens: listaDeImagens,
   video_url: textoOpcional(2000, "Vídeo").refine((v) => v === null || analisarVideo(v) !== null, `Vídeo: use um link do ${SITES_DE_VIDEO}`),
   id_externo: textoOpcional(64, "ID do produto na Shopee").refine((v) => v === null || /^[\w.-]+$/.test(v), "ID do produto na Shopee: use apenas letras, números, ponto, hífen ou _"),
 });
@@ -73,6 +92,7 @@ const APELIDOS: Record<string, string> = {
   categoria: "categoria",
   descricao: "descricao",
   imagem_url: "imagem_url", imagem: "imagem_url",
+  imagens_url: "imagens", imagens: "imagens", imagens_adicionais: "imagens", fotos: "imagens",
   video_url: "video_url", video: "video_url", link_video: "video_url",
   id_externo: "id_externo", id_shopee: "id_externo", item_id: "id_externo",
   publicar: "publicar",
@@ -86,6 +106,7 @@ export type ItemImportacao = {
   link_afiliado: string;
   descricao: string | null;
   imagem_url: string | null;
+  imagens: string[];
   video_url: string | null;
   id_externo: string | null;
   categoria_nome: string | null;
@@ -178,6 +199,7 @@ export function validarCsv(texto: string, opcoes: { publicarPorPadrao?: boolean 
       link_afiliado: p.link_afiliado,
       descricao: p.descricao,
       imagem_url: p.imagem_url,
+      imagens: p.imagens,
       video_url: p.video_url,
       id_externo: p.id_externo,
       categoria_nome: categoria || null,

@@ -62,6 +62,24 @@ export function FormularioProduto({ produto, categorias }: Props) {
       </div>
 
       <div>
+        <label htmlFor="imagens" className="rotulo">Fotos adicionais (opcional)</label>
+        {(p?.imagens?.length ?? 0) > 0 && <input type="hidden" name="tinha_imagens" value="1" />}
+        <textarea
+          id="imagens"
+          name="imagens"
+          rows={4}
+          defaultValue={txt("imagens", p?.imagens?.join("\n"))}
+          placeholder={"https://…\nhttps://…"}
+          className="campo"
+          aria-describedby="d-imagens"
+        />
+        <p id="d-imagens" className="mt-1 text-sm text-cinza">
+          Outros ângulos do produto: um endereço por linha, até 7, começando com https://. Aparecem depois da capa, na mesma ordem em que você escrever. Para
+          remover uma foto, apague a linha.
+        </p>
+      </div>
+
+      <div>
         <label htmlFor="video_url" className="rotulo">Link do vídeo (opcional)</label>
         {p?.video_url && <input type="hidden" name="tinha_video" value="1" />}
         <input id="video_url" name="video_url" type="url" defaultValue={txt("video_url", p?.video_url)} placeholder="https://www.youtube.com/shorts/… ou link do Shopee Video" className="campo" aria-describedby="d-video" />

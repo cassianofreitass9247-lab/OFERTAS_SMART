@@ -11,7 +11,7 @@ import { excluirProduto } from "../../../acoes";
 export const metadata: Metadata = { title: "Editar produto" };
 
 const CAMPOS: Record<string, string> = {
-  nome: "Nome", descricao: "Descrição", imagem_url: "Imagem", categoria_id: "Categoria", preco_atual: "Preço",
+  nome: "Nome", descricao: "Descrição", imagem_url: "Imagem", imagens: "Fotos adicionais", categoria_id: "Categoria", preco_atual: "Preço",
   link_afiliado: "Link de afiliado", disponibilidade: "Disponibilidade", status_publicacao: "Situação", destaque: "Destaque",
 };
 

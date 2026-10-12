@@ -2,9 +2,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ImagemProduto } from "@/components/ImagemProduto";
 import { Preco, SeloDesconto } from "@/components/Preco";
 import { IconeSaida } from "@/components/site/Icones";
+import { GaleriaProduto } from "@/components/site/GaleriaProduto";
 import { BotaoSalvar } from "@/components/site/Salvos";
 import { VideoProduto } from "@/components/site/VideoProduto";
 import { historicoDePrecos, listarCategorias, obterProduto } from "@/lib/dados";
@@ -37,6 +37,8 @@ export default async function PaginaProduto({ params }: Props) {
   const indisponivel = produto.disponibilidade === "indisponivel";
   const desconto = produto.preco_anterior !== null && produto.desconto_percentual ? produto.desconto_percentual : null;
   const video = analisarVideo(produto.video_url);
+  // Capa primeiro, depois as fotos adicionais na ordem do cadastro.
+  const fotos = [...new Set([produto.imagem_url, ...(produto.imagens ?? [])].filter((u): u is string => !!u))];
 
   return (
     <article className="mx-auto max-w-7xl px-4 py-8 sm:px-8 lg:py-12">
@@ -55,18 +57,13 @@ export default async function PaginaProduto({ params }: Props) {
         </p>
       )}
 
-      <div className="grid gap-8 md:grid-cols-2 md:gap-12">
-        <div className="flex flex-col gap-7 self-start">
-        <div className="relative rounded-[30px] border-[3px] border-tinta bg-pessego p-4 shadow-duro">
-          <div className="overflow-hidden rounded-[22px] border-2 border-tinta bg-white">
-            <ImagemProduto url={produto.imagem_url} nome={produto.nome} prioridade />
-          </div>
-          {desconto && (
-            <span className="absolute -top-5 -right-4">
-              <SeloDesconto desconto={desconto} grande />
-            </span>
-          )}
-        </div>
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12">
+        <div className="flex min-w-0 flex-col gap-7 self-start">
+        <GaleriaProduto
+          imagens={fotos}
+          nome={produto.nome}
+          selo={desconto ? <SeloDesconto desconto={desconto} grande /> : undefined}
+        />
         {video && <VideoProduto video={video} nome={produto.nome} imagem={produto.imagem_url} />}
         </div>
 

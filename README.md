@@ -36,7 +36,7 @@ Se o preço subir, o desconto some. Se você digitou um preço errado, marque "E
 Os nomes dos menus do Supabase podem mudar um pouco com o tempo.
 
 1. Crie uma conta em https://supabase.com e um projeto novo (região São Paulo).
-2. Abra **SQL Editor**, clique em **New query**, cole todo o conteúdo de `supabase/migrations/0001_base.sql` e clique em **Run**. Depois, em outra **New query**, faça o mesmo com `0002_pedidos_e_video.sql` (pedidos “Pede pra Moni” e vídeo do produto). Cada arquivo roda uma única vez, na ordem.
+2. Abra **SQL Editor**, clique em **New query**, cole todo o conteúdo de `supabase/migrations/0001_base.sql` e clique em **Run**. Depois, em outra **New query**, faça o mesmo com `0002_pedidos_e_video.sql` (pedidos “Pede pra Moni” e vídeo do produto) e depois com `0003_galeria_de_imagens.sql` (várias fotos por produto). Cada arquivo roda uma única vez, na ordem.
 3. Abra **Authentication > Users > Add user**, informe seu e-mail e uma senha forte, e marque a confirmação automática do e-mail.
 4. Volte ao **SQL Editor** e rode, trocando o e-mail pelo seu:
 

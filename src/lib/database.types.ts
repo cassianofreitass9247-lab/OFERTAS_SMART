@@ -23,6 +23,8 @@ export type Produto = {
   slug: string;
   descricao: string | null;
   imagem_url: string | null;
+  /** Fotos adicionais, em ordem (a capa fica em imagem_url). Ausente até a migração 0003 ser aplicada. */
+  imagens?: string[];
   /** Ausente até a migração 0002 ser aplicada. */
   video_url?: string | null;
   categoria_id: string | null;
@@ -51,6 +53,7 @@ type ProdutoGravavel = {
   link_afiliado: string;
   descricao?: string | null;
   imagem_url?: string | null;
+  imagens?: string[];
   video_url?: string | null;
   categoria_id?: string | null;
   id_externo?: string | null;

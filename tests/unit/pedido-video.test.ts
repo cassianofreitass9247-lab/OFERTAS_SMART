@@ -134,7 +134,7 @@ describe("link curto do TikTok", () => {
     expect(n).toBeLessThanOrEqual(4);
   });
   it("CSV: troca links curtos, recusa só a linha com problema e respeita o limite", async () => {
-    const base = { slug: "x", preco_atual: 1, link_afiliado: "https://s.shopee.com.br/a", descricao: null, imagem_url: null, id_externo: null, categoria_nome: null, categoria_slug: null, status: "rascunho" } as const;
+    const base = { slug: "x", preco_atual: 1, link_afiliado: "https://s.shopee.com.br/a", descricao: null, imagem_url: null, imagens: [] as string[], id_externo: null, categoria_nome: null, categoria_slug: null, status: "rascunho" } as const;
     const item = (nome: string, video: string | null): ItemImportacao => ({ ...base, nome, video_url: video });
     const itens = [item("A", "https://vm.tiktok.com/ZMokok1/"), item("B", "https://vm.tiktok.com/ZMruim1/"), item("C", null), item("D", "https://vm.tiktok.com/ZMokok1/")];
     const r = await resolverVideosDoCsv(itens, [2, 3, 4, 5], async (url) => (url.includes("ruim") ? resposta(404) : resposta(301, completo)));

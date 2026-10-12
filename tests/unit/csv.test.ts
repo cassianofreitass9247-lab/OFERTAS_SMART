@@ -39,7 +39,7 @@ describe("link de afiliado", () => {
 describe("produtoSchema", () => {
   it("normaliza campos opcionais vazios para null", () => {
     const r = produtoSchema.parse({ nome: " Mouse ", link_afiliado: "https://s.shopee.com.br/m", preco_atual: "49,90", descricao: " ", imagem_url: "" });
-    expect(r).toEqual({ nome: "Mouse", link_afiliado: "https://s.shopee.com.br/m", preco_atual: 49.9, descricao: null, imagem_url: null, video_url: null, id_externo: null });
+    expect(r).toEqual({ nome: "Mouse", link_afiliado: "https://s.shopee.com.br/m", preco_atual: 49.9, descricao: null, imagem_url: null, imagens: [], video_url: null, id_externo: null });
   });
   it("recusa imagem sem https", () => {
     const r = produtoSchema.safeParse({ nome: "Mouse", link_afiliado: "https://s.shopee.com.br/m", preco_atual: "1", imagem_url: "http://x.com/a.jpg" });
@@ -88,5 +88,19 @@ describe("validarCsv", () => {
     expect(validarCsv("nome;link;preco\n").erroGeral).toMatch(/cabeçalho/);
     const grande = "nome;link;preco\n" + Array.from({ length: 2001 }, (_, i) => `P${i};https://s.shopee.com.br/${i};1`).join("\n");
     expect(validarCsv(grande).erroGeral).toMatch(/limite/);
+  });
+});
+
+describe("fotos adicionais (imagens)", () => {
+  const base = { nome: "Mouse", link_afiliado: "https://s.shopee.com.br/m", preco_atual: "1" };
+  it("aceita uma por linha ou separadas por |, sem repetidas", () => {
+    const r = produtoSchema.parse({ ...base, imagens: "https://a.com/1.jpg\n https://a.com/2.jpg | https://a.com/1.jpg" });
+    expect(r.imagens).toEqual(["https://a.com/1.jpg", "https://a.com/2.jpg"]);
+    expect(produtoSchema.parse(base).imagens).toEqual([]);
+  });
+  it("recusa http e mais de 7", () => {
+    expect(produtoSchema.safeParse({ ...base, imagens: "http://a.com/1.jpg" }).success).toBe(false);
+    const oito = Array.from({ length: 8 }, (_, i) => `https://a.com/${i}.jpg`).join("|");
+    expect(produtoSchema.safeParse({ ...base, imagens: oito }).success).toBe(false);
   });
 });
