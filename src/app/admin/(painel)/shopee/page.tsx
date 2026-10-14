@@ -82,6 +82,8 @@ export default async function PaginaShopee({ searchParams }: { searchParams: Pro
         Cole o link de um produto da Shopee (ou só o número dele) ou digite o que procura. O site traz nome, foto, preço e comissão e cria um{" "}
         <strong>rascunho</strong> com o seu link de afiliado. Nada é publicado sozinho: você revisa e publica.{" "}
         <Link href="/admin/shopee/lote" className="underline">Importar vários de uma vez (lote)</Link>
+        {" · "}
+        <Link href="/admin/shopee/diagnostico" className="underline">Diagnóstico da API</Link>
       </p>
       <Aviso parametros={parametros} />
 
