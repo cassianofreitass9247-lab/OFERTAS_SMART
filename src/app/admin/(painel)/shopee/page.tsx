@@ -79,8 +79,8 @@ export default async function PaginaShopee({ searchParams }: { searchParams: Pro
     <>
       <h1 className="mb-1 font-titulo text-3xl font-extrabold">Importar da Shopee</h1>
       <p className="mb-4 max-w-[75ch] text-sm text-cinza">
-        Cole o link de um produto da Shopee (ou só o número dele) ou digite o que procura. O site traz nome, foto, preço e comissão e cria um{" "}
-        <strong>rascunho</strong> com o seu link de afiliado. Nada é publicado sozinho: você revisa e publica.{" "}
+        Cole o link de um produto da Shopee (ou só o número dele) ou digite o que procura. O site traz nome, foto, preço e comissão e cria o produto já{" "}
+        <strong>publicado e disponível</strong>, com categoria automática e o seu link de afiliado (termo sensível ou sem foto vira rascunho).{" "}
         <Link href="/admin/shopee/lote" className="underline">Importar vários de uma vez (lote)</Link>
         {" · "}
         <Link href="/admin/shopee/diagnostico" className="underline">Diagnóstico da API</Link>
@@ -166,7 +166,7 @@ export default async function PaginaShopee({ searchParams }: { searchParams: Pro
                         <input type="hidden" name="item" value={o.itemId} />
                         <input type="hidden" name="loja" value={o.shopId} />
                         <input type="hidden" name="q" value={q} />
-                        <button type="submit" className="botao">Criar rascunho</button>
+                        <button type="submit" className="botao">Importar e publicar</button>
                       </form>
                     )}
                   </div>

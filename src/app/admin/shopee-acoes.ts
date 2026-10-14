@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { exigirAdmin } from "@/lib/admin";
+import { categoriaAutomatica } from "@/lib/categoria-auto";
+import { nomeBloqueado } from "@/lib/lote";
 import { linkAfiliadoValido, primeiroErro, produtoSchema } from "@/lib/produto";
 import { buscarOfertaPorItem, buscarOfertas, ErroShopee, precoDaOferta } from "@/lib/shopee";
 import { gerarSlugProduto } from "@/lib/texto";
@@ -31,7 +33,7 @@ export async function testarConexaoShopee() {
   return voltar("/admin/shopee", "ok", msg);
 }
 
-/** Cria um RASCUNHO a partir do produto da Shopee. Os dados são consultados de novo na Shopee: nada vem do formulário. */
+/** Cria o produto a partir da Shopee, já publicado e disponível, com categoria automática (ou rascunho se tiver termo sensível ou faltar foto). Os dados são consultados de novo na Shopee: nada vem do formulário. */
 export async function criarRascunhoShopee(fd: FormData) {
   const sb = await exigirAdmin();
   const itemId = texto(fd, "item");
@@ -70,6 +72,12 @@ export async function criarRascunhoShopee(fd: FormData) {
   if (!r.success) return voltar(volta, "erro", `Dados da Shopee recusados pela validação: ${primeiroErro(r.error)}`);
 
   const { nome, link_afiliado, preco_atual, descricao, imagem_url, id_externo } = r.data;
+
+  // Vai ao ar direto, salvo termo sensível ou falta de foto: nesses casos fica como rascunho para você olhar.
+  const motivoRetido = nomeBloqueado(nome) ? "o nome tem um termo sensível" : !imagem_url ? "a Shopee não trouxe foto" : null;
+  const { data: cats } = await sb.from("categorias").select("id, nome, slug").eq("ativa", true);
+  const categoriaId = categoriaAutomatica(nome, cats ?? []);
+
   const { data: criado, error } = await sb
     .from("produtos")
     .insert({
@@ -79,9 +87,11 @@ export async function criarRascunhoShopee(fd: FormData) {
       descricao,
       imagem_url,
       id_externo,
+      categoria_id: categoriaId,
       slug: gerarSlugProduto(nome),
       origem: "manual",
-      status_publicacao: "rascunho",
+      status_publicacao: motivoRetido ? "rascunho" : "publicado",
+      disponibilidade: "disponivel",
     })
     .select("id")
     .single();
@@ -89,6 +99,10 @@ export async function criarRascunhoShopee(fd: FormData) {
     if (error?.code === "23505") return voltar(volta, "erro", "Já existe um produto com este link de afiliado ou com este ID da Shopee.");
     return voltar(volta, "erro", `Não foi possível salvar: ${error?.message ?? "erro desconhecido"}`);
   }
-  revalidatePath("/admin/produtos");
-  return redirect(`/admin/produtos/${criado.id}?ok=${encodeURIComponent("Rascunho criado a partir da Shopee. Revise (categoria, descrição) e publique quando quiser.")}`);
+  revalidatePath("/", "layout");
+  const nomeCategoria = (cats ?? []).find((c) => c.id === categoriaId)?.nome;
+  const msg = motivoRetido
+    ? `Criado como rascunho porque ${motivoRetido}. Revise e publique quando quiser.`
+    : `Produto publicado e disponível. Categoria: ${nomeCategoria ?? "nenhuma pista clara no nome, ficou sem categoria"}.`;
+  return redirect(`/admin/produtos/${criado.id}?ok=${encodeURIComponent(msg)}`);
 }

@@ -98,7 +98,7 @@ export default async function PaginaLote({ searchParams }: { searchParams: Promi
     <>
       <h1 className="mb-1 font-titulo text-3xl font-extrabold">Importar em lote</h1>
       <p className="mb-3 max-w-[75ch] text-sm text-cinza">
-        Defina filtros, veja os produtos com foto, marque os que quer (até {MAX_LOTE}) e importe de uma vez. Por padrão tudo entra como <strong>rascunho</strong>.{" "}
+        Defina filtros, veja os produtos com foto, marque os que quer (até {MAX_LOTE}) e importe de uma vez. Por padrão os produtos entram <strong>publicados e disponíveis</strong>, com categoria automática.{" "}
         <Link href="/admin/shopee" className="underline">Importar um produto só</Link>
       </p>
       <Aviso parametros={p} />
@@ -178,10 +178,10 @@ export default async function PaginaLote({ searchParams }: { searchParams: Promi
                 <li key={l.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-linha bg-white p-3 text-sm">
                   <span className="min-w-[12rem] flex-1">
                     {new Date(l.criado_em).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" })} ·{" "}
-                    {l.publicado_direto ? "publicado direto" : "rascunhos"} · {l.total} produto(s)
+                    {l.publicado_direto ? "publicados direto" : "rascunhos"} · {l.total} produto(s)
                     <span className="block text-xs text-cinza">
                       Hoje: {c.publicado} no ar, {c.rascunho} rascunho(s), {c.despublicado} despublicado(s)
-                      {l.retidos_por_bloqueio ? ` · ${l.retidos_por_bloqueio} retido(s) por termo sensível` : ""}
+                      {l.retidos_por_bloqueio ? ` · ${l.retidos_por_bloqueio} retido(s) como rascunho` : ""}
                     </span>
                   </span>
                   {ativos > 0 && (

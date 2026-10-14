@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { exigirAdmin } from "@/lib/admin";
+import { categoriaAutomatica } from "@/lib/categoria-auto";
 import { MAX_LOTE, nomeBloqueado } from "@/lib/lote";
 import { linkAfiliadoValido, produtoSchema } from "@/lib/produto";
 import type { Database } from "@/lib/database.types";
@@ -43,10 +44,9 @@ function lerItem(bruto: string): ItemLote | null {
 export async function importarLoteShopee(fd: FormData) {
   const sb = await exigirAdmin();
   const volta = texto(fd, "volta").startsWith(`${BASE}?`) ? texto(fd, "volta").slice(0, 600) : BASE;
-  const direto = texto(fd, "modo") === "direto";
-  if (direto && texto(fd, "confirmo") !== "sim") return voltar(volta, "erro", "Para publicar direto, marque a confirmação. Nada foi cadastrado.");
+  const direto = texto(fd, "modo") !== "rascunho"; // padrão: publicado e disponível
 
-  const categoria = texto(fd, "categoria_id");
+  const categoria = texto(fd, "categoria_id"); // vazio = automática
   if (categoria && !EH_UUID.test(categoria)) return voltar(volta, "erro", "Categoria inválida.");
 
   const itens: ItemLote[] = [];
@@ -71,7 +71,9 @@ export async function importarLoteShopee(fd: FormData) {
   const idsExistentes = new Set((porId ?? []).map((p) => p.id_externo));
   const linksExistentes = new Set((porLink ?? []).map((p) => p.link_afiliado));
 
+  const { data: cats } = categoria ? { data: [] } : await sb.from("categorias").select("id, nome, slug").eq("ativa", true);
   const linhas: Linha[] = [];
+  let semCategoria = 0;
   let jaExistiam = 0;
   let invalidos = 0;
   let retidos = 0;
@@ -107,6 +109,8 @@ export async function importarLoteShopee(fd: FormData) {
       else status = "publicado";
     }
     linksNoLote.add(it.link);
+    const catId = categoria || categoriaAutomatica(r.data.nome, cats ?? []);
+    if (!catId) semCategoria++;
     linhas.push({
       nome: r.data.nome,
       link_afiliado: r.data.link_afiliado,
@@ -114,7 +118,8 @@ export async function importarLoteShopee(fd: FormData) {
       descricao: r.data.descricao,
       imagem_url: r.data.imagem_url,
       id_externo: r.data.id_externo,
-      categoria_id: categoria || null,
+      categoria_id: catId,
+      disponibilidade: "disponivel",
       slug: gerarSlugProduto(r.data.nome),
       origem: "manual",
       status_publicacao: status,
@@ -153,6 +158,7 @@ export async function importarLoteShopee(fd: FormData) {
   const publicados = linhas.length - linhas.filter((l) => l.status_publicacao === "rascunho").length;
   const partes = [
     direto ? `${publicados} publicado(s)` : `${linhas.length} rascunho(s) criado(s)`,
+    !categoria && semCategoria ? `${semCategoria} sem categoria (nenhuma pista no nome)` : null,
     direto && linhas.length > publicados ? `${linhas.length - publicados} retido(s) como rascunho (palavra bloqueada ou sem foto)` : null,
     jaExistiam ? `${jaExistiam} já existia(m)` : null,
     invalidos ? `${invalidos} recusado(s)` : null,
