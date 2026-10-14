@@ -14,6 +14,7 @@ const MENU = [
   { href: "/admin/produtos", rotulo: "Produtos" },
   { href: "/admin/pedidos", rotulo: "Pedidos" },
   { href: "/admin/shopee", rotulo: "Importar da Shopee" },
+  { href: "/admin/shopee/lote", rotulo: "Importar em lote" },
   { href: "/admin/importar", rotulo: "Importar CSV" },
   { href: "/admin/categorias", rotulo: "Categorias" },
 ];

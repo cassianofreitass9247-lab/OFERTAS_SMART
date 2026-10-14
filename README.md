@@ -92,6 +92,12 @@ Depois de salvar, abra a tela e clique em **Testar conexão**. Se a Shopee recus
 
 Notas: o preço importado é o menor entre as variações do produto; a categoria e a descrição ficam para você preencher; produtos já cadastrados (mesmo ID da Shopee) não são duplicados; links curtos (`s.shopee.com.br`, `shope.ee`) são resolvidos só em endereços da Shopee. A Shopee não dá suporte à API e não informa os limites de consulta.
 
+### Importar em lote (painel > Importar em lote)
+
+Busca na Shopee (palavra-chave opcional), filtra por vendas, nota, desconto e comissão, mostra fotos e importa até 30 produtos marcados de uma vez.
+Padrão: tudo entra como **rascunho**. Opcional: "Publicar direto, sem rascunho" (exige confirmação; só vão ao ar produtos com foto e preço e sem termo da lista de bloqueio em `src/lib/lote.ts`; os demais ficam como rascunho). Cada importação vira um lote registrado, com botão **Desfazer lote** (despublica os publicados e apaga os rascunhos).
+Requer a migração `0005_lotes_de_importacao.sql`. A Shopee não ordena por desconto: "Maior desconto" reordena só entre os produtos buscados (até 50 por busca; use "Buscar mais").
+
 ## Importação por CSV
 
 No painel, em **Importar CSV**, há a planilha modelo e a explicação de cada coluna. Resumo:

@@ -219,18 +219,52 @@ export async function buscarOfertaPorItem(itemId: string, shopId: string | null,
 export const OFERTAS_POR_PAGINA = 10;
 
 export async function buscarOfertas(
-  entrada: { termo: string; ordem?: Ordem; pagina?: number },
+  entrada: { termo: string; ordem?: Ordem; pagina?: number; permitirVazio?: boolean },
   opcoes: Opcoes = {},
 ): Promise<{ ofertas: Oferta[]; temMais: boolean }> {
   // Remove caracteres de controle e limita o tamanho; JSON.stringify gera o texto entre aspas já escapado.
   const termo = entrada.termo.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 100);
-  if (termo.length < 2) throw new ErroShopee(null, "Digite pelo menos 2 letras para buscar.");
+  if (termo.length < 2 && !(termo === "" && entrada.permitirVazio)) throw new ErroShopee(null, "Digite pelo menos 2 letras para buscar.");
   const pagina = Math.min(Math.max(Math.trunc(entrada.pagina ?? 1), 1), 50);
   const sort = ordens[entrada.ordem ?? "relevancia"];
-  const args = `keyword: ${JSON.stringify(termo)}, sortType: ${sort}, page: ${pagina}, limit: ${OFERTAS_POR_PAGINA}`;
+  const args = [termo ? `keyword: ${JSON.stringify(termo)}` : null, `sortType: ${sort}`, `page: ${pagina}`, `limit: ${OFERTAS_POR_PAGINA}`].filter(Boolean).join(", ");
   const dados = await consultarShopee(`{ productOfferV2(${args}) { nodes { ${CAMPOS} } } }`, opcoes);
   const ofertas = extrairOfertas(dados);
   return { ofertas, temMais: ofertas.length >= OFERTAS_POR_PAGINA };
+}
+
+/** Páginas lidas por busca em lote (a Shopee não informa o limite de consultas: poucas e em sequência). */
+export const PAGINAS_POR_BUSCA_EM_LOTE = 5;
+
+/**
+ * Lê até `paginas` páginas seguidas a partir de `de`, uma de cada vez. Se uma página falhar depois de a primeira
+ * ter vindo, devolve o que já tem junto com o aviso, em vez de perder tudo.
+ */
+export async function buscarVariasPaginas(
+  entrada: { termo: string; ordem?: Ordem; de?: number; paginas?: number },
+  opcoes: Opcoes = {},
+): Promise<{ ofertas: Oferta[]; proximaPagina: number | null; aviso?: string }> {
+  const de = Math.min(Math.max(Math.trunc(entrada.de ?? 1), 1), 50);
+  const total = Math.min(Math.max(Math.trunc(entrada.paginas ?? PAGINAS_POR_BUSCA_EM_LOTE), 1), PAGINAS_POR_BUSCA_EM_LOTE);
+  const vistos = new Set<string>();
+  const ofertas: Oferta[] = [];
+  let proxima: number | null = de;
+  for (let i = 0; i < total && proxima !== null; i++) {
+    try {
+      const r = await buscarOfertas({ termo: entrada.termo, ordem: entrada.ordem, pagina: proxima, permitirVazio: true }, opcoes);
+      for (const o of r.ofertas) {
+        if (!vistos.has(o.itemId)) {
+          vistos.add(o.itemId);
+          ofertas.push(o);
+        }
+      }
+      proxima = r.temMais && proxima < 50 ? proxima + 1 : null;
+    } catch (e) {
+      if (i === 0) throw e;
+      return { ofertas, proximaPagina: proxima, aviso: `A busca parou na página ${proxima}: ${e instanceof Error ? e.message : "erro"}` };
+    }
+  }
+  return { ofertas, proximaPagina: proxima };
 }
 
 // ---------------------------------------------------------------------------

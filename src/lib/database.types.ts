@@ -35,6 +35,8 @@ export type Produto = {
   desconto_percentual: number | null;
   link_afiliado: string;
   id_externo: string | null;
+  /** Lote de importação da Shopee em que o produto entrou. Ausente até a migração 0005 ser aplicada. */
+  lote_id?: string | null;
   origem: OrigemProduto;
   ficticio: boolean;
   disponibilidade: Disponibilidade;
@@ -57,6 +59,7 @@ type ProdutoGravavel = {
   video_url?: string | null;
   categoria_id?: string | null;
   id_externo?: string | null;
+  lote_id?: string | null;
   origem?: OrigemProduto;
   disponibilidade?: Disponibilidade;
   status_publicacao?: StatusPublicacao;
@@ -105,6 +108,16 @@ export type Pedido = {
 
 type SomenteLeitura<R> = { Row: R; Insert: never; Update: never; Relationships: [] };
 
+export type LoteImportacao = {
+  id: string;
+  criado_em: string;
+  criado_por: string | null;
+  publicado_direto: boolean;
+  total: number;
+  retidos_por_bloqueio: number;
+  filtros: Json;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -120,6 +133,12 @@ export type Database = {
       historico_alteracoes: SomenteLeitura<HistoricoAlteracao>;
       cliques: SomenteLeitura<Clique>;
       importacoes: SomenteLeitura<Importacao>;
+      lotes_importacao: {
+        Row: LoteImportacao;
+        Insert: { publicado_direto?: boolean; total: number; retidos_por_bloqueio?: number; filtros?: Json; criado_por?: string | null };
+        Update: never;
+        Relationships: [];
+      };
       pedidos: {
         Row: Pedido;
         Insert: never;
