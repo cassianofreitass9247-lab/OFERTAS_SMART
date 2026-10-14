@@ -98,6 +98,14 @@ Busca na Shopee (palavra-chave opcional), filtra por vendas, nota, desconto e co
 Padrão: os produtos entram **publicados e disponíveis**, com **categoria automática** (pelo nome, entre as categorias existentes; `src/lib/categoria-auto.ts`). Opcional: "Criar como rascunho". Na publicação, só vão ao ar produtos com foto e preço e sem termo da lista de bloqueio em `src/lib/lote.ts`; os demais ficam como rascunho). Cada importação vira um lote registrado, com botão **Desfazer lote** (despublica os publicados e apaga os rascunhos).
 Requer a migração `0005_lotes_de_importacao.sql`. A Shopee não ordena por desconto: "Maior desconto" reordena só entre os produtos buscados (até 50 por busca; use "Buscar mais").
 
+
+### Modo automático (painel > Automação)
+
+Uma vez por dia (09h de Brasília, Cron Trigger do Cloudflare em `wrangler.jsonc`) o Worker chama a rota interna `/api/automacao`, que busca na Shopee os mais vendidos e com maior desconto de cada categoria já existente no site (6 categorias por execução, em rodízio) e publica, já disponível, até o limite diário (padrão 30; o banco também impõe o limite). Só entram produtos com foto, preço, link de afiliado válido, sem termo da lista de bloqueio e cujo nome combine com a categoria buscada. Cada execução vira um lote "automático" com "Desfazer lote". Pausa sozinha após 3 falhas seguidas. Começa **pausada**: ligue em Automação.
+- Requer a migração `0006_automacao.sql` e as variáveis `SHOPEE_APP_ID` e `SHOPEE_SECRET` (a chave do agendamento é derivada do Secret; nada vai ao GitHub nem existe conta de robô).
+- `worker.ts` é a entrada do Worker (site + agendamento); `main` em `wrangler.jsonc` aponta para ele.
+- "Maior desconto" vale entre os mais vendidos que a Shopee devolve (a API não ordena por desconto).
+
 ## Importação por CSV
 
 No painel, em **Importar CSV**, há a planilha modelo e a explicação de cada coluna. Resumo:

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { bancoConfigurado } from "@/lib/config";
 import { clienteServidor } from "@/lib/supabase/servidor";
+import { chaveDaAutomacao, hashDaChaveAutomacao } from "@/lib/automacao";
 import { chaveDePedidos, hashDaChave } from "@/lib/turnstile";
 import { sair } from "../acoes";
 
@@ -15,6 +16,7 @@ const MENU = [
   { href: "/admin/pedidos", rotulo: "Pedidos" },
   { href: "/admin/shopee", rotulo: "Importar da Shopee" },
   { href: "/admin/shopee/lote", rotulo: "Importar em lote" },
+  { href: "/admin/automacao", rotulo: "Automação" },
   { href: "/admin/importar", rotulo: "Importar CSV" },
   { href: "/admin/categorias", rotulo: "Categorias" },
 ];
@@ -33,6 +35,15 @@ export default async function LayoutPainel({ children }: { children: React.React
   if (admin) {
     const chave = await chaveDePedidos();
     await sb.rpc("sincronizar_chave_servidor", { p_hash: chave ? await hashDaChave(chave) : null }).then(
+      () => undefined,
+      () => undefined,
+    );
+  }
+
+  // Mesmo registro para a chave da automação (derivada do segredo da Shopee). Falha silenciosa sem a migração 0006.
+  if (admin) {
+    const chaveAuto = await chaveDaAutomacao();
+    await sb.rpc("sincronizar_chave_automacao", { p_hash: chaveAuto ? await hashDaChaveAutomacao(chaveAuto) : null }).then(
       () => undefined,
       () => undefined,
     );

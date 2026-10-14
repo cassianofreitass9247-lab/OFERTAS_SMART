@@ -70,7 +70,7 @@ export default async function PaginaLote({ searchParams }: { searchParams: Promi
   const { data: categorias } = await sb.from("categorias").select("id, nome").order("nome");
 
   // Lotes recentes (tolera a migração 0005 ainda não aplicada)
-  const { data: lotes, error: erroLotes } = await sb.from("lotes_importacao").select("id, criado_em, publicado_direto, total, retidos_por_bloqueio").order("criado_em", { ascending: false }).limit(8);
+  const { data: lotes, error: erroLotes } = await sb.from("lotes_importacao").select("*").order("criado_em", { ascending: false }).limit(8);
   const contagem = new Map<string, { publicado: number; rascunho: number; despublicado: number }>();
   if (lotes?.length) {
     const { data: prods } = await sb.from("produtos").select("lote_id, status_publicacao").in("lote_id", lotes.map((l) => l.id));
@@ -178,7 +178,7 @@ export default async function PaginaLote({ searchParams }: { searchParams: Promi
                 <li key={l.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-linha bg-white p-3 text-sm">
                   <span className="min-w-[12rem] flex-1">
                     {new Date(l.criado_em).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" })} ·{" "}
-                    {l.publicado_direto ? "publicados direto" : "rascunhos"} · {l.total} produto(s)
+                    {l.automatico ? "automático" : l.publicado_direto ? "publicados direto" : "rascunhos"} · {l.total} produto(s)
                     <span className="block text-xs text-cinza">
                       Hoje: {c.publicado} no ar, {c.rascunho} rascunho(s), {c.despublicado} despublicado(s)
                       {l.retidos_por_bloqueio ? ` · ${l.retidos_por_bloqueio} retido(s) como rascunho` : ""}

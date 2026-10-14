@@ -116,6 +116,24 @@ export type LoteImportacao = {
   total: number;
   retidos_por_bloqueio: number;
   filtros: Json;
+  /** Criado pela rotina automática. Ausente até a migração 0006 ser aplicada. */
+  automatico?: boolean;
+};
+
+export type AutomacaoConfig = {
+  id: number;
+  ativo: boolean;
+  limite_diario: number;
+  vendas_min: number;
+  nota_min: number;
+  desconto_min: number;
+  comissao_min: number;
+  cursor_categoria: number;
+  erros_seguidos: number;
+  pausado_motivo: string | null;
+  ultima_execucao: string | null;
+  ultimo_resultado: string | null;
+  atualizado_em: string;
 };
 
 export type Database = {
@@ -137,6 +155,12 @@ export type Database = {
         Row: LoteImportacao;
         Insert: { publicado_direto?: boolean; total: number; retidos_por_bloqueio?: number; filtros?: Json; criado_por?: string | null };
         Update: never;
+        Relationships: [];
+      };
+      automacao_config: {
+        Row: AutomacaoConfig;
+        Insert: never;
+        Update: Partial<Pick<AutomacaoConfig, "ativo" | "limite_diario" | "vendas_min" | "nota_min" | "desconto_min" | "comissao_min" | "erros_seguidos" | "pausado_motivo" | "atualizado_em">>;
         Relationships: [];
       };
       pedidos: {
@@ -164,6 +188,11 @@ export type Database = {
         Returns: string;
       };
       sincronizar_chave_servidor: { Args: { p_hash: string | null }; Returns: boolean };
+      sincronizar_chave_automacao: { Args: { p_hash: string | null }; Returns: boolean };
+      automacao_criados_hoje: { Args: Record<PropertyKey, never>; Returns: number };
+      automacao_estado: { Args: { p_chave: string }; Returns: Json };
+      automacao_registrar: { Args: { p_chave: string; p_itens: Json; p_filtros: Json; p_cursor: number }; Returns: Json };
+      automacao_falha: { Args: { p_chave: string; p_msg: string }; Returns: undefined };
       carregar_dados_demo: { Args: Record<PropertyKey, never>; Returns: number };
       remover_dados_demo: { Args: Record<PropertyKey, never>; Returns: number };
     };
