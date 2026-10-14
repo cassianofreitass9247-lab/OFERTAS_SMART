@@ -98,6 +98,8 @@ export type Pedido = {
   produto_id: string | null;
   link_enviado: string | null;
   respondido_em: string | null;
+  /** Ausente antes da migração 0004. */
+  consentimento_em?: string | null;
   criado_em: string;
 };
 
@@ -138,7 +140,11 @@ export type Database = {
         Returns: { produto_id: string; nome: string; slug: string; cliques: number }[];
       };
       cliques_por_canal: { Args: { p_dias?: number }; Returns: { canal: string; campanha: string; cliques: number }[] };
-      criar_pedido: { Args: { p_nome: string; p_whatsapp: string; p_descricao: string; p_referencia?: string | null }; Returns: string };
+      criar_pedido: {
+        Args: { p_nome: string; p_whatsapp: string; p_descricao: string; p_referencia?: string | null; p_consentimento?: boolean; p_chave?: string | null };
+        Returns: string;
+      };
+      sincronizar_chave_servidor: { Args: { p_hash: string | null }; Returns: boolean };
       carregar_dados_demo: { Args: Record<PropertyKey, never>; Returns: number };
       remover_dados_demo: { Args: Record<PropertyKey, never>; Returns: number };
     };

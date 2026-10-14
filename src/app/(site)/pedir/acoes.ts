@@ -1,7 +1,9 @@
 "use server";
 
+import { headers } from "next/headers";
 import { pedidoSchema } from "@/lib/pedido";
 import { clientePublico } from "@/lib/supabase/publico";
+import { chaveDePedidos, verificarTurnstile } from "@/lib/turnstile";
 
 export type EstadoPedido = { ok?: boolean; erro?: string; valores?: Record<string, string> };
 
@@ -12,7 +14,7 @@ const texto = (fd: FormData, campo: string) => {
 
 function comErro(fd: FormData, erro: string): EstadoPedido {
   const valores: Record<string, string> = {};
-  for (const [campo, valor] of fd) if (typeof valor === "string") valores[campo] = valor;
+  for (const [campo, valor] of fd) if (typeof valor === "string" && campo !== "cf-turnstile-response") valores[campo] = valor;
   return { erro, valores };
 }
 
@@ -29,6 +31,11 @@ export async function enviarPedido(_: EstadoPedido, fd: FormData): Promise<Estad
   });
   if (!r.success) return comErro(fd, r.error.issues[0]?.message ?? "Confira os dados do pedido.");
 
+  const robo = await verificarTurnstile(texto(fd, "cf-turnstile-response"), "pedido", {
+    ip: (await headers()).get("cf-connecting-ip"),
+  });
+  if (!robo.ok) return comErro(fd, robo.erro);
+
   const sb = clientePublico();
   if (!sb) return comErro(fd, "Os pedidos ainda não estão funcionando. Tente mais tarde.");
 
@@ -37,8 +44,14 @@ export async function enviarPedido(_: EstadoPedido, fd: FormData): Promise<Estad
     p_whatsapp: r.data.whatsapp,
     p_descricao: r.data.descricao,
     p_referencia: r.data.referencia,
+    p_consentimento: r.data.consentimento,
+    p_chave: await chaveDePedidos(),
   });
   if (error) {
+    if (error.hint === "chave") {
+      console.error("criar_pedido recusou a chave do servidor: abra o painel para sincronizar a chave do Turnstile.");
+      return comErro(fd, "Não foi possível enviar o pedido agora. Tente de novo em instantes.");
+    }
     if (error.hint === "limite_numero") return comErro(fd, "Você já fez 3 pedidos hoje com este número. A Moni responde esses primeiro; tente de novo amanhã.");
     if (error.hint === "limite_geral") return comErro(fd, "Muitos pedidos chegaram agora. Tente de novo daqui a pouco.");
     if (error.code === "22023") return comErro(fd, error.message);

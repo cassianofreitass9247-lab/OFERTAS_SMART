@@ -1,16 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { enviarPedido, type EstadoPedido } from "@/app/(site)/pedir/acoes";
+import { Turnstile } from "@/components/Turnstile";
 import { IconeWhatsapp } from "./Icones";
 
 const campo =
   "block w-full rounded-2xl border-[2.5px] border-tinta bg-white px-4 py-3 text-base text-tinta placeholder:text-cinza focus:shadow-[4px_4px_0_#1e120c] focus:outline-none";
 const rotulo = "mb-1.5 block font-bold";
 
-export function FormularioPedido({ busca = "" }: { busca?: string }) {
+export function FormularioPedido({ busca = "", siteKey = "" }: { busca?: string; siteKey?: string }) {
   const [estado, acao, enviando] = useActionState<EstadoPedido, FormData>(enviarPedido, {});
+  const [token, setToken] = useState<string | null>(null);
+  // Cada token vale uma vez: depois de cada envio, o widget é recriado para gerar outro.
+  const [tentativa, setTentativa] = useState(0);
+  useEffect(() => {
+    if (estado.erro) setTentativa((n) => n + 1);
+  }, [estado]);
+  const aguardandoVerificacao = Boolean(siteKey) && !token;
   const v = estado.valores;
   const txt = (nome: string, inicial = "") => (v ? (v[nome] ?? "") : inicial);
 
@@ -90,6 +98,8 @@ export function FormularioPedido({ busca = "" }: { busca?: string }) {
         </span>
       </label>
 
+      {siteKey && <Turnstile key={tentativa} siteKey={siteKey} acao="pedido" aoMudar={setToken} />}
+
       {estado.erro && (
         <p role="alert" className="rounded-2xl border-[2.5px] border-tinta bg-[#ffe0ea] p-3 font-semibold">
           {estado.erro}
@@ -98,11 +108,11 @@ export function FormularioPedido({ busca = "" }: { busca?: string }) {
 
       <button
         type="submit"
-        disabled={enviando}
+        disabled={enviando || aguardandoVerificacao}
         className="vm-btn vm-pilula min-h-14 w-full cursor-pointer bg-neon text-lg font-extrabold text-tinta shadow-duro-p disabled:cursor-wait disabled:opacity-70 sm:w-auto"
       >
         <IconeWhatsapp tamanho={22} />
-        {enviando ? "Enviando…" : "Enviar pedido"}
+        {enviando ? "Enviando…" : aguardandoVerificacao ? "Verificando segurança…" : "Enviar pedido"}
       </button>
     </form>
   );

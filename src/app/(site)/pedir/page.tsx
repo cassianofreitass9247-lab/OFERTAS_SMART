@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Cabecalho, Conteudo } from "@/components/site/Cabecalho";
 import { FormularioPedido } from "@/components/site/FormularioPedido";
+import { configTurnstile } from "@/lib/turnstile";
 
 export const metadata: Metadata = {
   title: "Pede pra Moni",
@@ -12,6 +14,8 @@ const um = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?
 
 export default async function PaginaPedir({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const busca = um((await searchParams).q).trim().slice(0, 200);
+  await connection(); // lê a chave do Turnstile em tempo de execução (variável do Worker)
+  const { siteKey, ativo } = configTurnstile();
   return (
     <>
       <Cabecalho
@@ -27,7 +31,7 @@ export default async function PaginaPedir({ searchParams }: { searchParams: Prom
             </li>
           ))}
         </ol>
-        <FormularioPedido busca={busca} />
+        <FormularioPedido busca={busca} siteKey={ativo ? siteKey : ""} />
       </Conteudo>
     </>
   );

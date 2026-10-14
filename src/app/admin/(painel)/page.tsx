@@ -3,6 +3,7 @@ import { Aviso } from "@/components/admin/Aviso";
 import { CONTATO_EMAIL, RESPONSAVEL, SITE_URL } from "@/lib/config";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { formatarDataHora } from "@/lib/texto";
+import { configTurnstile } from "@/lib/turnstile";
 import { carregarDemo, removerDemo } from "../acoes";
 
 export default async function PaginaResumo({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -28,7 +29,13 @@ export default async function PaginaResumo({ searchParams }: { searchParams: Pro
   const falhou = [publicados, rascunhos, despublicados, ficticios, cliques7, cliques30, top, canais, importacoes].find((r) => r.error);
   const qtdFicticios = ficticios.count ?? 0;
 
+  const turnstile = configTurnstile();
   const pendencias = [
+    turnstile.incompleto &&
+      "Proteção contra robôs com configuração incompleta: o formulário de pedidos e o login estão recusando envios. Cadastre TURNSTILE_SITE_KEY e TURNSTILE_SECRET_KEY no Worker.",
+    !turnstile.ativo &&
+      !turnstile.incompleto &&
+      "Proteção contra robôs (Cloudflare Turnstile) desligada no formulário de pedidos e no login. Cadastre TURNSTILE_SITE_KEY e TURNSTILE_SECRET_KEY no Worker.",
     qtdFicticios > 0 && `Há ${qtdFicticios} produtos fictícios no banco. Remova-os antes de divulgar o site.`,
     !CONTATO_EMAIL && "Falta definir o e-mail de contato (variável NEXT_PUBLIC_CONTATO_EMAIL).",
     !RESPONSAVEL && "Falta definir o nome do responsável pelo site, exibido na política de privacidade (variável NEXT_PUBLIC_RESPONSAVEL).",

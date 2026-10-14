@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { bancoConfigurado } from "@/lib/config";
 import { clienteServidor } from "@/lib/supabase/servidor";
+import { chaveDePedidos, hashDaChave } from "@/lib/turnstile";
 import { sair } from "../acoes";
 
 export const metadata: Metadata = { title: { default: "Painel", template: "%s | Painel Vitrine da Moni" }, robots: { index: false, follow: false } };
@@ -23,6 +24,17 @@ export default async function LayoutPainel({ children }: { children: React.React
   const { data } = await sb.auth.getUser();
   if (!data.user) redirect("/admin/login");
   const { data: admin } = await sb.rpc("eh_admin");
+
+  // Registra no banco o hash da chave que o servidor usa para criar pedidos (derivada do segredo do
+  // Turnstile). Sem Turnstile configurado, limpa o registro e o banco volta a aceitar pedidos sem chave.
+  // Falha silenciosa se a migração 0004 ainda não foi aplicada.
+  if (admin) {
+    const chave = await chaveDePedidos();
+    await sb.rpc("sincronizar_chave_servidor", { p_hash: chave ? await hashDaChave(chave) : null }).then(
+      () => undefined,
+      () => undefined,
+    );
+  }
 
   // Contador de pedidos novos no menu (fica oculto se a migração 0002 ainda não foi aplicada).
   const { count: novos } = admin

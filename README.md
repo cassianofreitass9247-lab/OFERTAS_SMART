@@ -36,7 +36,7 @@ Se o preço subir, o desconto some. Se você digitou um preço errado, marque "E
 Os nomes dos menus do Supabase podem mudar um pouco com o tempo.
 
 1. Crie uma conta em https://supabase.com e um projeto novo (região São Paulo).
-2. Abra **SQL Editor**, clique em **New query**, cole todo o conteúdo de `supabase/migrations/0001_base.sql` e clique em **Run**. Depois, em outra **New query**, faça o mesmo com `0002_pedidos_e_video.sql` (pedidos “Pede pra Moni” e vídeo do produto) e depois com `0003_galeria_de_imagens.sql` (várias fotos por produto). Cada arquivo roda uma única vez, na ordem.
+2. Abra **SQL Editor**, clique em **New query**, cole todo o conteúdo de `supabase/migrations/0001_base.sql` e clique em **Run**. Depois, em outra **New query**, faça o mesmo com `0002_pedidos_e_video.sql` (pedidos “Pede pra Moni” e vídeo do produto) depois com `0003_galeria_de_imagens.sql` (várias fotos por produto) e por último com `0004_protecao_contra_abuso.sql` (consentimento e chave do servidor nos pedidos, teto de cliques). Cada arquivo roda uma única vez, na ordem.
 3. Abra **Authentication > Users > Add user**, informe seu e-mail e uma senha forte, e marque a confirmação automática do e-mail.
 4. Volte ao **SQL Editor** e rode, trocando o e-mail pelo seu:
 
@@ -61,6 +61,21 @@ Veja `.env.example`. São cinco valores, nenhum deles secreto:
 | `NEXT_PUBLIC_SITE_URL` | Endereço do site, sem barra no final |
 | `NEXT_PUBLIC_CONTATO_EMAIL` | E-mail exibido na página de contato |
 | `NEXT_PUBLIC_RESPONSAVEL` | Nome do responsável, exibido na política de privacidade |
+
+### Proteção contra robôs (Cloudflare Turnstile)
+
+O formulário "Pede pra Moni" e o login do painel usam o Turnstile, o "não sou robô" gratuito do Cloudflare (quase sempre invisível). Ele usa duas variáveis **do Worker em execução** (não são variáveis de build):
+
+| Variável | Tipo no Cloudflare | O que é |
+|---|---|---|
+| `TURNSTILE_SITE_KEY` | Text | Chave do site (pública) |
+| `TURNSTILE_SECRET_KEY` | **Secret** | Chave secreta. Nunca no GitHub, no chat ou em `NEXT_PUBLIC_*` |
+
+1. Cloudflare > **Turnstile** > **Add widget**. Nome: Vitrine da Moni. Hostname: `ofertasmart.vitrinedamoni.workers.dev` (e o domínio próprio, quando houver). Modo: **Managed**. Copie as duas chaves.
+2. **Workers & Pages** > `ofertasmart` > **Settings** > **Variables and Secrets** > **Add**: `TURNSTILE_SITE_KEY` (Text) e `TURNSTILE_SECRET_KEY` (Secret). Salve (**Deploy**).
+3. Abra o painel do site uma vez, logado como administradora. Isso registra no banco a chave que impede robôs de criar pedidos direto pela API do Supabase.
+
+Sem as duas variáveis, a proteção fica desligada e o Resumo do painel mostra a pendência. Com só uma, o pedido e o login recusam envios (configuração incompleta). Se trocar a chave secreta, abra o painel de novo para registrar a nova chave; até lá, os pedidos são recusados.
 
 ## Importação por CSV
 

@@ -1,11 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { decodificarArquivo } from "@/lib/csv";
 import type { Disponibilidade, Json, StatusPublicacao } from "@/lib/database.types";
 import { linkAfiliadoValido, primeiroErro, produtoSchema, validarCsv, type ErroLinha } from "@/lib/produto";
 import { clienteServidor } from "@/lib/supabase/servidor";
+import { verificarTurnstile } from "@/lib/turnstile";
 import { EH_UUID, gerarSlugProduto, slugify } from "@/lib/texto";
 import { resolverVideo, resolverVideosDoCsv } from "@/lib/video-servidor";
 
@@ -35,7 +37,7 @@ export type Estado = { erro?: string; valores?: Record<string, string> };
 // para que um erro não obrigue a pessoa a preencher tudo de novo.
 function comErro(fd: FormData, erro: string): Estado {
   const valores: Record<string, string> = {};
-  for (const [campo, valor] of fd) if (typeof valor === "string" && campo !== "senha") valores[campo] = valor;
+  for (const [campo, valor] of fd) if (typeof valor === "string" && campo !== "senha" && campo !== "cf-turnstile-response") valores[campo] = valor;
   return { erro, valores };
 }
 
@@ -46,6 +48,12 @@ export async function entrar(_: Estado, fd: FormData): Promise<Estado> {
   const email = texto(fd, "email").trim();
   const senha = texto(fd, "senha");
   if (!email || !senha) return comErro(fd, "Informe o e-mail e a senha.");
+
+  // Bloqueia tentativas automáticas de adivinhar a senha (antes mesmo de consultar o Supabase).
+  const robo = await verificarTurnstile(texto(fd, "cf-turnstile-response"), "login", {
+    ip: (await headers()).get("cf-connecting-ip"),
+  });
+  if (!robo.ok) return comErro(fd, robo.erro);
 
   const sb = await clienteServidor();
   const { error } = await sb.auth.signInWithPassword({ email, password: senha });

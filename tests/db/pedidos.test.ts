@@ -4,7 +4,7 @@ import { como, criarBanco, inserirProduto } from "./banco";
 
 let db: PGlite;
 const criar = (nome: string, whats: string, desc = "Mochila rosa de rodinha", ref: string | null = null) =>
-  como<{ id: string }>(db, "anon", "select public.criar_pedido($1, $2, $3, $4) as id", [nome, whats, desc, ref]);
+  como<{ id: string }>(db, "anon", "select public.criar_pedido($1, $2, $3, $4, true) as id", [nome, whats, desc, ref]);
 
 beforeAll(async () => {
   db = await criarBanco();
