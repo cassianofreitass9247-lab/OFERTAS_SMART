@@ -77,6 +77,21 @@ O formulário "Pede pra Moni" e o login do painel usam o Turnstile, o "não sou 
 
 Sem as duas variáveis, a proteção fica desligada e o Resumo do painel mostra a pendência. Com só uma, o pedido e o login recusam envios (configuração incompleta). Se trocar a chave secreta, abra o painel de novo para registrar a nova chave; até lá, os pedidos são recusados.
 
+## Importar da Shopee (Open API)
+
+Em **Painel > Importar da Shopee**, cole o link de um produto (ou só o número dele) ou digite o que procura. O site consulta a Shopee Affiliate Open API (GraphQL), mostra nome, foto, preço e comissão e cria um **rascunho** com o seu link de afiliado. A comissão aparece só no painel. Nada é publicado sozinho.
+
+Variáveis do **Worker em execução** (Cloudflare > Workers & Pages > `ofertasmart` > Settings > Variables and Secrets), não de build:
+
+| Variável | Tipo | O que é |
+|---|---|---|
+| `SHOPEE_APP_ID` | Text | AppID da Open API (portal de afiliados) |
+| `SHOPEE_SECRET` | **Secret** | Secret da Open API. Nunca no GitHub, no chat ou em `NEXT_PUBLIC_*` |
+
+Depois de salvar, abra a tela e clique em **Testar conexão**. Se a Shopee recusar, a mensagem diz o motivo (credenciais, limite de consultas, conta sem acesso). A assinatura segue a documentação: `SHA256(AppID + Timestamp + corpo + Secret)`.
+
+Notas: o preço importado é o menor entre as variações do produto; a categoria e a descrição ficam para você preencher; produtos já cadastrados (mesmo ID da Shopee) não são duplicados; links curtos (`s.shopee.com.br`, `shope.ee`) são resolvidos só em endereços da Shopee. A Shopee não dá suporte à API e não informa os limites de consulta.
+
 ## Importação por CSV
 
 No painel, em **Importar CSV**, há a planilha modelo e a explicação de cada coluna. Resumo:

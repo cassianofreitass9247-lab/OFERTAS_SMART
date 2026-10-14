@@ -6,21 +6,11 @@ import { redirect } from "next/navigation";
 import { decodificarArquivo } from "@/lib/csv";
 import type { Disponibilidade, Json, StatusPublicacao } from "@/lib/database.types";
 import { linkAfiliadoValido, primeiroErro, produtoSchema, validarCsv, type ErroLinha } from "@/lib/produto";
+import { exigirAdmin } from "@/lib/admin";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { verificarTurnstile } from "@/lib/turnstile";
 import { EH_UUID, gerarSlugProduto, slugify } from "@/lib/texto";
 import { resolverVideo, resolverVideosDoCsv } from "@/lib/video-servidor";
-
-// Toda ação confere a sessão e a permissão de administrador antes de agir.
-// Mesmo que esta conferência falhasse, as políticas do banco (RLS) recusariam a gravação.
-async function exigirAdmin() {
-  const sb = await clienteServidor();
-  const { data } = await sb.auth.getUser();
-  if (!data.user) redirect("/admin/login");
-  const { data: admin } = await sb.rpc("eh_admin");
-  if (!admin) redirect("/admin");
-  return sb;
-}
 
 const texto = (fd: FormData, campo: string) => {
   const v = fd.get(campo);
