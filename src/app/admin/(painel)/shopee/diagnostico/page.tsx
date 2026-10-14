@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { configShopee, consultarShopee, ErroShopee, extrairIds } from "@/lib/shopee";
+import { configShopee, consultarShopee, ErroShopee, interpretarEntrada, resolverLinkCurto } from "@/lib/shopee";
 
 export const metadata: Metadata = { title: "Diagnóstico da Shopee" };
 
@@ -20,7 +20,7 @@ export default async function Diagnostico({ searchParams }: { searchParams: Prom
   const entrada = um(p.produto).trim().slice(0, 300);
 
   const esquema: { consultas?: string[]; campos?: Campo[]; erro?: string } = {};
-  const bruto: { json?: string; erro?: string } = {};
+  const bruto: { json?: string; erro?: string; periodos?: string[] } = {};
 
   if (rodar) {
     try {
@@ -32,16 +32,29 @@ export default async function Diagnostico({ searchParams }: { searchParams: Prom
     try {
       const d = (await consultarShopee(`{ __type(name: "ProductOfferV2") { fields { name type { name kind ofType { name } } } } }`)) as { __type?: { fields?: Campo[] } | null };
       esquema.campos = d.__type?.fields ?? undefined;
-      if (!esquema.campos && !esquema.erro) esquema.erro = "A Shopee não devolveu o esquema (introspecção desativada ou tipo com outro nome).";
+      if (!esquema.campos && !esquema.erro) esquema.erro = "A Shopee não devolveu o esquema.";
     } catch (e) {
       esquema.erro = esquema.erro ?? mensagem(e);
     }
     try {
-      const ids = entrada ? extrairIds(entrada) : null;
-      const alvo = ids ? `itemId: ${ids.itemId}, shopId: ${ids.shopId}` : /^\d{5,}$/.test(entrada) ? `itemId: ${entrada}` : `keyword: ${JSON.stringify(entrada || "air fryer")}, limit: 3`;
-      // Só os campos já usados pelo painel: mostra exatamente o que a API devolve hoje.
-      const d = await consultarShopee(`{ productOfferV2(${alvo}) { nodes { itemId shopId productName priceMin priceMax commissionRate sales ratingStar priceDiscountRate shopName productLink offerLink } } }`);
-      bruto.json = JSON.stringify(d, null, 2).slice(0, 6000);
+      // Aceita link completo, link curto (s.shopee.com.br), número do produto ou palavra-chave.
+      const alvoEntrada = interpretarEntrada(entrada || "air fryer");
+      let filtro: string;
+      if (alvoEntrada.tipo === "erro") throw new ErroShopee(null, alvoEntrada.erro);
+      if (alvoEntrada.tipo === "palavra") filtro = `keyword: ${JSON.stringify(alvoEntrada.termo)}, limit: 3`;
+      else {
+        const ids: { itemId: string; shopId: string | null } | { erro: string } = alvoEntrada.tipo === "item" ? alvoEntrada : await resolverLinkCurto(alvoEntrada.url);
+        if ("erro" in ids) throw new ErroShopee(null, ids.erro);
+        filtro = `itemId: ${ids.itemId}${ids.shopId ? `, shopId: ${ids.shopId}` : ""}`;
+      }
+      // Todos os campos abaixo foram confirmados pela própria API (lista acima), inclusive os que o painel ainda não usa.
+      const d = await consultarShopee(
+        `{ productOfferV2(${filtro}) { nodes { itemId shopId productName price priceMin priceMax priceDiscountRate sales ratingStar commissionRate commission sellerCommissionRate shopeeCommissionRate appExistRate appNewRate webExistRate webNewRate periodStartTime periodEndTime productCatIds shopType shopName productLink offerLink } } }`,
+      );
+      bruto.json = JSON.stringify(d, null, 2).slice(0, 8000);
+      const nos = ((d as { productOfferV2?: { nodes?: Record<string, unknown>[] } }).productOfferV2?.nodes ?? []).slice(0, 3);
+      const quando = (v: unknown) => (typeof v === "number" || (typeof v === "string" && /^\d+$/.test(v)) ? new Date(Number(v) * 1000).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—");
+      bruto.periodos = nos.map((n) => `${String(n.productName ?? "").slice(0, 50)}: período ${quando(n.periodStartTime)} até ${quando(n.periodEndTime)}`);
     } catch (e) {
       bruto.erro = mensagem(e);
     }
@@ -58,7 +71,7 @@ export default async function Diagnostico({ searchParams }: { searchParams: Prom
         <input type="hidden" name="rodar" value="1" />
         <div className="min-w-[16rem] flex-1">
           <label htmlFor="produto" className="rotulo">Link ou número de um produto para comparar (opcional)</label>
-          <input id="produto" name="produto" defaultValue={entrada} maxLength={300} placeholder="cole o link da fritadeira do print" className="campo" disabled={!cfg.ativo} />
+          <input id="produto" name="produto" defaultValue={entrada} maxLength={300} placeholder="link completo, link curto (s.shopee.com.br) ou número" className="campo" disabled={!cfg.ativo} />
         </div>
         <button type="submit" className="botao" disabled={!cfg.ativo}>Rodar diagnóstico</button>
       </form>
@@ -84,7 +97,14 @@ export default async function Diagnostico({ searchParams }: { searchParams: Prom
           <section>
             <h2 className="mb-2 font-titulo text-xl font-extrabold">Resposta bruta</h2>
             {bruto.json ? (
+              <>
+                {bruto.periodos?.length ? (
+                  <p className="mb-2 rounded-lg border border-linha bg-white p-3 text-sm" data-testid="periodos">
+                    <strong>Período informado pela Shopee (periodStartTime / periodEndTime):</strong> {bruto.periodos.join(" · ")}
+                  </p>
+                ) : null}
               <pre className="overflow-x-auto rounded-lg border border-linha bg-white p-3 text-xs">{bruto.json}</pre>
+              </>
             ) : (
               <p role="alert" className="rounded-md border border-laranja bg-laranja-claro p-3 text-sm">{bruto.erro}</p>
             )}
