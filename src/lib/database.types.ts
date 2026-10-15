@@ -43,6 +43,7 @@ export type Produto = {
   status_publicacao: StatusPublicacao;
   destaque: boolean;
   preco_atualizado_em: string;
+  preco_verificado_em: string | null;
   origem_atualizada_em: string;
   criado_em: string;
   atualizado_em: string;
@@ -136,6 +137,9 @@ export type AutomacaoConfig = {
   dias_semana: number[];
   hora_execucao: number;
   ultima_agendada: string | null;
+  precos_ativo: boolean;
+  precos_ultima_execucao: string | null;
+  precos_ultimo_resultado: string | null;
   atualizado_em: string;
 };
 
@@ -163,7 +167,7 @@ export type Database = {
       automacao_config: {
         Row: AutomacaoConfig;
         Insert: never;
-        Update: Partial<Pick<AutomacaoConfig, "ativo" | "limite_diario" | "vendas_min" | "nota_min" | "desconto_min" | "comissao_min" | "dias_semana" | "hora_execucao" | "erros_seguidos" | "pausado_motivo" | "atualizado_em">>;
+        Update: Partial<Pick<AutomacaoConfig, "ativo" | "limite_diario" | "vendas_min" | "nota_min" | "desconto_min" | "comissao_min" | "dias_semana" | "hora_execucao" | "precos_ativo" | "erros_seguidos" | "pausado_motivo" | "atualizado_em">>;
         Relationships: [];
       };
       pedidos: {
@@ -197,6 +201,9 @@ export type Database = {
       automacao_registrar: { Args: { p_chave: string; p_itens: Json; p_filtros: Json; p_cursor: number }; Returns: Json };
       automacao_existentes: { Args: { p_chave: string; p_ids: string[] }; Returns: string[] };
       automacao_reivindicar: { Args: { p_chave: string }; Returns: boolean };
+      precos_pendentes: { Args: { p_chave: string; p_limite: number }; Returns: Json };
+      precos_aplicar: { Args: { p_chave: string; p_itens: Json }; Returns: Json };
+      precos_falha: { Args: { p_chave: string; p_msg: string }; Returns: undefined };
       automacao_falha: { Args: { p_chave: string; p_msg: string }; Returns: undefined };
       carregar_dados_demo: { Args: Record<PropertyKey, never>; Returns: number };
       remover_dados_demo: { Args: Record<PropertyKey, never>; Returns: number };

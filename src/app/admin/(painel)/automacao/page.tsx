@@ -4,7 +4,8 @@ import { Aviso } from "@/components/admin/Aviso";
 import { configShopee } from "@/lib/shopee";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { NOMES_DIAS_CURTOS, proximaExecucao } from "@/lib/automacao";
-import { alternarAutomacao, rodarAutomacaoAgora, salvarAgenda, salvarAutomacao } from "../../automacao-acoes";
+import { PRODUTOS_POR_EXECUCAO } from "@/lib/precos";
+import { alternarAutomacao, alternarPrecos, conferirPrecosAgora, rodarAutomacaoAgora, salvarAgenda, salvarAutomacao } from "../../automacao-acoes";
 
 export const metadata: Metadata = { title: "Automação" };
 
@@ -16,6 +17,8 @@ export default async function PaginaAutomacao({ searchParams }: { searchParams: 
   const { data: hoje } = c ? await sb.rpc("automacao_criados_hoje") : { data: 0 };
   const { data: cats } = await sb.from("categorias").select("nome").eq("ativa", true).order("nome");
 
+  const base = () => sb.from("produtos").select("id", { count: "exact", head: true }).eq("status_publicacao", "publicado").not("id_externo", "is", null);
+  const [{ count: totalPrecos }, { count: semConferir }] = c ? await Promise.all([base(), base().is("preco_verificado_em", null)]) : [{ count: 0 }, { count: 0 }];
   const dias = c?.dias_semana ?? [0, 1, 2, 3, 4, 5, 6];
   const hora = c?.hora_execucao ?? 9;
   const migracaoAgenda = !!c && c.dias_semana === undefined;
@@ -106,6 +109,35 @@ export default async function PaginaAutomacao({ searchParams }: { searchParams: 
                 O botão &ldquo;Rodar agora&rdquo; não conta como a execução do dia.
               </p>
             </form>
+          )}
+
+          {!migracaoAgenda && c.precos_ativo !== undefined && (
+            <section aria-label="Preços" className="mb-6 rounded-lg border border-linha bg-white p-4" data-testid="precos">
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="font-titulo text-xl font-extrabold">Preços dos produtos</h2>
+                <span className="text-sm font-semibold">{c.precos_ativo ? "Conferindo a cada hora" : "Pausada"}</span>
+                <form action={alternarPrecos}>
+                  <input type="hidden" name="ativo" value={String(!c.precos_ativo)} />
+                  <button type="submit" className="botao-secundario">{c.precos_ativo ? "Pausar" : "Ligar"}</button>
+                </form>
+                <form action={conferirPrecosAgora}>
+                  <button type="submit" className="botao-secundario">Conferir preços agora</button>
+                </form>
+              </div>
+              <p className="mt-2 text-sm text-cinza">
+                A cada hora o site confere na Shopee o preço de até {PRODUTOS_POR_EXECUCAO} produtos publicados (os verificados há mais tempo) e atualiza o valor. Quando o preço cai,
+                o produto aparece em &ldquo;Preço caiu&rdquo;; quando sobe, o valor riscado some. Mudanças de menos de 1% são ignoradas, e quedas acima de 60% também (costumam ser outra variação do anúncio, não promoção).
+              </p>
+              <p className="mt-1 text-sm" data-testid="precos-fila">
+                Produtos da Shopee publicados: <strong>{totalPrecos ?? 0}</strong>. Ainda sem a primeira conferência: <strong>{semConferir ?? 0}</strong>.
+              </p>
+              <p className="mt-1 text-sm text-cinza">
+                Última conferência:{" "}
+                {c.precos_ultima_execucao
+                  ? `${new Date(c.precos_ultima_execucao).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" })} — ${c.precos_ultimo_resultado ?? ""}`
+                  : "ainda não rodou"}
+              </p>
+            </section>
           )}
 
           <form action={salvarAutomacao} className="grid gap-3 rounded-lg border border-linha bg-white p-4 sm:grid-cols-2 lg:grid-cols-3">

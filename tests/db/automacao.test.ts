@@ -173,3 +173,99 @@ describe("agenda da automação (migração 0008)", () => {
     await expect(como(db, "anon", "update public.automacao_config set hora_execucao = 3")).rejects.toThrow(/permission denied/);
   });
 });
+
+describe("sincronização de preços (migração 0009)", () => {
+  const pendentes = (limite = 30, chave: string | null = CHAVE) => como<{ r: { id_externo: string; preco_atual: number }[] }>(db, "anon", "select public.precos_pendentes($1, $2) as r", [chave, limite]).then((x) => x[0].r);
+  const aplicar = (itens: unknown[], chave: string | null = CHAVE) =>
+    como<{ r: { conferidos: number; quedas: number; altas: number; suspeitos: number; ausentes: number } }>(db, "anon", "select public.precos_aplicar($1, $2::jsonb) as r", [chave, JSON.stringify(itens)]).then((x) => x[0].r);
+  const produto = (ext: string) => como<{ preco_atual: string; preco_anterior: string | null; desconto_percentual: number | null; preco_verificado_em: string | null }>(db, "admin", "select preco_atual, preco_anterior, desconto_percentual, preco_verificado_em from public.produtos where id_externo = $1", [ext]).then((x) => x[0]);
+  const criar = async (ext: string, preco: number, status = "publicado") => {
+    n++;
+    await como(db, "admin", "insert into public.produtos (nome, slug, preco_atual, link_afiliado, id_externo, status_publicacao) values ($1, $2, $3, $4, $5, $6)", [`Produto preco ${n}`, `produto-preco-${n}-abc123`, preco, `https://s.shopee.com.br/PRECO${n}`, ext, status]);
+  };
+
+  it("exige a chave", async () => {
+    await expect(pendentes(30, "outra")).rejects.toThrow(/Acesso negado/);
+    await expect(aplicar([], "outra")).rejects.toThrow(/Acesso negado/);
+    await expect(como(db, "anon", "select public.precos_falha('outra', 'x')")).rejects.toThrow(/Acesso negado/);
+  });
+
+  it("fila: só publicados com id da Shopee, nunca verificados primeiro, respeitando o limite", async () => {
+    await criar("7.1001", 100);
+    await criar("7.1002", 100);
+    await criar("7.1003", 100, "rascunho");
+    const ids = (await pendentes()).map((p) => p.id_externo);
+    expect(ids).toContain("7.1001");
+    expect(ids).toContain("7.1002");
+    expect(ids).not.toContain("7.1003");
+    expect(await pendentes(1)).toHaveLength(1);
+    await aplicar([{ id_externo: "7.1001", preco: 100 }]);
+    const depois = (await pendentes()).map((p) => p.id_externo);
+    expect(depois.indexOf("7.1001")).toBeGreaterThan(depois.indexOf("7.1002")); // verificado vai para o fim da fila
+  });
+
+  it("queda de 10%: grava o novo preço e o produto passa a ter preço anterior (aparece em 'Preço caiu')", async () => {
+    await criar("7.2001", 100);
+    expect(await aplicar([{ id_externo: "7.2001", preco: 90 }])).toMatchObject({ conferidos: 1, quedas: 1, altas: 0 });
+    const p = await produto("7.2001");
+    expect(Number(p.preco_atual)).toBe(90);
+    expect(Number(p.preco_anterior)).toBe(100);
+    expect(p.desconto_percentual).toBe(10);
+    expect(p.preco_verificado_em).not.toBeNull();
+    const hist = await como<{ preco: string }>(db, "admin", "select h.preco from public.historico_precos h join public.produtos p on p.id = h.produto_id where p.id_externo = '7.2001' order by h.registrado_em, h.preco desc");
+    expect(hist.map((h) => Number(h.preco))).toEqual([100, 90]);
+  });
+
+  it("alta de preço: grava e remove o preço anterior; depois nova queda volta a aparecer", async () => {
+    await criar("7.3001", 100);
+    await aplicar([{ id_externo: "7.3001", preco: 80 }]);
+    expect((await produto("7.3001")).preco_anterior).not.toBeNull();
+    expect(await aplicar([{ id_externo: "7.3001", preco: 120 }])).toMatchObject({ altas: 1, quedas: 0 });
+    const p = await produto("7.3001");
+    expect(Number(p.preco_atual)).toBe(120);
+    expect(p.preco_anterior).toBeNull();
+    await aplicar([{ id_externo: "7.3001", preco: 100 }]);
+    expect(Number((await produto("7.3001")).preco_anterior)).toBe(120);
+  });
+
+  it("diferença menor que 1% é ignorada (mas o produto conta como verificado)", async () => {
+    await criar("7.4001", 100);
+    expect(await aplicar([{ id_externo: "7.4001", preco: 99.5 }])).toMatchObject({ conferidos: 1, quedas: 0, altas: 0 });
+    const p = await produto("7.4001");
+    expect(Number(p.preco_atual)).toBe(100);
+    expect(p.preco_anterior).toBeNull();
+    expect(p.preco_verificado_em).not.toBeNull();
+  });
+
+  it("queda acima de 60% é tratada como suspeita e ignorada", async () => {
+    await criar("7.5001", 100);
+    expect(await aplicar([{ id_externo: "7.5001", preco: 30 }])).toMatchObject({ suspeitos: 1, quedas: 0 });
+    expect(Number((await produto("7.5001")).preco_atual)).toBe(100);
+  });
+
+  it("sem resposta da Shopee (preço nulo) ou preço inválido: mantém o preço e marca como verificado", async () => {
+    await criar("7.6001", 100);
+    await criar("7.6002", 100);
+    expect(await aplicar([{ id_externo: "7.6001", preco: null }, { id_externo: "7.6002", preco: 0 }, { id_externo: "lixo", preco: 5 }])).toMatchObject({ conferidos: 2, ausentes: 2 });
+    expect(Number((await produto("7.6001")).preco_atual)).toBe(100);
+    expect((await produto("7.6002")).preco_verificado_em).not.toBeNull();
+  });
+
+  it("não mexe em rascunho; desligada devolve fila vazia; resultado fica registrado", async () => {
+    await criar("7.7001", 100, "rascunho");
+    await aplicar([{ id_externo: "7.7001", preco: 50 }]);
+    expect(Number((await produto("7.7001")).preco_atual)).toBe(100);
+    const [c] = await como<{ precos_ultimo_resultado: string; precos_ultima_execucao: string }>(db, "admin", "select precos_ultimo_resultado, precos_ultima_execucao from public.automacao_config");
+    expect(c.precos_ultimo_resultado).toMatch(/conferido/);
+    await como(db, "admin", "update public.automacao_config set precos_ativo = false");
+    expect(await pendentes()).toEqual([]);
+    await como(db, "admin", "update public.automacao_config set precos_ativo = true");
+    await como(db, "anon", "select public.precos_falha($1, 'Shopee fora do ar')", [CHAVE]);
+    const [f] = await como<{ precos_ultimo_resultado: string }>(db, "admin", "select precos_ultimo_resultado from public.automacao_config");
+    expect(f.precos_ultimo_resultado).toMatch(/^Falha: Shopee fora do ar/);
+  });
+
+  it("limita o tamanho do lote", async () => {
+    await expect(aplicar(Array.from({ length: 101 }, (_, i) => ({ id_externo: `7.${9000 + i}`, preco: 10 })))).rejects.toThrow(/demais/);
+  });
+});

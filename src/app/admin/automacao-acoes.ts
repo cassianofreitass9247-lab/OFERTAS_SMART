@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { exigirAdmin } from "@/lib/admin";
 import { chaveDaAutomacao, executarAutomacao } from "@/lib/automacao";
+import { sincronizarPrecos } from "@/lib/precos";
 
 const PAGINA = "/admin/automacao";
 const voltar = (tipo: "ok" | "erro", msg: string): never => redirect(`${PAGINA}?${tipo}=${encodeURIComponent(msg)}`);
@@ -77,4 +78,30 @@ export async function rodarAutomacaoAgora() {
     return voltar("erro", `A execução falhou: ${r.erro}.${dica}`.slice(0, 280));
   }
   return voltar("ok", `Execução concluída: ${r.criados} publicado(s) de ${r.consultadas} produto(s) consultados${r.falhas ? `; ${r.falhas} categoria(s) falharam` : ""}.`);
+}
+
+const MSG_MIGRACAO_PRECOS = "A conferência de preços precisa da migração 0009 no Supabase (supabase/migrations/0009_sincronizar_precos.sql).";
+
+export async function alternarPrecos(fd: FormData) {
+  const sb = await exigirAdmin();
+  const ligar = fd.get("ativo") === "true";
+  const { error } = await sb.from("automacao_config").update({ precos_ativo: ligar, atualizado_em: new Date().toISOString() }).eq("id", 1);
+  if (error) return voltar("erro", error.code === "42703" ? MSG_MIGRACAO_PRECOS : `Não foi possível alterar: ${error.message}`);
+  revalidatePath(PAGINA);
+  return voltar("ok", ligar ? "Conferência de preços ligada: roda a cada hora." : "Conferência de preços pausada.");
+}
+
+/** Confere agora o preço dos próximos produtos da fila (os verificados há mais tempo). */
+export async function conferirPrecosAgora() {
+  const sb = await exigirAdmin();
+  const chave = await chaveDaAutomacao();
+  if (!chave) return voltar("erro", "Falta cadastrar SHOPEE_APP_ID e SHOPEE_SECRET no Worker do Cloudflare.");
+  const r = await sincronizarPrecos(sb, chave);
+  revalidatePath("/", "layout");
+  if (r.status === "nada_a_conferir") return voltar("ok", "Nada a conferir: a conferência está pausada ou não há produtos publicados vindos da Shopee.");
+  if (r.status === "erro") {
+    const dica = /Acesso negado/i.test(r.erro) ? " Abra qualquer página do painel e tente de novo (a chave é registrada ao abrir o painel)." : "";
+    return voltar("erro", `A conferência falhou: ${r.erro}.${dica}`.slice(0, 280));
+  }
+  return voltar("ok", `${r.conferidos} produto(s) conferido(s): ${r.quedas} queda(s) e ${r.altas} alta(s) de preço${r.suspeitos ? `; ${r.suspeitos} queda(s) suspeita(s) ignorada(s)` : ""}${r.ausentes ? `; ${r.ausentes} sem resposta da Shopee` : ""}${r.parouPor ? `. Parou antes do fim: ${r.parouPor}` : ""}.`);
 }
