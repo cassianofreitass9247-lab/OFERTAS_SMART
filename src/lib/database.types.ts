@@ -133,6 +133,9 @@ export type AutomacaoConfig = {
   pausado_motivo: string | null;
   ultima_execucao: string | null;
   ultimo_resultado: string | null;
+  dias_semana: number[];
+  hora_execucao: number;
+  ultima_agendada: string | null;
   atualizado_em: string;
 };
 
@@ -160,7 +163,7 @@ export type Database = {
       automacao_config: {
         Row: AutomacaoConfig;
         Insert: never;
-        Update: Partial<Pick<AutomacaoConfig, "ativo" | "limite_diario" | "vendas_min" | "nota_min" | "desconto_min" | "comissao_min" | "erros_seguidos" | "pausado_motivo" | "atualizado_em">>;
+        Update: Partial<Pick<AutomacaoConfig, "ativo" | "limite_diario" | "vendas_min" | "nota_min" | "desconto_min" | "comissao_min" | "dias_semana" | "hora_execucao" | "erros_seguidos" | "pausado_motivo" | "atualizado_em">>;
         Relationships: [];
       };
       pedidos: {
@@ -193,6 +196,7 @@ export type Database = {
       automacao_estado: { Args: { p_chave: string }; Returns: Json };
       automacao_registrar: { Args: { p_chave: string; p_itens: Json; p_filtros: Json; p_cursor: number }; Returns: Json };
       automacao_existentes: { Args: { p_chave: string; p_ids: string[] }; Returns: string[] };
+      automacao_reivindicar: { Args: { p_chave: string }; Returns: boolean };
       automacao_falha: { Args: { p_chave: string; p_msg: string }; Returns: undefined };
       carregar_dados_demo: { Args: Record<PropertyKey, never>; Returns: number };
       remover_dados_demo: { Args: Record<PropertyKey, never>; Returns: number };

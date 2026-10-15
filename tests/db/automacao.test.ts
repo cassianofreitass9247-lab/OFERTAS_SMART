@@ -120,3 +120,56 @@ describe("automacao_existentes (migração 0007)", () => {
     await expect(existentes(CHAVE, Array.from({ length: 1001 }, (_, i) => `9.${i}`))).rejects.toThrow(/demais/);
   });
 });
+
+describe("agenda da automação (migração 0008)", () => {
+  const agora = async () => {
+    const [x] = await como<{ dow: number; hora: number }>(db, "admin", "select extract(dow from now() at time zone 'America/Sao_Paulo')::int as dow, extract(hour from now() at time zone 'America/Sao_Paulo')::int as hora");
+    return x;
+  };
+  const reivindicar = (chave: string | null = CHAVE) => como<{ r: boolean }>(db, "anon", "select public.automacao_reivindicar($1) as r", [chave]).then((x) => x[0].r);
+  const agenda = (dias: number[], hora: number, ativo = true) =>
+    como(db, "admin", "update public.automacao_config set ativo = $1, dias_semana = $2::smallint[], hora_execucao = $3, ultima_agendada = null, erros_seguidos = 0, pausado_motivo = null where id = 1", [ativo, `{${dias.join(",")}}`, hora]);
+
+  it("padrão: todos os dias, 9h", async () => {
+    const [c] = await como<{ dias_semana: number[]; hora_execucao: number }>(db, "admin", "select dias_semana, hora_execucao from public.automacao_config");
+    expect(c.dias_semana).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(c.hora_execucao).toBe(9);
+  });
+
+  it("valida dias e hora", async () => {
+    await expect(como(db, "admin", "update public.automacao_config set dias_semana = '{}'")).rejects.toThrow(/check/);
+    await expect(como(db, "admin", "update public.automacao_config set dias_semana = '{7}'")).rejects.toThrow(/check/);
+    await expect(como(db, "admin", "update public.automacao_config set hora_execucao = 24")).rejects.toThrow(/check/);
+    await expect(como(db, "admin", "update public.automacao_config set hora_execucao = -1")).rejects.toThrow(/check/);
+  });
+
+  it("exige a chave", async () => {
+    await expect(reivindicar("outra")).rejects.toThrow(/Acesso negado/);
+    await expect(reivindicar(null)).rejects.toThrow(/Acesso negado/);
+  });
+
+  it("devolve true uma única vez por dia, quando a hora já chegou, hoje é dia escolhido e está ligada", async () => {
+    const { dow } = await agora();
+    await agenda([dow], 0);
+    expect(await reivindicar()).toBe(true);
+    expect(await reivindicar()).toBe(false); // já rodou hoje
+    const [c] = await como<{ ok: boolean }>(db, "admin", "select ultima_agendada = (now() at time zone 'America/Sao_Paulo')::date as ok from public.automacao_config");
+    expect(c.ok).toBe(true);
+  });
+
+  it("não roda em dia não escolhido, antes da hora ou pausada", async () => {
+    const { dow, hora } = await agora();
+    await agenda([0, 1, 2, 3, 4, 5, 6].filter((d) => d !== dow), 0);
+    expect(await reivindicar()).toBe(false);
+    if (hora < 23) {
+      await agenda([dow], hora + 1);
+      expect(await reivindicar()).toBe(false);
+    }
+    await agenda([dow], 0, false);
+    expect(await reivindicar()).toBe(false);
+  });
+
+  it("anônimo não lê nem altera a agenda", async () => {
+    await expect(como(db, "anon", "update public.automacao_config set hora_execucao = 3")).rejects.toThrow(/permission denied/);
+  });
+});

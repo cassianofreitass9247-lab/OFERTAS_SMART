@@ -34,6 +34,19 @@ export async function salvarAutomacao(fd: FormData) {
   return voltar("ok", "Configuração salva.");
 }
 
+/** Dias da semana e hora (Brasília) da execução agendada. */
+export async function salvarAgenda(fd: FormData) {
+  const sb = await exigirAdmin();
+  const dias = [...new Set(fd.getAll("dia").map((v) => Number(v)))].filter((d) => Number.isInteger(d) && d >= 0 && d <= 6).sort();
+  const hora = num(fd, "hora", 0, 23);
+  if (dias.length === 0) return voltar("erro", "Marque pelo menos um dia da semana.");
+  if (hora === null) return voltar("erro", "Escolha uma hora entre 0h e 23h.");
+  const { error } = await sb.from("automacao_config").update({ dias_semana: dias, hora_execucao: hora, atualizado_em: new Date().toISOString() }).eq("id", 1);
+  if (error) return voltar("erro", error.code === "42703" || error.code === "42P01" ? "A agenda precisa da migração 0008 no Supabase (supabase/migrations/0008_automacao_agenda.sql)." : `Não foi possível salvar: ${error.message}`);
+  revalidatePath(PAGINA);
+  return voltar("ok", "Agenda salva.");
+}
+
 export async function alternarAutomacao(fd: FormData) {
   const sb = await exigirAdmin();
   const ligar = fd.get("ativo") === "true";
@@ -46,7 +59,7 @@ export async function alternarAutomacao(fd: FormData) {
     .eq("id", 1);
   if (error) return voltar("erro", error.code === "42P01" ? MSG_MIGRACAO : `Não foi possível alterar: ${error.message}`);
   revalidatePath(PAGINA);
-  return voltar("ok", ligar ? "Automação ligada. A próxima execução é amanhã às 9h (Brasília); para testar agora, use \"Rodar agora\"." : "Automação pausada.");
+  return voltar("ok", ligar ? "Automação ligada. Ela roda nos dias e na hora definidos em \"Quando roda\"; para testar agora, use \"Rodar agora\"." : "Automação pausada.");
 }
 
 /** Executa a rotina agora, com a mesma lógica do agendamento (precisa estar ligada). */
@@ -57,6 +70,7 @@ export async function rodarAutomacaoAgora() {
   const r = await executarAutomacao(sb, chave);
   revalidatePath("/", "layout");
   if (r.status === "pausada") return voltar("erro", "A automação está pausada. Ligue-a antes de rodar.");
+  if (r.status === "fora_do_horario") return voltar("erro", "Fora do horário agendado (não deveria acontecer no \"Rodar agora\").");
   if (r.status === "limite") return voltar("ok", `Limite diário já atingido (${r.criadosHoje} hoje). Nada a fazer.`);
   if (r.status === "erro") {
     const dica = /Acesso negado/i.test(r.erro) ? " Abra qualquer página do painel e tente de novo (a chave é registrada ao abrir o painel; exige a migração 0006)." : "";

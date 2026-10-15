@@ -8,6 +8,6 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
-  "triggers": { "crons": ["0 12 * * *"] },
+  "triggers": { "crons": ["0 * * * *"] },
   "observability": { "enabled": true }
 }

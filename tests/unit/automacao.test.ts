@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { chaveDaAutomacao, chavesIguais, diaDeBrasilia, executarAutomacao, termoDaCategoria, termosDoDia } from "@/lib/automacao";
+import { chaveDaAutomacao, chavesIguais, diaDeBrasilia, executarAutomacao, proximaExecucao, termoDaCategoria, termosDoDia } from "@/lib/automacao";
 import { termosDeBusca } from "@/lib/categoria-auto";
 
 const ENV = { SHOPEE_APP_ID: "1234567", SHOPEE_SECRET: "segredo-de-teste" };
@@ -30,11 +30,12 @@ const no = (id: number, nome: string, extra: Record<string, unknown> = {}) => ({
   ...extra,
 });
 
-function fakeSb(est: unknown, extra: { falhaEstado?: boolean; existentes?: string[] } = {}) {
+function fakeSb(est: unknown, extra: { falhaEstado?: boolean; existentes?: string[]; vez?: boolean } = {}) {
   const chamadas: { nome: string; args: Record<string, unknown> }[] = [];
   const rpc = vi.fn(async (nome: string, args: Record<string, unknown>) => {
     chamadas.push({ nome, args });
     if (nome === "automacao_estado") return extra.falhaEstado ? { data: null, error: { message: "Acesso negado" } } : { data: est, error: null };
+    if (nome === "automacao_reivindicar") return { data: extra.vez ?? true, error: null };
     if (nome === "automacao_existentes") return { data: (args.p_ids as string[]).filter((i) => (extra.existentes ?? []).includes(i)), error: null };
     if (nome === "automacao_registrar") return { data: { criados: (args.p_itens as unknown[]).length, ignorados: 0 }, error: null };
     return { data: null, error: null };
@@ -215,5 +216,46 @@ describe("executarAutomacao", () => {
     const cheia = vi.fn(async () => new Response(JSON.stringify({ data: { productOfferV2: { nodes: Array.from({ length: 10 }, (_, i) => no(i + 1, `Produto ${i}`)) } } })));
     await executarAutomacao(sb, "k", { env: ENV, buscar: cheia });
     expect(cheia.mock.calls.length + chamadas.length).toBeLessThanOrEqual(50);
+  });
+
+  it("execução agendada fora da vez (dia, hora ou já rodou hoje): não busca nada", async () => {
+    const { sb, chamadas } = fakeSb(estado(), { vez: false });
+    const buscar = loja({});
+    expect(await executarAutomacao(sb, "k", { env: ENV, buscar, agendada: true })).toEqual({ status: "fora_do_horario" });
+    expect(buscar).not.toHaveBeenCalled();
+    expect(chamadas.map((c) => c.nome)).toEqual(["automacao_reivindicar"]);
+  });
+
+  it("execução agendada na vez roda normalmente; a manual nem pergunta ao banco se é a vez", async () => {
+    const a = fakeSb(estado(), { vez: true });
+    expect(await executarAutomacao(a.sb, "k", { env: ENV, buscar: loja({ Beleza: [no(1, "Batom Matte")] }), agendada: true })).toMatchObject({ status: "ok", criados: 1 });
+    expect(a.chamadas[0].nome).toBe("automacao_reivindicar");
+    const m = fakeSb(estado(), { vez: false });
+    await executarAutomacao(m.sb, "k", { env: ENV, buscar: loja({}) });
+    expect(m.chamadas.map((c) => c.nome)).not.toContain("automacao_reivindicar");
+  });
+});
+
+describe("proximaExecucao (horário de Brasília)", () => {
+  const TODOS = [0, 1, 2, 3, 4, 5, 6];
+  const br = (a: number, m: number, d: number, h: number, min = 0) => Date.UTC(a, m - 1, d, h + 3, min); // 2026-10-15 é quinta
+  it("hoje, se a hora ainda não chegou e hoje não rodou", () => {
+    expect(proximaExecucao(TODOS, 9, br(2026, 10, 15, 7), "2026-10-14")?.texto).toBe("hoje às 09h");
+  });
+  it("hoje já rodou: amanhã", () => {
+    expect(proximaExecucao(TODOS, 9, br(2026, 10, 15, 10), "2026-10-15")?.texto).toBe("amanhã (16/10) às 09h");
+  });
+  it("hora já passou e hoje ainda não rodou: na próxima hora cheia", () => {
+    expect(proximaExecucao(TODOS, 9, br(2026, 10, 15, 11), "2026-10-14")?.texto).toBe("hoje, na próxima hora cheia");
+  });
+  it("só alguns dias: pula para o próximo dia escolhido, com o nome do dia", () => {
+    // quinta já rodou; escolhidos: segunda e quarta -> segunda 19/10
+    expect(proximaExecucao([1, 3], 8, br(2026, 10, 15, 10), "2026-10-15")?.texto).toBe("segunda (19/10) às 08h");
+    // virada de mês e fuso: 01:00 UTC de 01/11 ainda é 31/10 em Brasília (sábado)
+    expect(proximaExecucao([0], 9, Date.UTC(2026, 10, 1, 1, 0), null)?.texto).toBe("amanhã (01/11) às 09h");
+  });
+  it("nenhum dia válido: nada", () => {
+    expect(proximaExecucao([], 9, br(2026, 10, 15, 7), null)).toBeNull();
+    expect(proximaExecucao([9, -1], 9, br(2026, 10, 15, 7), null)).toBeNull();
   });
 });

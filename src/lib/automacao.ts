@@ -39,6 +39,32 @@ export async function chaveDaAutomacao(env: Ambiente = process.env): Promise<str
 }
 export const hashDaChaveAutomacao = sha256Hex;
 
+export const NOMES_DIAS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"] as const;
+export const NOMES_DIAS_CURTOS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"] as const;
+
+/**
+ * Próxima execução agendada, em horário de Brasília: o primeiro dia escolhido (a partir de hoje) cuja hora ainda não
+ * passou, ou hoje mesmo se a hora já passou mas hoje ainda não rodou (o agendamento recupera na próxima hora cheia).
+ */
+export function proximaExecucao(dias: number[], hora: number, agoraMs: number, ultimaAgendada: string | null): { dia: Date; texto: string } | null {
+  const validos = new Set(dias.filter((d) => Number.isInteger(d) && d >= 0 && d <= 6));
+  if (validos.size === 0) return null;
+  const br = new Date(agoraMs - 3 * 3600_000); // lido com getUTC*, que aqui é o relógio de Brasília
+  const hojeIso = br.toISOString().slice(0, 10);
+  for (let i = 0; i < 8; i++) {
+    const dia = new Date(Date.UTC(br.getUTCFullYear(), br.getUTCMonth(), br.getUTCDate() + i));
+    if (!validos.has(dia.getUTCDay())) continue;
+    if (i === 0) {
+      if (ultimaAgendada === hojeIso) continue; // hoje já rodou
+      const rotulo = br.getUTCHours() >= hora ? "hoje, na próxima hora cheia" : `hoje às ${String(hora).padStart(2, "0")}h`;
+      return { dia, texto: rotulo };
+    }
+    const nome = i === 1 ? "amanhã" : NOMES_DIAS[dia.getUTCDay()];
+    return { dia, texto: `${nome} (${String(dia.getUTCDate()).padStart(2, "0")}/${String(dia.getUTCMonth() + 1).padStart(2, "0")}) às ${String(hora).padStart(2, "0")}h` };
+  }
+  return null;
+}
+
 /** Comparação sem pistas de tempo. */
 export function chavesIguais(a: string, b: string) {
   if (a.length !== b.length) return false;
@@ -61,6 +87,7 @@ type Estado = {
 
 export type ResultadoAutomacao =
   | { status: "pausada" }
+  | { status: "fora_do_horario" }
   | { status: "limite"; criadosHoje: number }
   | { status: "ok"; criados: number; ignorados: number; consultadas: number; falhas: number; avisos: string[] }
   | { status: "erro"; erro: string };
@@ -90,8 +117,14 @@ const porDescontoEVendas = (a: Oferta, b: Oferta) => (b.desconto ?? 0) - (a.desc
 export async function executarAutomacao(
   sb: Cliente,
   chave: string,
-  opcoes: { env?: Ambiente; buscar?: (url: string, init: RequestInit) => Promise<Response>; agora?: () => number } = {},
+  opcoes: { env?: Ambiente; buscar?: (url: string, init: RequestInit) => Promise<Response>; agora?: () => number; agendada?: boolean } = {},
 ): Promise<ResultadoAutomacao> {
+  // Execução do agendamento (de hora em hora): o banco diz se é a vez de rodar hoje (dia, hora e "ainda não rodou").
+  if (opcoes.agendada) {
+    const { data: vez, error: erroVez } = await sb.rpc("automacao_reivindicar", { p_chave: chave });
+    if (erroVez) return { status: "erro", erro: erroVez.message };
+    if (!vez) return { status: "fora_do_horario" };
+  }
   const { data, error } = await sb.rpc("automacao_estado", { p_chave: chave });
   if (error || !data) return { status: "erro", erro: error?.message ?? "Não foi possível ler a configuração da automação." };
   const estado = data as unknown as Estado;

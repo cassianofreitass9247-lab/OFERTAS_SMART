@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Aviso } from "@/components/admin/Aviso";
 import { configShopee } from "@/lib/shopee";
 import { clienteServidor } from "@/lib/supabase/servidor";
-import { alternarAutomacao, rodarAutomacaoAgora, salvarAutomacao } from "../../automacao-acoes";
+import { NOMES_DIAS_CURTOS, proximaExecucao } from "@/lib/automacao";
+import { alternarAutomacao, rodarAutomacaoAgora, salvarAgenda, salvarAutomacao } from "../../automacao-acoes";
 
 export const metadata: Metadata = { title: "Automação" };
 
@@ -15,11 +16,16 @@ export default async function PaginaAutomacao({ searchParams }: { searchParams: 
   const { data: hoje } = c ? await sb.rpc("automacao_criados_hoje") : { data: 0 };
   const { data: cats } = await sb.from("categorias").select("nome").eq("ativa", true).order("nome");
 
+  const dias = c?.dias_semana ?? [0, 1, 2, 3, 4, 5, 6];
+  const hora = c?.hora_execucao ?? 9;
+  const migracaoAgenda = !!c && c.dias_semana === undefined;
+  const proxima = c && !migracaoAgenda ? proximaExecucao(dias, hora, Date.now(), c.ultima_agendada) : null;
+
   return (
     <>
       <h1 className="mb-1 font-titulo text-3xl font-extrabold">Automação</h1>
       <p className="mb-4 max-w-[75ch] text-sm text-cinza">
-        Uma vez por dia (9h, horário de Brasília) o site busca na Shopee os <strong>mais vendidos e com maior desconto</strong> de cada categoria que já existe e
+        Uma vez por dia, nos dias e na hora que você escolher (horário de Brasília), o site busca na Shopee os <strong>mais vendidos e com maior desconto</strong> de cada categoria que já existe e
         publica sozinho, já disponível, até o limite diário. Só entram produtos com foto, preço e sem termo sensível no nome. Tudo fica registrado em{" "}
         <Link href="/admin/shopee/lote" className="underline">Importar em lote</Link>, com o botão &ldquo;Desfazer lote&rdquo;.
       </p>
@@ -62,6 +68,45 @@ export default async function PaginaAutomacao({ searchParams }: { searchParams: 
               Categorias buscadas: {cats?.length ? cats.map((x) => x.nome).join(", ") : "nenhuma ativa"}. A cada execução são consultadas 6, em rodízio. Depois de 3 falhas seguidas ela pausa sozinha.
             </p>
           </section>
+
+          {migracaoAgenda ? (
+            <p role="alert" className="mb-6 rounded-md border border-laranja bg-laranja-claro p-3 text-sm">
+              Para escolher dias e hora falta a migração <code>0008_automacao_agenda.sql</code> no Supabase (arquivo em <code>supabase/migrations</code>).
+            </p>
+          ) : (
+            <form action={salvarAgenda} className="mb-6 rounded-lg border border-linha bg-white p-4" data-testid="agenda">
+              <h2 className="font-titulo text-xl font-extrabold">Quando roda</h2>
+              <fieldset className="mt-3">
+                <legend className="rotulo">Dias da semana</legend>
+                <div className="flex flex-wrap gap-2">
+                  {NOMES_DIAS_CURTOS.map((nome, i) => (
+                    <label key={nome} className="flex cursor-pointer items-center gap-2 rounded-md border border-linha px-3 py-2 text-sm font-semibold has-[:checked]:border-tinta has-[:checked]:bg-neon">
+                      <input type="checkbox" name="dia" value={i} defaultChecked={dias.includes(i)} className="size-4" />
+                      {nome}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <div className="mt-3 flex flex-wrap items-end gap-3">
+                <div>
+                  <label htmlFor="hora" className="rotulo">Hora (Brasília)</label>
+                  <select id="hora" name="hora" defaultValue={hora} className="campo">
+                    {Array.from({ length: 24 }, (_, h) => (
+                      <option key={h} value={h}>{String(h).padStart(2, "0")}h</option>
+                    ))}
+                  </select>
+                </div>
+                <button type="submit" className="botao">Salvar agenda</button>
+              </div>
+              <p className="mt-3 text-sm" data-testid="proxima">
+                Próxima execução: <strong>{!c.ativo ? "automação pausada" : proxima ? proxima.texto : "nenhuma (marque ao menos um dia)"}</strong>
+              </p>
+              <p className="mt-1 max-w-[75ch] text-xs text-cinza">
+                O site confere de hora em hora e roda uma vez por dia escolhido, a partir da hora marcada. Se você marcar uma hora que já passou hoje e ele ainda não rodou, roda na próxima hora cheia.
+                O botão &ldquo;Rodar agora&rdquo; não conta como a execução do dia.
+              </p>
+            </form>
+          )}
 
           <form action={salvarAutomacao} className="grid gap-3 rounded-lg border border-linha bg-white p-4 sm:grid-cols-2 lg:grid-cols-3">
             <h2 className="font-titulo text-xl font-extrabold sm:col-span-2 lg:col-span-3">Limites e filtros</h2>

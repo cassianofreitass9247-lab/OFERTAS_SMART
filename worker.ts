@@ -1,6 +1,6 @@
 /**
  * Entrada do Worker: o site (OpenNext) + o agendamento diário da automação (Cron Trigger).
- * O agendamento só chama a rota interna /api/automacao do próprio site, com a chave derivada do segredo da Shopee
+ * O Cloudflare acorda de hora em hora; o banco decide se é a vez de rodar (dias e hora escolhidos no painel). O agendamento só chama a rota interna /api/automacao do próprio site, com a chave derivada do segredo da Shopee
  * (a mesma que o painel registra no banco). Nada de segredo vai para o GitHub.
  */
 import handler from "./.open-next/worker.js";
@@ -22,7 +22,7 @@ const entrada = {
     if (!segredo) return; // sem Shopee configurada, a automação não existe
     const pedido = new Request("https://ofertasmart.vitrinedamoni.workers.dev/api/automacao", {
       method: "POST",
-      headers: { "x-automacao-chave": await chaveDaAutomacao(segredo) },
+      headers: { "x-automacao-chave": await chaveDaAutomacao(segredo), "x-automacao-agendada": "1" },
     });
     ctx.waitUntil(
       (async () => {
