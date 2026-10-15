@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { categoriaAutomatica, type CategoriaBasica } from "./categoria-auto";
+import { categoriaAutomatica, EXCLUSOES_POR_CATEGORIA, semAcento, termosDeBusca, type CategoriaBasica } from "./categoria-auto";
 import type { Database } from "./database.types";
 import { nomeBloqueado, passaNosFiltros, type FiltrosLote } from "./lote";
 import { buscarVariasPaginas, precoDaOferta, type Oferta } from "./shopee";
@@ -17,9 +17,15 @@ import { gerarSlugProduto } from "./texto";
 type Ambiente = Record<string, string | undefined>;
 type Cliente = SupabaseClient<Database>;
 
-/** Categorias consultadas por execução (cada uma gasta 2 consultas à Shopee; o plano gratuito limita ~50 chamadas por execução). */
+/**
+ * Orçamento de consultas por execução: o plano gratuito do Cloudflare limita ~50 chamadas externas. Gastamos
+ * 6 categorias x 2 termos x 3 páginas = 36 à Shopee, mais 3 ao banco (estado, existentes, registrar).
+ */
 export const CATEGORIAS_POR_EXECUCAO = 6;
-export const PAGINAS_POR_CATEGORIA = 2;
+export const TERMOS_POR_CATEGORIA = 2;
+export const PAGINAS_POR_TERMO = 3;
+/** Produtos mais baratos que isso (em R$) não entram sozinhos: costumam ser acessórios de pouco valor. */
+export const PRECO_MINIMO_AUTOMATICO = 15;
 
 async function sha256Hex(texto: string) {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(texto));
@@ -62,6 +68,23 @@ export type ResultadoAutomacao =
 /** Termo de busca de uma categoria: o nome sem ano ("Natal 2026" -> "Natal"). */
 export const termoDaCategoria = (nome: string) => nome.replace(/\b20\d{2}\b/g, "").replace(/\s+/g, " ").trim();
 
+/** Termos do dia para uma categoria: avança pela lista a cada dia, para não buscar sempre os mesmos produtos. */
+export function termosDoDia(cat: CategoriaBasica, dia: number, quantos = TERMOS_POR_CATEGORIA): string[] {
+  const todos = termosDeBusca(cat);
+  const n = Math.min(quantos, todos.length);
+  return Array.from({ length: n }, (_, j) => todos[(((dia * quantos + j) % todos.length) + todos.length) % todos.length]);
+}
+
+/** Dia corrente no fuso de Brasília (UTC-3), em dias desde 1970. */
+export const diaDeBrasilia = (agoraMs: number) => Math.floor((agoraMs - 3 * 3600_000) / 86_400_000);
+
+const temExclusao = (nome: string, slug: string) => {
+  const termos = EXCLUSOES_POR_CATEGORIA[slug];
+  if (!termos) return false;
+  const texto = ` ${semAcento(nome)} `;
+  return termos.some((t) => texto.includes(` ${t} `));
+};
+
 const porDescontoEVendas = (a: Oferta, b: Oferta) => (b.desconto ?? 0) - (a.desconto ?? 0) || (b.vendas ?? 0) - (a.vendas ?? 0);
 
 export async function executarAutomacao(
@@ -90,7 +113,7 @@ export async function executarAutomacao(
   const quantas = Math.min(CATEGORIAS_POR_EXECUCAO, cats.length);
   const escolhidas = Array.from({ length: quantas }, (_, i) => cats[(estado.cursor + i) % cats.length]);
   const novoCursor = (estado.cursor + quantas) % cats.length;
-  const porCategoria = Math.ceil(restante / quantas) + 2; // folga para os que o banco ignorar (duplicados)
+  const dia = diaDeBrasilia((opcoes.agora ?? Date.now)());
 
   const filas: { cat: CategoriaBasica; ofertas: Oferta[] }[] = [];
   const avisos: string[] = [];
@@ -98,26 +121,47 @@ export async function executarAutomacao(
   let consultadas = 0;
   let ultimoErro = "";
   for (const cat of escolhidas) {
-    try {
-      const r = await buscarVariasPaginas({ termo: termoDaCategoria(cat.nome), ordem: "vendas", de: 1, paginas: PAGINAS_POR_CATEGORIA }, { env: opcoes.env, buscar: opcoes.buscar, agora: opcoes.agora });
-      consultadas += r.ofertas.length;
-      if (r.aviso) avisos.push(`${cat.nome}: ${r.aviso}`);
-      const boas = r.ofertas
-        .filter((o) => o.linkAfiliado && o.imagemUrl && precoDaOferta(o) !== null)
-        .filter((o) => passaNosFiltros(o, filtros) && !nomeBloqueado(o.nome))
-        .filter((o) => categoriaAutomatica(o.nome, cats) === cat.id)
-        .sort(porDescontoEVendas)
-        .slice(0, porCategoria);
-      filas.push({ cat, ofertas: boas });
-    } catch (e) {
-      falhas++;
-      ultimoErro = e instanceof Error ? e.message : "erro";
-      avisos.push(`${cat.nome}: ${ultimoErro}`);
+    const achadas = new Map<string, Oferta>();
+    let falhouTodas = true;
+    for (const termo of termosDoDia(cat, dia)) {
+      try {
+        const r = await buscarVariasPaginas({ termo, ordem: "vendas", de: 1, paginas: PAGINAS_POR_TERMO }, { env: opcoes.env, buscar: opcoes.buscar, agora: opcoes.agora });
+        falhouTodas = false;
+        if (r.aviso) avisos.push(`${cat.nome} (${termo}): ${r.aviso}`);
+        for (const o of r.ofertas) if (!achadas.has(o.itemId)) achadas.set(o.itemId, o);
+      } catch (e) {
+        ultimoErro = e instanceof Error ? e.message : "erro";
+        avisos.push(`${cat.nome} (${termo}): ${ultimoErro}`);
+      }
     }
+    if (falhouTodas) {
+      falhas++;
+      continue;
+    }
+    consultadas += achadas.size;
+    const boas = [...achadas.values()]
+      .filter((o) => o.linkAfiliado && o.imagemUrl)
+      .filter((o) => {
+        const preco = precoDaOferta(o);
+        return preco !== null && preco >= PRECO_MINIMO_AUTOMATICO;
+      })
+      .filter((o) => passaNosFiltros(o, filtros) && !nomeBloqueado(o.nome) && !temExclusao(o.nome, cat.slug))
+      .filter((o) => categoriaAutomatica(o.nome, cats) === cat.id)
+      .sort(porDescontoEVendas);
+    filas.push({ cat, ofertas: boas });
   }
   if (falhas === quantas) return falhar(ultimoErro || "A Shopee não respondeu.");
 
-  // Intercala as categorias (uma de cada vez) para a cota ser dividida entre elas.
+  // Tira os que já existem no site: sem isso, os de maior desconto são sempre os mesmos e a cota se perde em repetidos.
+  const candidatos = [...new Set(filas.flatMap((f) => f.ofertas.map((o) => `${o.shopId}.${o.itemId}`)))];
+  if (candidatos.length > 0) {
+    const { data: ja, error: erroJa } = await sb.rpc("automacao_existentes", { p_chave: chave, p_ids: candidatos.slice(0, 1000) });
+    if (erroJa) return { status: "erro", erro: erroJa.message };
+    const existentes = new Set((ja ?? []) as string[]);
+    for (const f of filas) f.ofertas = f.ofertas.filter((o) => !existentes.has(`${o.shopId}.${o.itemId}`));
+  }
+
+  // Intercala as categorias (uma de cada vez): a cota se divide entre elas e o que uma não preenche vai para as outras.
   const itens: Database["public"]["Functions"]["automacao_registrar"]["Args"]["p_itens"][] = [];
   const vistos = new Set<string>();
   for (let rodada = 0; itens.length < restante && filas.some((f) => rodada < f.ofertas.length); rodada++) {

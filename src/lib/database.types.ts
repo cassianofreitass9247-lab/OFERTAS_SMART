@@ -192,6 +192,7 @@ export type Database = {
       automacao_criados_hoje: { Args: Record<PropertyKey, never>; Returns: number };
       automacao_estado: { Args: { p_chave: string }; Returns: Json };
       automacao_registrar: { Args: { p_chave: string; p_itens: Json; p_filtros: Json; p_cursor: number }; Returns: Json };
+      automacao_existentes: { Args: { p_chave: string; p_ids: string[] }; Returns: string[] };
       automacao_falha: { Args: { p_chave: string; p_msg: string }; Returns: undefined };
       carregar_dados_demo: { Args: Record<PropertyKey, never>; Returns: number };
       remover_dados_demo: { Args: Record<PropertyKey, never>; Returns: number };

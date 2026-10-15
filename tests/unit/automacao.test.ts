@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { chaveDaAutomacao, chavesIguais, executarAutomacao, termoDaCategoria } from "@/lib/automacao";
+import { chaveDaAutomacao, chavesIguais, diaDeBrasilia, executarAutomacao, termoDaCategoria, termosDoDia } from "@/lib/automacao";
+import { termosDeBusca } from "@/lib/categoria-auto";
 
 const ENV = { SHOPEE_APP_ID: "1234567", SHOPEE_SECRET: "segredo-de-teste" };
 const CATS = [
@@ -29,21 +30,24 @@ const no = (id: number, nome: string, extra: Record<string, unknown> = {}) => ({
   ...extra,
 });
 
-function fakeSb(est: unknown, extra: { falhaEstado?: boolean } = {}) {
+function fakeSb(est: unknown, extra: { falhaEstado?: boolean; existentes?: string[] } = {}) {
   const chamadas: { nome: string; args: Record<string, unknown> }[] = [];
   const rpc = vi.fn(async (nome: string, args: Record<string, unknown>) => {
     chamadas.push({ nome, args });
     if (nome === "automacao_estado") return extra.falhaEstado ? { data: null, error: { message: "Acesso negado" } } : { data: est, error: null };
+    if (nome === "automacao_existentes") return { data: (args.p_ids as string[]).filter((i) => (extra.existentes ?? []).includes(i)), error: null };
     if (nome === "automacao_registrar") return { data: { criados: (args.p_itens as unknown[]).length, ignorados: 0 }, error: null };
     return { data: null, error: null };
   });
   return { sb: { rpc } as never, chamadas };
 }
-const loja = (porTermo: Record<string, unknown[]>) =>
+/** Simula a Shopee: o termo buscado leva à categoria dona dele (pelos termos de busca) e devolve os produtos dela, só na página 1. */
+const loja = (porCategoria: Record<string, unknown[]>, catsDeTeste = CATS) =>
   vi.fn(async (_u: string, init: RequestInit) => {
     const termo = termoDe(init);
     const pagina = Number(/page: (\d+)/.exec(consulta(init))?.[1] ?? 1);
-    return new Response(JSON.stringify({ data: { productOfferV2: { nodes: pagina === 1 ? (porTermo[termo] ?? []) : [] } } }));
+    const dona = catsDeTeste.find((c) => termosDeBusca(c).includes(termo));
+    return new Response(JSON.stringify({ data: { productOfferV2: { nodes: pagina === 1 && dona ? (porCategoria[dona.nome] ?? []) : [] } } }));
   });
 
 describe("chave e utilidades", () => {
@@ -125,7 +129,7 @@ describe("executarAutomacao", () => {
   it("rodízio de categorias: 6 por execução, a partir do cursor", async () => {
     const muitas = Array.from({ length: 8 }, (_, i) => ({ id: `c${i}`, nome: `Cat${i}`, slug: `cat${i}` }));
     const { sb, chamadas } = fakeSb(estado({ categorias: muitas, cursor: 5 }));
-    const buscar = loja({});
+    const buscar = loja({}, muitas);
     await executarAutomacao(sb, "k", { env: ENV, buscar });
     const termos = buscar.mock.calls.map((c) => termoDe(c[1] as RequestInit));
     expect(termos).toEqual(["Cat5", "Cat6", "Cat7", "Cat0", "Cat1", "Cat2"]);
@@ -145,10 +149,71 @@ describe("executarAutomacao", () => {
     const { sb } = fakeSb(estado());
     const buscar = vi.fn(async (_u: string, init: RequestInit) => {
       const termo = termoDe(init);
-      if (termo === "Beleza") return new Response(JSON.stringify({ errors: [{ message: "x", extensions: { code: 10030 } }] }));
-      return new Response(JSON.stringify({ data: { productOfferV2: { nodes: termo === "Eletrodomésticos" ? [no(10, "Liquidificador 900W")] : [] } } }));
+      if (termosDeBusca(CATS[0]).includes(termo)) return new Response(JSON.stringify({ errors: [{ message: "x", extensions: { code: 10030 } }] }));
+      return new Response(JSON.stringify({ data: { productOfferV2: { nodes: termosDeBusca(CATS[1]).includes(termo) ? [no(10, "Liquidificador 900W")] : [] } } }));
     });
     const r = await executarAutomacao(sb, "k", { env: ENV, buscar });
     expect(r).toMatchObject({ status: "ok", criados: 1, falhas: 1 });
+  });
+
+  it("não gasta a cota com produtos que já existem no site", async () => {
+    const { sb, chamadas } = fakeSb(estado(), { existentes: ["9.1", "9.2"] });
+    const buscar = loja({ Beleza: [no(1, "Batom A", { priceDiscountRate: 90 }), no(2, "Batom B", { priceDiscountRate: 80 }), no(3, "Batom C", { priceDiscountRate: 30 })] });
+    await executarAutomacao(sb, "k", { env: ENV, buscar });
+    const itens = chamadas.find((c) => c.nome === "automacao_registrar")!.args.p_itens as { nome: string }[];
+    expect(itens.map((i) => i.nome)).toEqual(["Batom C"]);
+  });
+
+  it("preço mínimo, exclusões da categoria (brinquedo de pet) e preço ausente", async () => {
+    const { sb, chamadas } = fakeSb(estado());
+    const buscar = loja({
+      Brinquedos: [
+        no(1, "Boneca Infantil Brinquedo"),
+        no(2, "Brinquedo para Gato Bolinha", { priceDiscountRate: 80 }),
+        no(3, "Brinquedo Cachorro Mordedor", { priceDiscountRate: 80 }),
+        no(4, "Brinquedo Boneca Barata", { priceMin: "9.9", priceMax: "9.9" }),
+        no(5, "Brinquedo Boneca Sem Preço", { priceMin: null, priceMax: null }),
+      ],
+    });
+    await executarAutomacao(sb, "k", { env: ENV, buscar });
+    const itens = chamadas.find((c) => c.nome === "automacao_registrar")!.args.p_itens as { nome: string }[];
+    expect(itens.map((i) => i.nome)).toEqual(["Boneca Infantil Brinquedo"]);
+  });
+
+  it("a cota se divide entre as categorias e o que uma não preenche vai para as outras", async () => {
+    const { sb, chamadas } = fakeSb(estado({ limite_diario: 6 }));
+    const buscar = loja({
+      Beleza: [1, 2, 3, 4, 5, 6].map((i) => no(i, `Batom ${i}`, { priceDiscountRate: 50 - i })),
+      Eletrodomésticos: [no(20, "Liquidificador 900W")],
+      Brinquedos: [no(30, "Boneca Infantil Brinquedo")],
+    });
+    await executarAutomacao(sb, "k", { env: ENV, buscar });
+    const itens = chamadas.find((c) => c.nome === "automacao_registrar")!.args.p_itens as { categoria_id: string }[];
+    expect(itens).toHaveLength(6);
+    expect(itens.slice(0, 3).map((i) => i.categoria_id).sort()).toEqual(["c-beleza", "c-brinq", "c-eletro"]);
+    expect(itens.filter((i) => i.categoria_id === "c-beleza")).toHaveLength(4);
+  });
+
+  it("termos do dia: avançam a cada dia, sem estourar a lista, e o dia usa o fuso de Brasília", () => {
+    const cat = CATS[0];
+    const todos = termosDeBusca(cat);
+    expect(termosDoDia(cat, 0)).toEqual([todos[0], todos[1]]);
+    expect(termosDoDia(cat, 1)).toEqual([todos[2], todos[3]]);
+    expect(termosDoDia(cat, todos.length)).toHaveLength(2);
+    expect(termosDoDia(cat, -1)).toHaveLength(2);
+    expect(termosDoDia({ id: "x", nome: "Natal 2099", slug: "outra" }, 5)).toEqual(["Natal"]);
+    // 01:00 UTC ainda é o dia anterior em Brasília
+    expect(diaDeBrasilia(Date.UTC(2026, 9, 15, 1, 0))).toBe(diaDeBrasilia(Date.UTC(2026, 9, 14, 12, 0)));
+    expect(diaDeBrasilia(Date.UTC(2026, 9, 15, 12, 0))).toBe(diaDeBrasilia(Date.UTC(2026, 9, 14, 12, 0)) + 1);
+  });
+
+  it("respeita o orçamento de chamadas externas do plano gratuito (<= 50 por execução)", async () => {
+    const todas = [
+      ["Beleza", "beleza"], ["Brinquedos", "brinquedos"], ["Casa e construção", "casa-e-construcao"], ["Eletrodomésticos", "eletrodomesticos"], ["Eletrônicos", "eletronicos"], ["Esporte e Lazer", "esporte-e-lazer"], ["Mãe e Bebê", "mae-e-bebe"],
+    ].map(([nome, slug]) => ({ id: slug, nome, slug }));
+    const { sb, chamadas } = fakeSb(estado({ categorias: todas }));
+    const cheia = vi.fn(async () => new Response(JSON.stringify({ data: { productOfferV2: { nodes: Array.from({ length: 10 }, (_, i) => no(i + 1, `Produto ${i}`)) } } })));
+    await executarAutomacao(sb, "k", { env: ENV, buscar: cheia });
+    expect(cheia.mock.calls.length + chamadas.length).toBeLessThanOrEqual(50);
   });
 });

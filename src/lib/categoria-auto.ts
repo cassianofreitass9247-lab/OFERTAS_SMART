@@ -19,6 +19,20 @@ const PALAVRAS: Record<string, string[]> = {
   "casa-e-construcao": ["organizador", "panela", "utensilio", "jogo de cama", "lencol", "toalha", "tapete", "cortina", "furadeira", "parafusadeira", "ferramenta", "lampada", "luminaria", "pote", "prateleira", "cabide", "tabua de", "faca", "escorredor", "decoracao", "colcha", "travesseiro", "fita led", "chuveiro", "torneira", "fechadura", "vassoura", "rodo", "lixeira", "talheres", "marmita", "frigideira"],
 };
 
+/** Termos para buscar produtos de uma categoria na Shopee: as palavras dela (a busca pelo nome, como "Casa e construção", quase não acha nada). */
+export function termosDeBusca(c: CategoriaBasica): string[] {
+  const palavras = PALAVRAS[c.slug];
+  if (palavras && palavras.length > 0) return palavras;
+  return [c.nome.replace(/\b20\d{2}\b/g, "").replace(/\s+/g, " ").trim()];
+}
+
+/** Palavras que tiram o produto de uma categoria no modo automático (ex.: brinquedo de gato não é brinquedo infantil). */
+export const EXCLUSOES_POR_CATEGORIA: Record<string, string[]> = {
+  brinquedos: ["gato", "gatos", "cachorro", "cachorros", "cao", "caes", "pet", "pets", "animal", "animais", "papagaio", "passaro"],
+  "mae-e-bebe": ["pet", "cachorro", "gato"],
+  beleza: ["pet", "cachorro", "gato"],
+};
+
 export const semAcento = (t: string) =>
   t
     .normalize("NFD")

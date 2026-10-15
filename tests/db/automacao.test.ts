@@ -105,3 +105,18 @@ describe("automação (migração 0006)", () => {
     expect(b.pausado_motivo).toMatch(/3 falhas/);
   });
 });
+
+describe("automacao_existentes (migração 0007)", () => {
+  it("exige a chave e devolve só os ids que já existem entre os perguntados", async () => {
+    await ligar(true, 60);
+    const novo = item();
+    await registrar([novo]);
+    const existentes = (chave: string | null, ids: string[]) =>
+      como<{ r: string[] }>(db, "anon", "select public.automacao_existentes($1, $2::text[]) as r", [chave, ids]).then((x) => x[0].r);
+    expect(await existentes(CHAVE, [novo.id_externo as string, "9.999999999"])).toEqual([novo.id_externo]);
+    expect(await existentes(CHAVE, [])).toEqual([]);
+    await expect(existentes("outra", [novo.id_externo as string])).rejects.toThrow(/Acesso negado/);
+    await expect(existentes(null, [novo.id_externo as string])).rejects.toThrow(/Acesso negado/);
+    await expect(existentes(CHAVE, Array.from({ length: 1001 }, (_, i) => `9.${i}`))).rejects.toThrow(/demais/);
+  });
+});
