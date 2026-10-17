@@ -7,7 +7,10 @@ import handler from "./.open-next/worker.js";
 
 export { DOQueueHandler, DOShardedTagCache, BucketCachePurge } from "./.open-next/worker.js";
 
-type Ambiente = { SHOPEE_SECRET?: string } & Record<string, unknown>;
+type Ambiente = { SHOPEE_SECRET?: string; NEXT_PUBLIC_SITE_URL?: string } & Record<string, unknown>;
+
+/** Endereço usado só como cabeçalho da chamada interna (ela não passa pela rede); vem da variável do site, se existir. */
+const ENDERECO_PADRAO = "https://ofertasmart.cfsolutions.workers.dev";
 
 async function chaveDaAutomacao(segredo: string) {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`vitrine-da-moni/automacao/${segredo}`));
@@ -20,7 +23,8 @@ const entrada = {
   async scheduled(_evento: unknown, env: Ambiente, ctx: { waitUntil(p: Promise<unknown>): void }) {
     const segredo = (env.SHOPEE_SECRET ?? "").trim();
     if (!segredo) return; // sem Shopee configurada, a automação não existe
-    const pedido = new Request("https://ofertasmart.vitrinedamoni.workers.dev/api/automacao", {
+    const endereco = (typeof env.NEXT_PUBLIC_SITE_URL === "string" && env.NEXT_PUBLIC_SITE_URL.startsWith("https://") ? env.NEXT_PUBLIC_SITE_URL : ENDERECO_PADRAO).replace(/\/+$/, "");
+    const pedido = new Request(`${endereco}/api/automacao`, {
       method: "POST",
       headers: { "x-automacao-chave": await chaveDaAutomacao(segredo), "x-automacao-agendada": "1" },
     });

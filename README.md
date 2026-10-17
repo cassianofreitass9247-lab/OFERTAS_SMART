@@ -71,7 +71,7 @@ O formulário "Pede pra Moni" e o login do painel usam o Turnstile, o "não sou 
 | `TURNSTILE_SITE_KEY` | Text | Chave do site (pública) |
 | `TURNSTILE_SECRET_KEY` | **Secret** | Chave secreta. Nunca no GitHub, no chat ou em `NEXT_PUBLIC_*` |
 
-1. Cloudflare > **Turnstile** > **Add widget**. Nome: Vitrine da Moni. Hostname: `ofertasmart.vitrinedamoni.workers.dev` (e o domínio próprio, quando houver). Modo: **Managed**. Copie as duas chaves.
+1. Cloudflare > **Turnstile** > **Add widget**. Nome: Vitrine da Moni. Hostname: `ofertasmart.cfsolutions.workers.dev` (e o domínio próprio, quando houver; se o endereço mudar, inclua o novo hostname no widget, senão o login e o pedido deixam de funcionar). Modo: **Managed**. Copie as duas chaves.
 2. **Workers & Pages** > `ofertasmart` > **Settings** > **Variables and Secrets** > **Add**: `TURNSTILE_SITE_KEY` (Text) e `TURNSTILE_SECRET_KEY` (Secret). Salve (**Deploy**).
 3. Abra o painel do site uma vez, logado como administradora. Isso registra no banco a chave que impede robôs de criar pedidos direto pela API do Supabase.
 
