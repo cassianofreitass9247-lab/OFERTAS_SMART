@@ -9,11 +9,12 @@ import type { Json } from "@/lib/database.types";
 import { formatarNota, formatarVendas } from "@/lib/pedido-opcoes";
 import { clientePublico } from "@/lib/supabase/publico";
 import { formatarPreco } from "@/lib/texto";
+import { F } from "@/lib/marca";
 
 // Página pessoal da cliente: o código na URL é o único "login". Não é indexada e nunca é guardada em cache.
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Opções separadas pela Moni",
+  title: `Opções separadas ${F.pela}`,
   robots: { index: false, follow: false },
   referrer: "no-referrer",
 };
@@ -43,9 +44,9 @@ export default async function PaginaPedido({ params }: { params: Promise<{ token
       <Conteudo>
         {opcoes.length === 0 ? (
           <div className="rounded-3xl border-[2.5px] border-tinta bg-pessego p-6">
-            <p className="text-lg font-semibold">A Moni ainda não separou opções para este pedido.</p>
+            <p className="text-lg font-semibold">{F.A} ainda não separou opções para este pedido.</p>
             <p className="mt-1">
-              Volte em instantes ou chame a Moni no{" "}
+              Volte em instantes ou chame {F.a} no{" "}
               <a href={INSTAGRAM_URL} target="_blank" rel="noopener" className="font-bold underline decoration-neon decoration-2">Instagram</a>.
             </p>
           </div>
@@ -89,7 +90,7 @@ export default async function PaginaPedido({ params }: { params: Promise<{ token
           </>
         )}
         <p className="mt-8 max-w-[70ch] text-sm text-cinza">
-          Os links são de afiliado: se você comprar, a Moni pode receber uma comissão da Shopee, sem custo extra para você. Preço, variações, frete e estoque
+          Os links são de afiliado: se você comprar, {F.a} pode receber uma comissão da Shopee, sem custo extra para você. Preço, variações, frete e estoque
           mudam; vale o que aparece na Shopee na hora da compra. Esta página é só sua: não compartilhe o endereço com quem você não quer que veja o seu pedido.{" "}
           <Link href="/privacidade" className="text-tinta underline decoration-neon decoration-2">Política de privacidade</Link>
         </p>

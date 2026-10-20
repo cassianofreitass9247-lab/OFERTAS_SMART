@@ -7,6 +7,7 @@ import type { PedidoOpcao } from "@/lib/database.types";
 import { enderecoDoPedido, formatarNota, formatarVendas, mensagemOpcoes } from "@/lib/pedido-opcoes";
 import { linkWhatsapp } from "@/lib/pedido";
 import { formatarDataHora, formatarPreco } from "@/lib/texto";
+import { F } from "@/lib/marca";
 
 type Props = {
   pedido: { id: string; nome: string; whatsapp: string; descricao: string; token: string; busca_resultado: string | null; buscado_em: string | null };
@@ -88,7 +89,7 @@ export function OpcoesPedido({ pedido, opcoes, termo, siteUrl }: Props) {
             >
               Enviar pelo WhatsApp e marcar como respondido
             </a>
-            <p className="text-xs text-cinza">Abre o WhatsApp da Moni com a mensagem pronta; o envio é feito por ela, no próprio aparelho.</p>
+            <p className="text-xs text-cinza">Abre o WhatsApp {F.da} com a mensagem pronta; o envio é feito no próprio aparelho.</p>
           </div>
         </>
       )}

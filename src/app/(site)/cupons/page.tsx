@@ -3,13 +3,14 @@ import Link from "next/link";
 import { CartaoCupom } from "@/components/site/CartaoCupom";
 import { Cabecalho, Conteudo } from "@/components/site/Cabecalho";
 import { listarCategorias, listarCupons } from "@/lib/dados";
+import { F } from "@/lib/marca";
 
 // Dados ao vivo: o cupom vencido some sozinho (o banco só entrega os vigentes).
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Cupons da Shopee",
-  description: "Cupons e vouchers da Shopee separados pela Moni, com o prazo de validade de cada um.",
+  description: `Cupons e vouchers da Shopee separados ${F.pela}, com o prazo de validade de cada um.`,
   alternates: { canonical: "/cupons" },
 };
 
@@ -20,7 +21,7 @@ export default async function PaginaCupons() {
     <>
       <Cabecalho
         titulo="Cupons"
-        subtitulo="Cupons da Shopee que a Moni separou. Copie o código ou abra o link e aplique na hora de pagar. Cada cupom mostra até quando vale."
+        subtitulo={`Cupons da Shopee que ${F.a} separou. Copie o código ou abra o link e aplique na hora de pagar. Cada cupom mostra até quando vale.`}
       />
       <Conteudo>
         {cupons.length === 0 ? (

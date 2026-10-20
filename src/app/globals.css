@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* Vitrine da Moni */
+  /* Cores da marca: estes são os padrões; src/lib/marca.ts sobrepõe (variáveis NEXT_PUBLIC_MARCA_COR*) */
   --color-neon: #ff5b14;
   --color-sol: #ffe14d;
   --color-pessego: #ffe8db;
@@ -54,9 +54,9 @@ html {
 .vm-faixa { animation: vmCorre 32s linear infinite; }
 
 @keyframes vmPulso {
-  0% { box-shadow: 0 0 0 0 rgba(255, 225, 77, 0.9); }
-  70% { box-shadow: 0 0 0 9px rgba(255, 225, 77, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 225, 77, 0); }
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-sol) 90%, transparent); }
+  70% { box-shadow: 0 0 0 9px color-mix(in srgb, var(--color-sol) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-sol) 0%, transparent); }
 }
 .vm-pulso { animation: vmPulso 1.8s ease-out infinite; }
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ListaOfertas } from "@/components/ListaOfertas";
 import { Cabecalho, Conteudo } from "@/components/site/Cabecalho";
+import { F } from "@/lib/marca";
 
 type Busca = Record<string, string | string[] | undefined>;
 
@@ -8,7 +9,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   const ate = Number((await searchParams).ate) || 0;
   return {
     title: ate > 0 ? `Achadinhos até R$ ${ate}` : "Todas as ofertas",
-    description: "Todos os achadinhos da Shopee publicados na Vitrine da Moni, com busca e ordenação por preço ou desconto.",
+    description: `Todos os achadinhos da Shopee publicados ${F.noSite}, com busca e ordenação por preço ou desconto.`,
     alternates: { canonical: "/ofertas" },
   };
 }

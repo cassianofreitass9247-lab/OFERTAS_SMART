@@ -160,6 +160,24 @@ npm run verificar            # lint + tipos + testes + build
 - O contador de cliques não tem limite de requisições: alguém mal-intencionado pode inflar os números. Será tratado na etapa de automação.
 - As páginas de privacidade e termos são um ponto de partida e não substituem a revisão de um advogado.
 
+## Marca configurável (um site por cliente)
+
+Nome, apelido, gênero ("a Moni" / "o João"), Instagram, WhatsApp, foto, apresentação, descrição para o Google e as duas cores vêm de variáveis `NEXT_PUBLIC_MARCA_*` (lista comentada no `.env.example`). Sem nenhuma delas o site é a Vitrine da Moni, idêntico ao anterior.
+
+- São valores de **build**: cadastre em *Build variables* da Cloudflare e faça novo deploy após qualquer mudança.
+- Valor inválido é ignorado (vale o padrão) e aparece como "Marca: ..." nas pendências do painel.
+- A cor principal é validada (precisa contrastar com o texto escuro); os tons de apoio e o ícone do site são derivados dela.
+- Ao trocar a foto, coloque o arquivo em `public/` (ou use um endereço https). `public/foto-padrao.svg` é um espaço reservado neutro.
+- O painel e os textos legais (privacidade, termos) usam o nome configurado. Revise-os para cada cliente: o responsável e o e-mail vêm de `NEXT_PUBLIC_RESPONSAVEL` e `NEXT_PUBLIC_CONTATO_EMAIL`.
+
+### Checklist para um novo cliente
+
+1. Contas **no nome do cliente**: Supabase, Cloudflare e programa de afiliados da Shopee (a chave Open API é dele).
+2. Novo projeto Supabase; rode `supabase/migrations/0001` a `0012` em ordem; crie o primeiro usuário e dê a ele o papel de admin.
+3. Novo Worker apontando para este repositório (nome do Worker diferente do `name` do `wrangler.jsonc` ou uma cópia da configuração).
+4. Variáveis de build: Supabase, `NEXT_PUBLIC_SITE_URL`, contato, responsável e `NEXT_PUBLIC_MARCA_*`. Segredos no Worker: Turnstile e Shopee.
+5. Supabase > Authentication > URL Configuration com o endereço do site; deploy; conferir o painel (pendências).
+
 ## Publicação na Cloudflare Workers
 
 O projeto já está configurado (`wrangler.jsonc`, `open-next.config.ts`, adaptador `@opennextjs/cloudflare`).

@@ -11,6 +11,7 @@ import { CartaoCupom } from "@/components/site/CartaoCupom";
 import { historicoDePrecos, listarCategorias, listarCuponsOuNada, obterProduto } from "@/lib/dados";
 import { formatarData, formatarDataHora, formatarPreco } from "@/lib/texto";
 import { analisarVideo } from "@/lib/video";
+import { F, MARCA } from "@/lib/marca";
 
 // Dados ao vivo: a página é montada a cada acesso (não é gerada no build).
 export const dynamic = "force-dynamic";
@@ -122,10 +123,10 @@ export default async function PaginaProduto({ params }: Props) {
           )}
 
           <div className="mt-8 flex items-center gap-3 rounded-2xl border-[2.5px] border-tinta bg-pessego p-3">
-            <img src="/moni.jpg" alt="" width={48} height={48} className="size-12 flex-none rounded-full border-2 border-tinta object-cover object-[center_15%]" />
+            <img src={MARCA.foto} alt="" width={48} height={48} className="size-12 flex-none rounded-full border-2 border-tinta object-cover object-[center_15%]" />
             <p className="text-[15px] font-semibold">
-              Achadinho garimpado pela Moni.{" "}
-              <Link href="/#moni" className="text-tinta underline decoration-neon decoration-2">Quem é a Moni</Link>
+              Achadinho garimpado {F.pela}.{" "}
+              <Link href="/#moni" className="text-tinta underline decoration-neon decoration-2">Quem é {F.a}</Link>
             </p>
           </div>
 

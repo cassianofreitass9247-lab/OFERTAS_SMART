@@ -5,6 +5,7 @@ import { clienteServidor } from "@/lib/supabase/servidor";
 import { formatarDataHora } from "@/lib/texto";
 import { configTurnstile } from "@/lib/turnstile";
 import { carregarDemo, removerDemo } from "../acoes";
+import { MARCA } from "@/lib/marca";
 
 export default async function PaginaResumo({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sb = await clienteServidor();
@@ -39,6 +40,7 @@ export default async function PaginaResumo({ searchParams }: { searchParams: Pro
     qtdFicticios > 0 && `Há ${qtdFicticios} produtos fictícios no banco. Remova-os antes de divulgar o site.`,
     !CONTATO_EMAIL && "Falta definir o e-mail de contato (variável NEXT_PUBLIC_CONTATO_EMAIL).",
     !RESPONSAVEL && "Falta definir o nome do responsável pelo site, exibido na política de privacidade (variável NEXT_PUBLIC_RESPONSAVEL).",
+    ...MARCA.avisos.map((a) => `Marca: ${a}`),
     SITE_URL.includes("localhost") && "Falta definir o endereço público do site (variável NEXT_PUBLIC_SITE_URL).",
   ].filter(Boolean) as string[];
 

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Cabecalho, Conteudo } from "@/components/site/Cabecalho";
-import { CONTATO_EMAIL, NOME_SITE, RESPONSAVEL } from "@/lib/config";
+import { CONTATO_EMAIL, RESPONSAVEL } from "@/lib/config";
+import { F } from "@/lib/marca";
 
 export const metadata: Metadata = { title: "Política de privacidade", alternates: { canonical: "/privacidade" } };
 
@@ -12,7 +13,7 @@ export default function PaginaPrivacidade() {
       <Conteudo estreito>
         <div className="prosa">
           <p>
-            Esta página explica, de forma direta, quais dados a {NOME_SITE} trata. Ela segue a Lei Geral de Proteção de Dados (Lei nº 13.709/2018).
+            Esta página explica, de forma direta, quais dados {F.site} trata. Ela segue a Lei Geral de Proteção de Dados (Lei nº 13.709/2018).
           </p>
 
           <h2>Quem é o responsável</h2>
@@ -32,11 +33,11 @@ export default function PaginaPrivacidade() {
               origem (por exemplo, “instagram”). Não guardamos endereço IP, nome, e-mail nem identificador do seu aparelho junto com o clique.
             </li>
             <li>
-              <strong>Pedidos de produto (“Pede pra Moni”):</strong> se você fizer um pedido, guardamos seu nome, seu WhatsApp, a descrição do produto e o
-              link de exemplo, se você mandar. Servem só para a Moni procurar o produto e responder você no WhatsApp, inclusive com link de afiliado da
+              <strong>Pedidos de produto (“Pede {F.pra}”):</strong> se você fizer um pedido, guardamos seu nome, seu WhatsApp, a descrição do produto e o
+              link de exemplo, se você mandar. Servem só para {F.a} procurar o produto e responder você no WhatsApp, inclusive com link de afiliado da
               Shopee. A base é o seu consentimento, dado na caixa de autorização do formulário. Para responder, o site pode separar opções de produto (o texto do seu pedido, sem nome nem WhatsApp, é usado para buscar produtos na Shopee, inclusive
               automaticamente logo depois do envio) e abrir uma página só sua, com um endereço secreto, que mostra seu primeiro nome, o que você pediu e as opções; os links de afiliado dessas opções
-              levam um código do pedido, sem seu nome nem seu WhatsApp, para a Moni saber de qual pedido veio uma compra. Só a administração do site vê o
+              levam um código do pedido, sem seu nome nem seu WhatsApp, para {F.a} saber de qual pedido veio uma compra. Só a administração do site vê o
               nome completo e o WhatsApp, que não são vendidos nem repassados, e tudo é apagado automaticamente em até 90 dias. Você pode pedir a exclusão antes disso pelo canal de contato.
             </li>
             <li>

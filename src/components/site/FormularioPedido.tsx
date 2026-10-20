@@ -5,6 +5,7 @@ import { useActionState, useEffect, useState } from "react";
 import { enviarPedido, type EstadoPedido } from "@/app/(site)/pedir/acoes";
 import { Turnstile } from "@/components/Turnstile";
 import { IconeWhatsapp } from "./Icones";
+import { F } from "@/lib/marca";
 
 const campo =
   "block w-full rounded-2xl border-[2.5px] border-tinta bg-white px-4 py-3 text-base text-tinta placeholder:text-cinza focus:shadow-[4px_4px_0_#1e120c] focus:outline-none";
@@ -30,7 +31,7 @@ export function FormularioPedido({ busca = "", siteKey = "" }: { busca?: string;
         {estado.pagina ? (
           <>
             <p className="mt-3 text-lg leading-relaxed">
-              Já separei {quantidade === 1 ? "1 opção" : `${quantidade} opções`} pra você escolher. A Moni também vai ler o seu pedido e pode chamar você no
+              Já separei {quantidade === 1 ? "1 opção" : `${quantidade} opções`} pra você escolher. {F.A} também vai ler o seu pedido e pode chamar você no
               WhatsApp com algo ainda melhor.
             </p>
             <Link href={estado.pagina} className="vm-btn vm-pilula mt-5 min-h-14 bg-neon text-lg font-extrabold text-tinta shadow-duro-p">
@@ -41,7 +42,7 @@ export function FormularioPedido({ busca = "", siteKey = "" }: { busca?: string;
         ) : (
           <>
             <p className="mt-3 text-lg leading-relaxed">
-              A Moni vai procurar e, se encontrar uma boa opção, chama você no WhatsApp com o link. Não dá para garantir que todo produto será encontrado,
+              {F.A} vai procurar e, se encontrar uma boa opção, chama você no WhatsApp com o link. Não dá para garantir que todo produto será encontrado,
               mas todo pedido é lido.
             </p>
             <Link href="/ofertas" className="vm-btn vm-pilula mt-5 bg-white text-tinta">
@@ -107,9 +108,9 @@ export function FormularioPedido({ busca = "", siteKey = "" }: { busca?: string;
       </div>
 
       <label className="flex items-start gap-3 text-[15px] leading-snug">
-        <input type="checkbox" name="consentimento" required defaultChecked={v?.consentimento === "on"} className="mt-0.5 size-5 flex-none accent-[#ff5b14]" />
+        <input type="checkbox" name="consentimento" required defaultChecked={v?.consentimento === "on"} className="mt-0.5 size-5 flex-none accent-neon" />
         <span>
-          Autorizo a Moni a me chamar neste WhatsApp para responder este pedido, inclusive com link de afiliado da Shopee. Meus dados ficam guardados
+          Autorizo {F.a} a me chamar neste WhatsApp para responder este pedido, inclusive com link de afiliado da Shopee. Meus dados ficam guardados
           por até 90 dias e não são repassados. <Link href="/privacidade" className="underline">Política de privacidade</Link>.
         </span>
       </label>

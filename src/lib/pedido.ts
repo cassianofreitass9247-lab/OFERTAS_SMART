@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { F } from "./marca";
 
 /**
  * WhatsApp do visitante: guarda só dígitos, com o 55 na frente.
@@ -47,7 +48,7 @@ export const pedidoSchema = z.object({
     .max(2000, "Link: muito longo")
     .refine((v) => v === "" || urlHttps(v), "Link de exemplo: precisa começar com https://")
     .transform((v) => (v === "" ? null : v)),
-  consentimento: z.literal(true, { error: "Marque a autorização para a Moni chamar você no WhatsApp" }),
+  consentimento: z.literal(true, { error: `Marque a autorização para ${F.a} chamar você no WhatsApp` }),
 });
 
 // ---------------------------------------------------------------------------
@@ -62,7 +63,7 @@ const resumir = (texto: string, max = 120) => {
 
 export function mensagemAchei(p: { nome: string; descricao: string; produto: string; link: string }): string {
   return [
-    `Oi, ${primeiroNome(p.nome)}! Aqui é a Moni, da Vitrine da Moni 🧡`,
+    `Oi, ${primeiroNome(p.nome)}! Aqui é ${F.a}, ${F.doSite} 🧡`,
     `Você me pediu: "${resumir(p.descricao)}"`,
     "",
     `Achei este: ${p.produto.trim()}`,
@@ -74,7 +75,7 @@ export function mensagemAchei(p: { nome: string; descricao: string; produto: str
 
 export function mensagemNaoAchei(p: { nome: string; descricao: string }): string {
   return [
-    `Oi, ${primeiroNome(p.nome)}! Aqui é a Moni, da Vitrine da Moni 🧡`,
+    `Oi, ${primeiroNome(p.nome)}! Aqui é ${F.a}, ${F.doSite} 🧡`,
     `Procurei "${resumir(p.descricao)}", mas ainda não encontrei uma opção boa na Shopee.`,
     "Se eu achar, te mando por aqui!",
   ].join("\n");

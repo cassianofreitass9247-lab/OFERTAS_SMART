@@ -19,7 +19,7 @@ export function IconeCoracao({ tamanho = 22, preenchido = true, className }: P &
 export function IconeEstrela({ tamanho = 18, className }: P) {
   return (
     <svg {...base(tamanho)} className={className}>
-      <path d="M12 2l2.6 6.6L21 9.3l-5 4.4 1.6 6.8L12 17l-5.6 3.5L8 13.7 3 9.3l6.4-.7z" fill="#ffe14d" stroke="#1e120c" strokeWidth={2} strokeLinejoin="round" />
+      <path d="M12 2l2.6 6.6L21 9.3l-5 4.4 1.6 6.8L12 17l-5.6 3.5L8 13.7 3 9.3l6.4-.7z" fill="var(--color-sol)" stroke="#1e120c" strokeWidth={2} strokeLinejoin="round" />
     </svg>
   );
 }
@@ -27,8 +27,8 @@ export function IconeEstrela({ tamanho = 18, className }: P) {
 export function IconeBrilho({ tamanho = 22, className }: P) {
   return (
     <svg {...base(tamanho)} className={className}>
-      <path d="M12 2l2 6.5L20.5 10 14 12l-2 6.5L10 12 3.5 10 10 8.5z" fill="#ffe14d" stroke="#1e120c" strokeWidth={1.5} strokeLinejoin="round" />
-      <path d="M19 15l.9 2.1 2.1.9-2.1.9L19 21l-.9-2.1-2.1-.9 2.1-.9z" fill="#ffe14d" stroke="#1e120c" strokeWidth={1.2} strokeLinejoin="round" />
+      <path d="M12 2l2 6.5L20.5 10 14 12l-2 6.5L10 12 3.5 10 10 8.5z" fill="var(--color-sol)" stroke="#1e120c" strokeWidth={1.5} strokeLinejoin="round" />
+      <path d="M19 15l.9 2.1 2.1.9-2.1.9L19 21l-.9-2.1-2.1-.9 2.1-.9z" fill="var(--color-sol)" stroke="#1e120c" strokeWidth={1.2} strokeLinejoin="round" />
     </svg>
   );
 }
@@ -59,13 +59,13 @@ export const IconeWhatsapp = ({ tamanho = 20 }: P) => (
   </svg>
 );
 export const IconeEscudo = ({ tamanho = 16 }: P) => (
-  <svg {...base(tamanho)} {...traco} stroke="#ffe14d"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z" /><path d="M8.5 12l2.5 2.5 4.5-5" /></svg>
+  <svg {...base(tamanho)} {...traco} stroke="var(--color-sol)"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z" /><path d="M8.5 12l2.5 2.5 4.5-5" /></svg>
 );
 export const IconeQueda = ({ tamanho = 16 }: P) => (
-  <svg {...base(tamanho)} {...traco} stroke="#ffe14d"><path d="M3 7l6 6 4-4 8 8" /><path d="M15 17h6v-6" /></svg>
+  <svg {...base(tamanho)} {...traco} stroke="var(--color-sol)"><path d="M3 7l6 6 4-4 8 8" /><path d="M15 17h6v-6" /></svg>
 );
 export const IconeRelogio = ({ tamanho = 16 }: P) => (
-  <svg {...base(tamanho)} {...traco} stroke="#ffe14d"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+  <svg {...base(tamanho)} {...traco} stroke="var(--color-sol)"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
 );
 export const IconeEtiqueta = ({ tamanho = 18 }: P) => (
   <svg {...base(tamanho)} {...traco}><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z" /><circle cx="7.5" cy="7.5" r="1.5" fill="currentColor" /></svg>
@@ -101,20 +101,20 @@ export function IconeCategoria({ slug, tamanho = 18 }: { slug: string; tamanho?:
   return <IconeEtiqueta tamanho={tamanho} />;
 }
 
-/** Marca da Vitrine: selo com a sacola de compras, estrela e coração. Mesmo desenho de src/app/icon.svg. */
+/** Marca da Vitrine: selo com a sacola de compras, estrela e coração. Mesmo desenho de iconeSvg() em src/lib/marca.ts (o ícone do navegador). */
 export function Marca({ tamanho = 56 }: P) {
   return (
     <svg width={tamanho} height={tamanho} viewBox="0 0 56 56" aria-hidden="true">
       <rect x="2" y="2" width="52" height="52" rx="16" fill="#ffffff" stroke="#1e120c" strokeWidth="3" />
-      <path d="M37 24l7 3 1 18-6 2z" fill="#c2410c" stroke="#1e120c" strokeWidth="2.6" strokeLinejoin="round" />
-      <path d="M13 24h24l2 23H11z" fill="#ff5b14" stroke="#1e120c" strokeWidth="2.6" strokeLinejoin="round" />
+      <path d="M37 24l7 3 1 18-6 2z" fill="var(--color-laranja-forte)" stroke="#1e120c" strokeWidth="2.6" strokeLinejoin="round" />
+      <path d="M13 24h24l2 23H11z" fill="var(--color-neon)" stroke="#1e120c" strokeWidth="2.6" strokeLinejoin="round" />
       <circle cx="18" cy="28" r="1.9" fill="#1e120c" />
       <circle cx="30" cy="28" r="1.9" fill="#1e120c" />
       <path d="M18 28v-8a6 6 0 0 1 12 0v8" fill="none" stroke="#1e120c" strokeWidth="2.8" strokeLinecap="round" />
       <path
         transform="translate(12.5 14) scale(5.6)"
         d="M0,-1L.265,-.364L.951,-.309L.428,.139L.588,.809L0,.45L-.588,.809L-.428,.139L-.951,-.309L-.265,-.364Z"
-        fill="#ffe14d"
+        fill="var(--color-sol)"
         stroke="#1e120c"
         strokeWidth="0.3"
         strokeLinejoin="round"

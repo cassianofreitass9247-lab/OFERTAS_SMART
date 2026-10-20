@@ -19,6 +19,7 @@ import { INSTAGRAM_URL, TELEGRAM_URL, WHATSAPP_URL } from "@/lib/config";
 import { CartaoCupom } from "@/components/site/CartaoCupom";
 import { categoriasComCupom, listarCategorias, listarCuponsOuNada, listarProdutos } from "@/lib/dados";
 import { formatarDataHora, formatarPreco } from "@/lib/texto";
+import { F, MARCA } from "@/lib/marca";
 
 // Dados ao vivo: a página é montada a cada acesso (não é gerada no build).
 export const dynamic = "force-dynamic";
@@ -38,7 +39,7 @@ export default async function PaginaInicial() {
   const faixa = ["Preço caiu hoje", ...categorias.map((c) => c.nome), "Achadinhos até R$ 50"];
   const grupo = TELEGRAM_URL
     ? { href: TELEGRAM_URL, rotulo: "Entrar no grupo", longo: "Entrar no grupo do Telegram", icone: <IconeTelegram tamanho={22} /> }
-    : { href: INSTAGRAM_URL, rotulo: "Seguir no Instagram", longo: "Seguir a Moni no Instagram", icone: <IconeInstagram tamanho={22} /> };
+    : { href: INSTAGRAM_URL, rotulo: "Seguir no Instagram", longo: `Seguir ${F.a} no Instagram`, icone: <IconeInstagram tamanho={22} /> };
 
   return (
     <>
@@ -70,7 +71,7 @@ export default async function PaginaInicial() {
 
           <div className="relative flex min-w-0 flex-[1_1_400px] justify-center py-6">
             <div className="h-[440px] w-[min(430px,86%)] overflow-hidden rounded-t-[240px] rounded-b-[36px] border-[3px] border-tinta bg-pessego shadow-[14px_14px_0_#1e120c] sm:h-[560px]">
-              <img src="/moni.jpg" alt="Monique Albuquerque, a Moni, sorrindo" width={1024} height={1536} className="block h-full w-full object-cover object-[center_18%]" />
+              <img src={MARCA.foto} alt={`Foto de ${MARCA.nomePessoa}`} width={1024} height={1536} className="block h-full w-full object-cover object-[center_18%]" />
             </div>
 
             <span className="vm-flutua absolute top-8 left-0 rounded-2xl border-[2.5px] border-tinta bg-sol px-4 py-2.5 font-titulo text-xl font-extrabold shadow-[5px_5px_0_#1e120c] sm:text-2xl" style={{ ["--r" as string]: "-9deg" }}>
@@ -97,7 +98,7 @@ export default async function PaginaInicial() {
             )}
 
             <span className="vm-flutua vm-d3 absolute bottom-2 left-[6%] rounded-full bg-tinta px-5 py-3 font-titulo text-lg font-bold text-white shadow-[5px_5px_0_#ffffff] sm:text-xl" style={{ ["--r" as string]: "-4deg" }}>
-              Oi, eu sou a Moni!
+              Oi, eu sou {F.a}!
             </span>
           </div>
         </div>
@@ -146,7 +147,7 @@ export default async function PaginaInicial() {
                 <IconeEstrela tamanho={34} />
                 Em destaque
               </h2>
-              <p className="mt-3 max-w-[52ch] text-lg text-cinza">Os achadinhos que a Moni separou para você olhar primeiro.</p>
+              <p className="mt-3 max-w-[52ch] text-lg text-cinza">Os achadinhos que {F.a} separou para você olhar primeiro.</p>
             </div>
             {destaques.total > destaques.itens.length && (
               <Link href="/destaques" className="text-[17px] font-bold underline decoration-neon decoration-[3px] underline-offset-4">
@@ -258,7 +259,7 @@ export default async function PaginaInicial() {
           </div>
           <Link href="/pedir" className="vm-btn vm-pilula min-h-14 bg-tinta px-7 text-lg font-extrabold text-white shadow-[5px_5px_0_#ffffff]">
             <IconeWhatsapp tamanho={22} />
-            Pede pra Moni
+            Pede {F.pra}
           </Link>
         </div>
       </section>
@@ -267,32 +268,33 @@ export default async function PaginaInicial() {
       <section id="moni" className="scroll-mt-48 border-y-[3px] border-tinta bg-pessego">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-14 px-4 py-16 sm:px-8 lg:py-24">
           <div className="flex min-w-0 flex-[0_1_360px] justify-center">
-            <div className="aspect-square w-[min(340px,78vw)] overflow-hidden rounded-full border-[3px] border-tinta bg-neon shadow-[0_0_0_12px_#ff5b14,0_0_0_15px_#1e120c]">
-              <img src="/moni.jpg" alt="" width={1024} height={1536} loading="lazy" className="block h-full w-full object-cover object-[center_12%]" />
+            <div className="aspect-square w-[min(340px,78vw)] overflow-hidden rounded-full border-[3px] border-tinta bg-neon shadow-[0_0_0_12px_var(--color-neon),0_0_0_15px_#1e120c]">
+              <img src={MARCA.foto} alt="" width={1024} height={1536} loading="lazy" className="block h-full w-full object-cover object-[center_12%]" />
             </div>
           </div>
           <div className="min-w-0 flex-[1_1_460px]">
             <h2 className="vm-titulo flex flex-wrap items-center gap-x-3.5 gap-y-1">
-              Prazer, eu sou a Moni!
+              Prazer, eu sou {F.a}!
               <IconeCoracao tamanho={48} />
             </h2>
             <p className="mt-5 max-w-[52ch] text-xl leading-relaxed">
-              Sou Monique Albuquerque, empreendedora digital, mãe de três filhos e apaixonada por garimpar ofertas na Shopee.
+              {MARCA.bio[0]}
             </p>
-            <p className="mt-3.5 max-w-[52ch] text-xl leading-relaxed">
-              Compartilho achadinhos de beleza, casa, mundo infantil e muito mais para ajudar você a economizar.{" "}
-              <IconeBrilho className="inline align-[-3px]" />
-            </p>
+            {MARCA.bio[1] && (
+              <p className="mt-3.5 max-w-[52ch] text-xl leading-relaxed">
+                {MARCA.bio[1]} <IconeBrilho className="inline align-[-3px]" />
+              </p>
+            )}
             <div className="mt-7 flex flex-wrap gap-3">
-              <a href={INSTAGRAM_URL} target="_blank" rel="noopener" aria-label="Instagram da Moni" title="Instagram" className="vm-btn flex size-[58px] items-center justify-center rounded-full border-[2.5px] border-tinta bg-white text-tinta shadow-duro-p">
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener" aria-label={`Instagram ${F.da}`} title="Instagram" className="vm-btn flex size-[58px] items-center justify-center rounded-full border-[2.5px] border-tinta bg-white text-tinta shadow-duro-p">
                 <IconeInstagram tamanho={26} />
               </a>
               {TELEGRAM_URL && (
-                <a href={TELEGRAM_URL} target="_blank" rel="noopener" aria-label="Grupo da Moni no Telegram" title="Telegram" className="vm-btn flex size-[58px] items-center justify-center rounded-full border-[2.5px] border-tinta bg-white text-tinta shadow-duro-p">
+                <a href={TELEGRAM_URL} target="_blank" rel="noopener" aria-label={`Grupo ${F.da} no Telegram`} title="Telegram" className="vm-btn flex size-[58px] items-center justify-center rounded-full border-[2.5px] border-tinta bg-white text-tinta shadow-duro-p">
                   <IconeTelegram tamanho={26} />
                 </a>
               )}
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener" aria-label="Falar com a Moni no WhatsApp" title="WhatsApp" className="vm-btn flex size-[58px] items-center justify-center rounded-full border-[2.5px] border-tinta bg-white text-tinta shadow-duro-p">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener" aria-label={`Falar com ${F.a} no WhatsApp`} title="WhatsApp" className="vm-btn flex size-[58px] items-center justify-center rounded-full border-[2.5px] border-tinta bg-white text-tinta shadow-duro-p">
                 <IconeWhatsapp tamanho={26} />
               </a>
             </div>

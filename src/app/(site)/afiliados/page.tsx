@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Cabecalho, Conteudo } from "@/components/site/Cabecalho";
-import { NOME_SITE } from "@/lib/config";
+import { F } from "@/lib/marca";
 
 export const metadata: Metadata = { title: "Como funcionam os links de afiliado", alternates: { canonical: "/afiliados" } };
 
@@ -11,7 +11,7 @@ export default function PaginaAfiliados() {
       <Conteudo estreito>
       <div className="prosa">
       <p>
-        A {NOME_SITE} participa do programa de afiliados da Shopee. Os botões “Ver preço atual na Shopee” são links de afiliado: quando você compra
+        {F.siteComArtigo} participa do programa de afiliados da Shopee. Os botões “Ver preço atual na Shopee” são links de afiliado: quando você compra
         depois de clicar em um deles, a Shopee pode pagar uma comissão ao site.
       </p>
       <h2>O que isso muda para você</h2>

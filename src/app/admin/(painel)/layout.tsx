@@ -6,8 +6,9 @@ import { clienteServidor } from "@/lib/supabase/servidor";
 import { chaveDaAutomacao, hashDaChaveAutomacao } from "@/lib/automacao";
 import { chaveDePedidos, hashDaChave } from "@/lib/turnstile";
 import { sair } from "../acoes";
+import { NOME_SITE } from "@/lib/config";
 
-export const metadata: Metadata = { title: { default: "Painel", template: "%s | Painel Vitrine da Moni" }, robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: { default: "Painel", template: `%s | Painel ${NOME_SITE}` }, robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 const MENU = [
@@ -75,7 +76,7 @@ export default async function LayoutPainel({ children }: { children: React.React
     <>
       <header className="border-b border-linha bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-          <Link href="/admin" className="font-titulo text-xl font-extrabold">Painel Vitrine da Moni</Link>
+          <Link href="/admin" className="font-titulo text-xl font-extrabold">Painel {NOME_SITE}</Link>
           <nav aria-label="Painel" className="flex flex-wrap gap-4 text-sm font-semibold">
             {MENU.map((m) => (
               <Link key={m.href} href={m.href} className="inline-flex items-center gap-1.5 py-1 hover:text-laranja-forte">

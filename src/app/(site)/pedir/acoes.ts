@@ -5,6 +5,7 @@ import { pedidoSchema } from "@/lib/pedido";
 import { opcoesAutomaticasDoPedido } from "@/lib/pedido-servidor";
 import { clientePublico } from "@/lib/supabase/publico";
 import { chaveDePedidos, verificarTurnstile } from "@/lib/turnstile";
+import { F } from "@/lib/marca";
 
 /** `pagina` e `quantidade` só vêm quando a busca automática achou opções: o caminho secreto da página do pedido. */
 export type EstadoPedido = { ok?: boolean; erro?: string; valores?: Record<string, string>; pagina?: string; quantidade?: number };
@@ -54,7 +55,7 @@ export async function enviarPedido(_: EstadoPedido, fd: FormData): Promise<Estad
       console.error("criar_pedido recusou a chave do servidor: abra o painel para sincronizar a chave do Turnstile.");
       return comErro(fd, "Não foi possível enviar o pedido agora. Tente de novo em instantes.");
     }
-    if (error.hint === "limite_numero") return comErro(fd, "Você já fez 3 pedidos hoje com este número. A Moni responde esses primeiro; tente de novo amanhã.");
+    if (error.hint === "limite_numero") return comErro(fd, `Você já fez 3 pedidos hoje com este número. ${F.A} responde esses primeiro; tente de novo amanhã.`);
     if (error.hint === "limite_geral") return comErro(fd, "Muitos pedidos chegaram agora. Tente de novo daqui a pouco.");
     if (error.code === "22023") return comErro(fd, error.message);
     return comErro(fd, "Não foi possível enviar o pedido agora. Tente de novo em instantes.");

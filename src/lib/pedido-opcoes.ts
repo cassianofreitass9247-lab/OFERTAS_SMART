@@ -4,6 +4,7 @@
 import type { Oferta, Ordem } from "./shopee";
 import { precoDaOferta } from "./shopee";
 import { primeiroNome } from "./pedido";
+import { F } from "./marca";
 
 export const MAX_OPCOES = 5;
 
@@ -252,7 +253,7 @@ export const enderecoDoPedido = (siteUrl: string, token: string) => `${siteUrl.r
 export function mensagemOpcoes(p: { nome: string; descricao: string; url: string; quantidade: number }): string {
   const resumo = p.descricao.replace(/\s+/g, " ").trim();
   return [
-    `Oi, ${primeiroNome(p.nome)}! Aqui é a Moni, da Vitrine da Moni 🧡`,
+    `Oi, ${primeiroNome(p.nome)}! Aqui é ${F.a}, ${F.doSite} 🧡`,
     `Você me pediu: "${resumo.length > 120 ? resumo.slice(0, 119).trimEnd() + "…" : resumo}"`,
     "",
     `Separei ${p.quantidade} ${p.quantidade === 1 ? "opção" : "opções"} pra você escolher a que mais gostar:`,

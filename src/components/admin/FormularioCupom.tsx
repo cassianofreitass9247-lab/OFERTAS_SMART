@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { salvarCupom, type Estado } from "@/app/admin/acoes";
 import { ROTULO_TIPO, TIPOS_CUPOM } from "@/lib/cupom";
 import type { Cupom } from "@/lib/database.types";
+import { MARCA } from "@/lib/marca";
 
 type Props = { cupom?: Cupom; categorias: { id: string; nome: string }[] };
 
@@ -33,7 +34,7 @@ export function FormularioCupom({ cupom, categorias }: Props) {
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="codigo" className="rotulo">Código do cupom</label>
-          <input id="codigo" name="codigo" maxLength={40} defaultValue={txt("codigo", c?.codigo)} placeholder="MONI10" className="campo" aria-describedby="d-codigo" />
+          <input id="codigo" name="codigo" maxLength={40} defaultValue={txt("codigo", c?.codigo)} placeholder={`${MARCA.apelido.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 12) || "CUPOM"}10`} className="campo" aria-describedby="d-codigo" />
           <p id="d-codigo" className="mt-1 text-sm text-cinza">Se o cupom tem código, o visitante copia com um toque.</p>
         </div>
         <div>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Cabecalho, Conteudo } from "@/components/site/Cabecalho";
 import Link from "next/link";
-import { NOME_SITE } from "@/lib/config";
+import { F } from "@/lib/marca";
 
 export const metadata: Metadata = { title: "Termos de uso", alternates: { canonical: "/termos" } };
 
@@ -11,11 +11,11 @@ export default function PaginaTermos() {
       <Cabecalho titulo="Termos de uso" />
       <Conteudo estreito>
       <div className="prosa">
-      <p>Ao usar a {NOME_SITE}, você concorda com as condições abaixo.</p>
+      <p>Ao usar {F.site}, você concorda com as condições abaixo.</p>
 
       <h2>O que o site é</h2>
       <p>
-        A {NOME_SITE} divulga ofertas de produtos vendidos na Shopee. O site não vende produtos, não processa pagamentos e não faz entregas. Toda compra é
+        {F.siteComArtigo} divulga ofertas de produtos vendidos na Shopee. O site não vende produtos, não processa pagamentos e não faz entregas. Toda compra é
         feita na Shopee, com as regras da Shopee e do vendedor.
       </p>
 

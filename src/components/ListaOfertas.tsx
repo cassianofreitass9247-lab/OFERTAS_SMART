@@ -2,6 +2,7 @@ import Link from "next/link";
 import { categoriasComCupom, listarCategorias, listarCuponsOuNada, listarProdutos, ORDENACOES, POR_PAGINA, type Filtros, type Ordenacao } from "@/lib/dados";
 import { formatarPreco } from "@/lib/texto";
 import { GradeProdutos } from "./CartaoProduto";
+import { F } from "@/lib/marca";
 
 type Busca = Record<string, string | string[] | undefined>;
 const um = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
@@ -80,7 +81,7 @@ export async function ListaOfertas({ caminho, parametros, fixos, vazio }: Props)
             )}
             {busca && (
               <Link href={`/pedir?q=${encodeURIComponent(busca)}`} className="vm-btn vm-pilula bg-neon font-extrabold">
-                Pedir “{busca}” pra Moni
+                Pedir “{busca}” {F.pra}
               </Link>
             )}
           </div>

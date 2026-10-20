@@ -15,6 +15,7 @@ import { ContadorSalvos, SalvosProvider } from "@/components/site/Salvos";
 import { bancoConfigurado, INSTAGRAM_URL, NOME_SITE, TELEGRAM_URL } from "@/lib/config";
 import type { Categoria } from "@/lib/database.types";
 import { listarCategorias, listarCupons } from "@/lib/dados";
+import { F, MARCA } from "@/lib/marca";
 
 const MAX_CATEGORIAS_NO_MENU = 8;
 
@@ -105,8 +106,8 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
                 className="vm-navlink hidden xl:inline-flex min-h-11 flex-none items-center gap-2.5 rounded-full border-[2.5px] border-tinta bg-white py-0 pr-4 pl-1 text-[15px] font-bold text-tinta no-underline"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/moni.jpg" alt="" width={32} height={32} className="size-8 rounded-full border-2 border-tinta object-cover object-[center_15%]" />
-                Quem é a Moni
+                <img src={MARCA.foto} alt="" width={32} height={32} className="size-8 rounded-full border-2 border-tinta object-cover object-[center_15%]" />
+                Quem é {F.a}
               </Link>
               <ContadorSalvos />
               <a
@@ -167,8 +168,8 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
                 className="vm-navlink inline-flex xl:hidden min-h-11 flex-none items-center gap-2.5 rounded-full border-[2.5px] border-tinta bg-white py-0 pr-4 pl-1 text-[15px] font-bold text-tinta no-underline"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/moni.jpg" alt="" width={32} height={32} className="size-8 rounded-full border-2 border-tinta object-cover object-[center_15%]" />
-                Quem é a Moni
+                <img src={MARCA.foto} alt="" width={32} height={32} className="size-8 rounded-full border-2 border-tinta object-cover object-[center_15%]" />
+                Quem é {F.a}
               </Link>
             </nav>
           </div>
@@ -190,11 +191,11 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
             </span>
             <p className="max-w-[70ch] text-[15px] leading-relaxed text-[#e8dcd5]">
               Este site usa links de afiliado: se você comprar por um link daqui, posso receber uma comissão da Shopee, sem custo extra para você. Preços,
-              condições e estoque podem mudar a qualquer momento; vale sempre o que aparece na Shopee na hora da compra. A {NOME_SITE} é independente e não
+              condições e estoque podem mudar a qualquer momento; vale sempre o que aparece na Shopee na hora da compra. {F.siteComArtigo} é independente e não
               pertence à Shopee.
             </p>
             <nav aria-label="Institucional" className="flex flex-wrap gap-x-6 gap-y-3 text-[15px]">
-              <Link href="/pedir" className="text-white underline">Pede pra Moni</Link>
+              <Link href="/pedir" className="text-white underline">Pede {F.pra}</Link>
               <Link href="/afiliados" className="text-white underline">Links de afiliado</Link>
               <Link href="/privacidade" className="text-white underline">Política de privacidade</Link>
               <Link href="/termos" className="text-white underline">Termos de uso</Link>

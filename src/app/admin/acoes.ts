@@ -267,11 +267,11 @@ export async function removerDemo() {
 }
 
 // ---------------------------------------------------------------------------
-// Pedidos de visitantes ("Pede pra Moni")
+// Pedidos de visitantes ("Pede pra Moni", ou o nome da marca)
 // ---------------------------------------------------------------------------
 const STATUS_PEDIDO = ["novo", "respondido", "arquivado"] as const;
 
-/** Chamada pelo botão do WhatsApp: registra a resposta (o envio em si acontece no WhatsApp da Moni). */
+/** Chamada pelo botão do WhatsApp: registra a resposta (o envio em si acontece no WhatsApp do site). */
 export async function registrarRespostaPedido(id: string, dados: { produtoId: string | null; link: string | null }): Promise<{ erro?: string }> {
   const sb = await exigirAdmin();
   if (!EH_UUID.test(id) || (dados.produtoId && !EH_UUID.test(dados.produtoId))) return { erro: "Pedido inválido." };

@@ -11,6 +11,7 @@ import { clienteServidor } from "@/lib/supabase/servidor";
 import { formatarDataHora } from "@/lib/texto";
 import { alterarStatusPedido, excluirPedido } from "../../acoes";
 import { definirBuscaAutomatica } from "../../pedido-opcoes-acoes";
+import { F } from "@/lib/marca";
 
 export const metadata: Metadata = { title: "Pedidos" };
 
@@ -50,7 +51,7 @@ export default async function PaginaPedidos({ searchParams }: { searchParams: Pr
     <>
       <h1 className="mb-1 font-titulo text-3xl font-extrabold">Pedidos dos visitantes</h1>
       <p className="mb-4 max-w-[75ch] text-sm text-cinza">
-        Pedidos feitos em <Link href="/pedir" className="underline">/pedir</Link>. O botão abre o WhatsApp da Moni com a mensagem pronta; o envio é feito
+        Pedidos feitos em <Link href="/pedir" className="underline">/pedir</Link>. O botão abre o WhatsApp {F.da} com a mensagem pronta; o envio é feito
         por ela, no próprio aparelho. Os pedidos são apagados automaticamente 90 dias depois de criados.
       </p>
       <Aviso parametros={parametros} />
