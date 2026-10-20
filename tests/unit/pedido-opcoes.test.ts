@@ -175,3 +175,13 @@ describe("formatarVendas", () => {
     expect(formatarVendas(12000)).toBe("12 mil vendidos");
   });
 });
+
+describe("formatarNota", () => {
+  it("trunca em vez de arredondar para cima", async () => {
+    const { formatarNota } = await import("@/lib/pedido-opcoes");
+    expect(formatarNota(4.95)).toBe("4,9");
+    expect(formatarNota(4.8)).toBe("4,8");
+    expect(formatarNota(5)).toBe("5,0");
+    expect(formatarNota(4.7)).toBe("4,7");
+  });
+});

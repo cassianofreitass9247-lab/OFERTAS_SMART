@@ -225,3 +225,6 @@ export function formatarVendas(n: number): string {
   const mil = Math.round(n / 100) / 10;
   return `${String(mil).replace(".", ",")} mil vendidos`;
 }
+
+/** Nota com 1 casa, sempre para baixo: 4,95 vira "4,9" (arredondar para "5,0" prometeria mais do que a loja tem). */
+export const formatarNota = (n: number) => (Math.floor(n * 10 + 1e-9) / 10).toFixed(1).replace(".", ",");

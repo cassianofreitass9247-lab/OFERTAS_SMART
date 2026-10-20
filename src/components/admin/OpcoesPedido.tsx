@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { buscarOpcoesPedido, marcarOpcoesEnviadas } from "@/app/admin/pedido-opcoes-acoes";
 import type { PedidoOpcao } from "@/lib/database.types";
-import { enderecoDoPedido, formatarVendas, mensagemOpcoes } from "@/lib/pedido-opcoes";
+import { enderecoDoPedido, formatarNota, formatarVendas, mensagemOpcoes } from "@/lib/pedido-opcoes";
 import { linkWhatsapp } from "@/lib/pedido";
 import { formatarDataHora, formatarPreco } from "@/lib/texto";
 
@@ -64,7 +64,7 @@ export function OpcoesPedido({ pedido, opcoes, termo, siteUrl }: Props) {
                 </a>
                 <span className="preco font-semibold">{o.preco !== null ? formatarPreco(o.preco) : "sem preço"}</span>
                 <span className="text-cinza">
-                  {[o.nota !== null ? `★ ${o.nota.toFixed(1).replace(".", ",")}` : null, o.vendas ? formatarVendas(o.vendas) : null, o.cliques ? `${o.cliques} clique(s)` : null]
+                  {[o.nota !== null ? `★ ${formatarNota(o.nota)}` : null, o.vendas ? formatarVendas(o.vendas) : null, o.cliques ? `${o.cliques} clique(s)` : null]
                     .filter(Boolean)
                     .join(" · ")}
                 </span>
@@ -74,7 +74,7 @@ export function OpcoesPedido({ pedido, opcoes, termo, siteUrl }: Props) {
 
           <div>
             <label htmlFor={`msg-${pedido.id}`} className="rotulo">Mensagem para o WhatsApp</label>
-            <textarea id={`msg-${pedido.id}`} readOnly rows={7} value={mensagem} className="campo" />
+            <textarea id={`msg-${pedido.id}`} readOnly rows={10} value={mensagem} className="campo" />
             <p className="mt-1 text-xs break-all text-cinza">Página da cliente: {url}</p>
           </div>
 

@@ -6,7 +6,7 @@ import { Cabecalho, Conteudo } from "@/components/site/Cabecalho";
 import { IconeEstrela, IconeSaida } from "@/components/site/Icones";
 import { INSTAGRAM_URL } from "@/lib/config";
 import type { Json } from "@/lib/database.types";
-import { formatarVendas } from "@/lib/pedido-opcoes";
+import { formatarNota, formatarVendas } from "@/lib/pedido-opcoes";
 import { clientePublico } from "@/lib/supabase/publico";
 import { formatarPreco } from "@/lib/texto";
 
@@ -64,14 +64,14 @@ export default async function PaginaPedido({ params }: { params: Promise<{ token
                   </div>
                   <h2 className="line-clamp-3 min-h-[3.9em] text-[16px] leading-snug font-semibold">{o.nome}</h2>
                   <p className="text-sm font-semibold text-cinza">
-                    {[o.nota !== null ? `★ ${o.nota.toFixed(1).replace(".", ",")}` : null, o.vendas ? formatarVendas(o.vendas) : null, o.loja].filter(Boolean).join(" · ")}
+                    {[o.nota !== null ? `★ ${formatarNota(o.nota)}` : null, o.vendas ? formatarVendas(o.vendas) : null, o.loja].filter(Boolean).join(" · ")}
                   </p>
                   <div className="mt-auto flex flex-col gap-3">
                     {o.preco !== null && (
-                      <p className="preco text-3xl font-extrabold">
-                        <span className="mr-1.5 text-sm font-bold text-cinza">a partir de</span>
-                        {formatarPreco(o.preco)}
-                      </p>
+                      <div className="flex flex-wrap items-baseline gap-x-2">
+                        <span className="text-sm font-bold text-cinza">a partir de</span>
+                        <p className="preco text-3xl font-extrabold">{formatarPreco(o.preco)}</p>
+                      </div>
                     )}
                     <a
                       href={`/pedido/ir/${o.id}`}
