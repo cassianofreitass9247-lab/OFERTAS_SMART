@@ -5,6 +5,7 @@ import type { Database, Json } from "./database.types";
 import { prepararOpcoes, type DepsOpcoes } from "./pedido-opcoes";
 import { buscarOfertaPorItem, buscarOfertas, ErroShopee, gerarLinkCurto, interpretarEntrada, resolverLinkCurto, type Oferta } from "./shopee";
 
+export const MSG_MIGRACAO_AUTO = "A busca automática precisa da migração 0012 no Supabase (supabase/migrations/0012_pedidos_busca_automatica.sql).";
 export const MSG_MIGRACAO_OPCOES = "As opções de pedido precisam da migração 0011 no Supabase (supabase/migrations/0011_pedido_opcoes.sql).";
 
 /** Produto de um link da Shopee que a cliente mandou como exemplo (aceita link comprido, curto ou só o número). */
@@ -60,4 +61,53 @@ export async function gerarOpcoesDoPedido(
     return { ok: false, erro: `Não foi possível gravar as opções: ${error.message}` };
   }
   return { ok: true, quantidade: r.opcoes.length, resumo: r.resumo };
+}
+
+/** Tempo máximo que o visitante espera pela busca automática; passou disso, o pedido segue sem as opções. */
+export const LIMITE_BUSCA_AUTOMATICA_MS = 20_000;
+
+export type OpcoesAutomaticas = { token: string; quantidade: number };
+
+/**
+ * Busca automática logo depois que o visitante cria o pedido. NUNCA lança erro nem atrapalha o pedido: qualquer falha
+ * (interruptor desligado, teto de buscas por hora, Shopee fora do ar, banco sem a migração 0012, demora) devolve nulo e o
+ * pedido segue o fluxo manual. Só devolve algo se houver pelo menos uma opção gravada.
+ */
+export async function opcoesAutomaticasDoPedido(
+  sb: SupabaseClient<Database>,
+  pedido: { id: string; descricao: string; referencia_url: string | null },
+  deps: DepsOpcoes = depsReais,
+  limiteMs = LIMITE_BUSCA_AUTOMATICA_MS,
+  chaveInformada?: string | null,
+): Promise<OpcoesAutomaticas | null> {
+  try {
+    const { data: disponivel, error } = await sb.rpc("pedidos_auto_disponivel");
+    if (error || disponivel !== true) return null;
+
+    const chave = chaveInformada ?? (await chaveDaAutomacao());
+    if (!chave) return null;
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const demora = new Promise<null>((resolver) => {
+      timer = setTimeout(() => resolver(null), limiteMs);
+    });
+    const feito = await Promise.race([gerarOpcoesDoPedido(sb, pedido, null, deps, chave), demora]);
+    clearTimeout(timer);
+    if (!feito) {
+      console.error("busca automática do pedido passou do tempo; segue sem as opções.");
+      return null;
+    }
+    if (!feito.ok) {
+      console.error("busca automática do pedido falhou:", feito.erro);
+      return null;
+    }
+    if (feito.quantidade < 1) return null;
+
+    const { data: token, error: erroToken } = await sb.rpc("pedido_token", { p_chave: chave, p_pedido: pedido.id });
+    if (erroToken || typeof token !== "string" || !/^[0-9a-f]{32}$/.test(token)) return null;
+    return { token, quantidade: feito.quantidade };
+  } catch (e) {
+    console.error("busca automática do pedido: erro inesperado:", e instanceof Error ? e.message : e);
+    return null;
+  }
 }

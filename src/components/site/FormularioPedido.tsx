@@ -23,16 +23,32 @@ export function FormularioPedido({ busca = "", siteKey = "" }: { busca?: string;
   const txt = (nome: string, inicial = "") => (v ? (v[nome] ?? "") : inicial);
 
   if (estado.ok) {
+    const quantidade = estado.quantidade ?? 0;
     return (
       <div role="status" className="rounded-[26px] border-[3px] border-tinta bg-sol p-7 shadow-duro">
         <h2 className="font-titulo text-3xl font-extrabold">Pedido enviado!</h2>
-        <p className="mt-3 text-lg leading-relaxed">
-          A Moni vai procurar e, se encontrar uma boa opção, chama você no WhatsApp com o link. Não dá para garantir que todo produto será encontrado,
-          mas todo pedido é lido.
-        </p>
-        <Link href="/ofertas" className="vm-btn vm-pilula mt-5 bg-white text-tinta">
-          Enquanto isso, ver as ofertas
-        </Link>
+        {estado.pagina ? (
+          <>
+            <p className="mt-3 text-lg leading-relaxed">
+              Já separei {quantidade === 1 ? "1 opção" : `${quantidade} opções`} pra você escolher. A Moni também vai ler o seu pedido e pode chamar você no
+              WhatsApp com algo ainda melhor.
+            </p>
+            <Link href={estado.pagina} className="vm-btn vm-pilula mt-5 min-h-14 bg-neon text-lg font-extrabold text-tinta shadow-duro-p">
+              Ver as opções
+            </Link>
+            <p className="mt-3 text-sm">Salve a página nos favoritos: ela é só sua, e quem tiver o link consegue vê-la.</p>
+          </>
+        ) : (
+          <>
+            <p className="mt-3 text-lg leading-relaxed">
+              A Moni vai procurar e, se encontrar uma boa opção, chama você no WhatsApp com o link. Não dá para garantir que todo produto será encontrado,
+              mas todo pedido é lido.
+            </p>
+            <Link href="/ofertas" className="vm-btn vm-pilula mt-5 bg-white text-tinta">
+              Enquanto isso, ver as ofertas
+            </Link>
+          </>
+        )}
       </div>
     );
   }

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { exigirAdmin } from "@/lib/admin";
 import { SITE_URL } from "@/lib/config";
 import { enderecoDoPedido } from "@/lib/pedido-opcoes";
-import { gerarOpcoesDoPedido, MSG_MIGRACAO_OPCOES } from "@/lib/pedido-servidor";
+import { gerarOpcoesDoPedido, MSG_MIGRACAO_AUTO, MSG_MIGRACAO_OPCOES } from "@/lib/pedido-servidor";
 import { EH_UUID } from "@/lib/texto";
 
 const texto = (fd: FormData, campo: string) => {
@@ -44,4 +44,16 @@ export async function marcarOpcoesEnviadas(id: string): Promise<{ erro?: string 
   if (e2) return { erro: `Não foi possível marcar como respondido: ${e2.message}` };
   revalidatePath("/admin", "layout");
   return {};
+}
+
+/** Interruptor "Busca automática ao receber o pedido". */
+export async function definirBuscaAutomatica(fd: FormData) {
+  const sb = await exigirAdmin();
+  const ligar = texto(fd, "ligar") === "sim";
+  const { error } = await sb.rpc("definir_pedidos_auto", { p_ligado: ligar });
+  if (error) {
+    return voltar("erro", error.code === "42883" || error.code === "PGRST202" ? MSG_MIGRACAO_AUTO : `Não foi possível alterar: ${error.message}`);
+  }
+  revalidatePath("/admin/pedidos");
+  return voltar("ok", ligar ? "Busca automática ligada: pedidos novos já recebem as opções na hora." : "Busca automática desligada: os pedidos voltam a depender do botão Buscar opções.");
 }

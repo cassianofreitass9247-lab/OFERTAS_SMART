@@ -2,10 +2,12 @@
 
 import { headers } from "next/headers";
 import { pedidoSchema } from "@/lib/pedido";
+import { opcoesAutomaticasDoPedido } from "@/lib/pedido-servidor";
 import { clientePublico } from "@/lib/supabase/publico";
 import { chaveDePedidos, verificarTurnstile } from "@/lib/turnstile";
 
-export type EstadoPedido = { ok?: boolean; erro?: string; valores?: Record<string, string> };
+/** `pagina` e `quantidade` só vêm quando a busca automática achou opções: o caminho secreto da página do pedido. */
+export type EstadoPedido = { ok?: boolean; erro?: string; valores?: Record<string, string>; pagina?: string; quantidade?: number };
 
 const texto = (fd: FormData, campo: string) => {
   const v = fd.get(campo);
@@ -39,7 +41,7 @@ export async function enviarPedido(_: EstadoPedido, fd: FormData): Promise<Estad
   const sb = clientePublico();
   if (!sb) return comErro(fd, "Os pedidos ainda não estão funcionando. Tente mais tarde.");
 
-  const { error } = await sb.rpc("criar_pedido", {
+  const { data: pedidoId, error } = await sb.rpc("criar_pedido", {
     p_nome: r.data.nome,
     p_whatsapp: r.data.whatsapp,
     p_descricao: r.data.descricao,
@@ -56,6 +58,13 @@ export async function enviarPedido(_: EstadoPedido, fd: FormData): Promise<Estad
     if (error.hint === "limite_geral") return comErro(fd, "Muitos pedidos chegaram agora. Tente de novo daqui a pouco.");
     if (error.code === "22023") return comErro(fd, error.message);
     return comErro(fd, "Não foi possível enviar o pedido agora. Tente de novo em instantes.");
+  }
+
+  // Busca automática (se a administradora ligou no painel): o pedido já está salvo, então qualquer falha aqui só
+  // significa que a Moni responde pelo caminho manual.
+  if (typeof pedidoId === "string") {
+    const auto = await opcoesAutomaticasDoPedido(sb, { id: pedidoId, descricao: r.data.descricao, referencia_url: r.data.referencia });
+    if (auto) return { ok: true, pagina: `/pedido/${auto.token}`, quantidade: auto.quantidade };
   }
   return { ok: true };
 }

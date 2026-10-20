@@ -32,20 +32,52 @@ describe("escolherOpcoes", () => {
     const vendido = oferta({ vendas: 9000, nota: 4.6, precoMin: 70 });
     const avaliado = oferta({ vendas: 300, nota: 4.95, precoMin: 90 });
     const barato = oferta({ vendas: 40, nota: 4.5, precoMin: 25 });
-    const desconto = oferta({ vendas: 20, nota: 4.4, precoMin: 60, desconto: 45 });
+    const desconto = oferta({ vendas: 80, nota: 4.4, precoMin: 60, desconto: 45 });
     const r = escolherOpcoes([parecido, vendido, avaliado, barato, desconto]);
     expect(r.map((x) => x.rotulo)).toEqual(["Mais parecido com o seu pedido", "Mais vendido", "Melhor avaliado", "Mais barato", "Maior desconto"]);
     expect(r.map((x) => x.oferta)).toEqual([parecido, vendido, avaliado, barato, desconto]);
     expect(new Set(r.map((x) => x.oferta.itemId)).size).toBe(5);
   });
 
-  it("o mesmo produto não leva dois rótulos: o critério seguinte pega o próximo melhor", () => {
-    const a = oferta({ vendas: 9000, nota: 4.9, precoMin: 20 });
-    const b = oferta({ vendas: 500, nota: 4.8, precoMin: 30 });
-    const c = oferta({ vendas: 100, nota: 4.6, precoMin: 40 });
-    const r = escolherOpcoes([a, b, c]);
-    expect(r.map((x) => x.oferta)).toEqual([a, b, c]);
-    expect(r[0].rotulo).toBe("Mais parecido com o seu pedido");
+  it("o selo nunca mente: o produto mais barato leva 'Mais barato', mesmo se também for o mais vendido", () => {
+    const parecido = oferta({ vendas: 71, nota: 4.7, precoMin: 33 });
+    const vendidoEBarato = oferta({ vendas: 5668, nota: 4.7, precoMin: 16.97 });
+    const avaliado = oferta({ vendas: 1631, nota: 4.9, precoMin: 46.03 });
+    const outro = oferta({ vendas: 3084, nota: 4.7, precoMin: 20.97 });
+    const r = escolherOpcoes([parecido, vendidoEBarato, avaliado, outro]);
+    const dele = r.find((x) => x.oferta === vendidoEBarato);
+    expect(dele?.rotulo).toBe("Mais vendido e mais barato");
+    // nenhum outro produto se diz "mais barato"
+    expect(r.filter((x) => /mais barato/i.test(x.rotulo))).toHaveLength(1);
+    expect(r.map((x) => x.oferta.itemId)).toEqual([...new Set(r.map((x) => x.oferta.itemId))]);
+    // a vaga que sobrou vira "Outra opção", sem selo falso
+    expect(r.find((x) => x.oferta === outro)?.rotulo).toBe("Outra opção");
+    expect(r).toHaveLength(4);
+  });
+
+  it("produto único com vários selos aparece uma vez, com no máximo dois selos", () => {
+    const a = oferta({ vendas: 9000, nota: 4.9, precoMin: 20, desconto: 40 });
+    const r = escolherOpcoes([a]);
+    expect(r).toHaveLength(1);
+    expect(r[0].oferta).toBe(a);
+    expect(r[0].rotulo).toBe("Mais vendido, melhor avaliado e mais barato");
+    expect(r[0].rotulo.length).toBeLessThanOrEqual(60);
+  });
+
+  it("'maior desconto' exige histórico de vendas; sem isso, o selo não é dado", () => {
+    const normal = oferta({ vendas: 500, desconto: 5 });
+    const promoSemHistorico = oferta({ vendas: 4, desconto: 60 });
+    const r = escolherOpcoes([normal, promoSemHistorico]);
+    expect(r.find((x) => x.rotulo === "Maior desconto")).toBeUndefined();
+    const comHistorico = oferta({ vendas: 300, desconto: 60, precoMin: 90 });
+    expect(escolherOpcoes([normal, comHistorico]).find((x) => x.rotulo === "Maior desconto")?.oferta).toBe(comHistorico);
+  });
+
+  it("'mais barato' ignora anúncio sem histórico de vendas", () => {
+    const normal = oferta({ vendas: 800, precoMin: 100, nota: 4.8 });
+    const baratoSemVenda = oferta({ vendas: 2, precoMin: 5, nota: 4.8 });
+    const r = escolherOpcoes([normal, baratoSemVenda]);
+    expect(r.find((x) => /mais barato/i.test(x.rotulo))?.oferta).toBe(normal);
   });
 
   it("descarta nota baixa, preço ausente, repetidos e anúncios com o mesmo título", () => {
@@ -60,23 +92,24 @@ describe("escolherOpcoes", () => {
 
   it("'mais barato' ignora produto de nota abaixo de 4,3", () => {
     const normal = oferta({ precoMin: 100, nota: 4.8 });
-    const baratoRuim = oferta({ precoMin: 5, nota: 4.1, vendas: 1 });
+    const baratoRuim = oferta({ precoMin: 5, nota: 4.1, vendas: 500 });
     const r = escolherOpcoes([normal, baratoRuim]);
-    expect(r.find((x) => x.rotulo === "Mais barato")).toBeUndefined();
-    expect(r).toHaveLength(2); // completado como "Outra opção" para chegar ao mínimo possível
+    expect(r.find((x) => /mais barato/i.test(x.rotulo))?.oferta).toBe(normal);
+    expect(r).toHaveLength(2);
   });
 
   it("o produto do link vem primeiro e sobrevive mesmo com nota baixa", () => {
     const doLink = oferta({ nota: 3.9 });
     const outro = oferta();
     const r = escolherOpcoes([doLink, outro], { doLink });
-    expect(r[0]).toMatchObject({ rotulo: "O produto do seu link", oferta: doLink });
+    expect(r[0].oferta).toBe(doLink);
+    expect(r[0].rotulo).toMatch(/^O produto do seu link/);
   });
 
   it("respeita o máximo de 5 e devolve vazio sem candidatas", () => {
-    const muitas = () => Array.from({ length: 12 }, (_, i) => oferta({ desconto: i === 11 ? 30 : 5 }));
-    expect(escolherOpcoes(muitas())).toHaveLength(5);
-    expect(escolherOpcoes(muitas(), { max: 3 })).toHaveLength(3);
+    const muitas = () => Array.from({ length: 12 }, (_, i) => oferta({ vendas: 100 + i, desconto: i === 11 ? 30 : 5 }));
+    expect(escolherOpcoes(muitas()).length).toBeLessThanOrEqual(5);
+    expect(escolherOpcoes(muitas(), { max: 3 }).length).toBeLessThanOrEqual(3);
     expect(escolherOpcoes([])).toEqual([]);
   });
 });

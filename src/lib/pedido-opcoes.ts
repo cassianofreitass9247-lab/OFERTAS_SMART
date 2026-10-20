@@ -6,7 +6,6 @@ import { precoDaOferta } from "./shopee";
 import { primeiroNome } from "./pedido";
 
 export const MAX_OPCOES = 5;
-export const MIN_OPCOES = 3;
 
 export type OpcaoPronta = {
   rotulo: string;
@@ -57,15 +56,41 @@ export const termoDoProduto = (nome: string) =>
 // ---------------------------------------------------------------------------
 const NOTA_MINIMA = 4.0;
 const NOTA_PARA_BARATO = 4.3;
+/** "Mais barato" não pode ser anúncio sem histórico; "maior desconto" exige histórico de verdade (desconto de anúncio novo engana). */
+const VENDAS_PARA_BARATO = 20;
+const VENDAS_PARA_DESCONTO = 50;
+const DESCONTO_MINIMO = 20;
+/** Sem critério suficiente, completa com "Outra opção" até este total. */
+const ALVO_OPCOES = 4;
 
 const chaveNome = (nome: string) => nome.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim().slice(0, 40);
+
+const ROTULO_PARECIDO = "Mais parecido com o seu pedido";
+
+/** Um produto com vários selos: "Mais vendido, melhor avaliado e mais barato". "Mais parecido" some quando há selo mais informativo. */
+function juntarRotulos(rotulos: string[]): string {
+  const lista = rotulos.length > 1 ? rotulos.filter((r) => r !== ROTULO_PARECIDO) : rotulos;
+  const usados: string[] = [];
+  for (const r of lista) {
+    const tentativa = [...usados, r];
+    if (usados.length > 0 && (tentativa.length > 3 || montarRotulo(tentativa).length > 60)) break;
+    usados.push(r);
+  }
+  return montarRotulo(usados);
+}
+const minuscula = (t: string) => t.charAt(0).toLowerCase() + t.slice(1);
+function montarRotulo(r: string[]): string {
+  if (r.length === 1) return r[0];
+  return `${[r[0], ...r.slice(1, -1).map(minuscula)].join(", ")} e ${minuscula(r[r.length - 1])}`;
+}
 
 type Escolhida = { oferta: Oferta; rotulo: string };
 
 /**
  * `candidatas` vem na ordem de relevância da busca; a primeira, se `doLink`, é o produto que a cliente mandou.
- * Cada critério leva o melhor que ainda não foi escolhido, então o mesmo produto nunca aparece duas vezes e as
- * opções variam (parecida com o pedido, mais vendida, mais bem avaliada, mais barata, maior desconto).
+ * Cada selo é calculado sobre TODOS os candidatos válidos, então ele nunca mente: "Mais barato" é o mais barato mesmo.
+ * Quando o mesmo produto vence dois critérios, aparece uma vez só com os dois selos ("Mais vendido e mais barato");
+ * as vagas que sobram não são preenchidas com "o segundo mais barato" (que teria selo falso), e sim com "Outra opção".
  */
 export function escolherOpcoes(candidatas: Oferta[], opcoes: { max?: number; doLink?: Oferta | null } = {}): Escolhida[] {
   const max = Math.min(opcoes.max ?? MAX_OPCOES, MAX_OPCOES);
@@ -83,14 +108,6 @@ export function escolherOpcoes(candidatas: Oferta[], opcoes: { max?: number; doL
     validas.push(o);
   }
 
-  const escolhidas: Escolhida[] = [];
-  const usadas = new Set<string>();
-  const levar = (o: Oferta | undefined, rotulo: string) => {
-    if (!o || usadas.has(o.itemId) || escolhidas.length >= max) return;
-    usadas.add(o.itemId);
-    escolhidas.push({ oferta: o, rotulo });
-  };
-  const livres = () => validas.filter((o) => !usadas.has(o.itemId));
   const melhor = (lista: Oferta[], valor: (o: Oferta) => number | null, maior = true) => {
     let achado: Oferta | undefined;
     let v: number | null = null;
@@ -105,29 +122,55 @@ export function escolherOpcoes(candidatas: Oferta[], opcoes: { max?: number; doL
     return achado;
   };
 
-  if (opcoes.doLink && validas.includes(opcoes.doLink)) levar(opcoes.doLink, "O produto do seu link");
-  levar(livres()[0], "Mais parecido com o seu pedido");
-  levar(melhor(livres(), (o) => (o.vendas && o.vendas > 0 ? o.vendas : null)), "Mais vendido");
-  levar(
-    melhor(
-      livres().filter((o) => (o.vendas ?? 0) >= 10),
-      (o) => (o.nota === null ? null : o.nota * 1000 + Math.min(o.vendas ?? 0, 999)),
-    ),
-    "Melhor avaliado",
-  );
-  levar(
-    melhor(
-      livres().filter((o) => o.nota === null || o.nota >= NOTA_PARA_BARATO),
-      (o) => precoDaOferta(o),
-      false,
-    ),
-    "Mais barato",
-  );
-  levar(melhor(livres(), (o) => (o.desconto && o.desconto >= 20 ? o.desconto : null)), "Maior desconto");
-  // Poucas variações: completa com os próximos da busca até o mínimo.
-  for (const o of livres()) {
-    if (escolhidas.length >= Math.min(MIN_OPCOES, max)) break;
-    levar(o, "Outra opção");
+  // Vencedor de cada selo, na ordem em que aparecem.
+  const vencedores: { oferta: Oferta | undefined; rotulo: string }[] = [
+    { oferta: opcoes.doLink && validas.includes(opcoes.doLink) ? opcoes.doLink : undefined, rotulo: "O produto do seu link" },
+    { oferta: validas.find((o) => o !== opcoes.doLink), rotulo: ROTULO_PARECIDO },
+    { oferta: melhor(validas, (o) => (o.vendas && o.vendas > 0 ? o.vendas : null)), rotulo: "Mais vendido" },
+    {
+      oferta: melhor(
+        validas.filter((o) => (o.vendas ?? 0) >= 10),
+        // Nota primeiro (em décimos); só no empate de nota vale quem vendeu mais.
+        (o) => (o.nota === null ? null : Math.round(o.nota * 10) * 1e7 + Math.min(o.vendas ?? 0, 9_999_999)),
+      ),
+      rotulo: "Melhor avaliado",
+    },
+    {
+      oferta: melhor(
+        validas.filter((o) => (o.nota === null || o.nota >= NOTA_PARA_BARATO) && (o.vendas === null || o.vendas >= VENDAS_PARA_BARATO)),
+        (o) => precoDaOferta(o),
+        false,
+      ),
+      rotulo: "Mais barato",
+    },
+    {
+      oferta: melhor(
+        validas.filter((o) => (o.vendas ?? 0) >= VENDAS_PARA_DESCONTO),
+        (o) => (o.desconto && o.desconto >= DESCONTO_MINIMO ? o.desconto : null),
+      ),
+      rotulo: "Maior desconto",
+    },
+  ];
+
+  const porProduto = new Map<string, { oferta: Oferta; rotulos: string[] }>();
+  for (const { oferta, rotulo } of vencedores) {
+    if (!oferta) continue;
+    const atual = porProduto.get(oferta.itemId);
+    if (atual) atual.rotulos.push(rotulo);
+    else porProduto.set(oferta.itemId, { oferta, rotulos: [rotulo] });
+  }
+  const escolhidas: Escolhida[] = [...porProduto.values()].slice(0, max).map(({ oferta, rotulos }) => ({ oferta, rotulo: juntarRotulos(rotulos) }));
+
+  // Poucos vencedores distintos: completa com os próximos da busca (preferindo os que têm histórico de vendas).
+  const usados = new Set(escolhidas.map((e) => e.oferta.itemId));
+  const alvo = Math.min(ALVO_OPCOES, max);
+  for (const exigeVendas of [true, false]) {
+    for (const o of validas) {
+      if (escolhidas.length >= alvo) break;
+      if (usados.has(o.itemId) || (exigeVendas && (o.vendas ?? 0) < VENDAS_PARA_BARATO)) continue;
+      usados.add(o.itemId);
+      escolhidas.push({ oferta: o, rotulo: "Outra opção" });
+    }
   }
   return escolhidas;
 }

@@ -10,6 +10,7 @@ import { termoDeBusca } from "@/lib/pedido-opcoes";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { formatarDataHora } from "@/lib/texto";
 import { alterarStatusPedido, excluirPedido } from "../../acoes";
+import { definirBuscaAutomatica } from "../../pedido-opcoes-acoes";
 
 export const metadata: Metadata = { title: "Pedidos" };
 
@@ -26,12 +27,16 @@ export default async function PaginaPedidos({ searchParams }: { searchParams: Pr
   const caminho = `/admin/pedidos?status=${status}`;
 
   const sb = await clienteServidor();
-  const [pedidos, produtos] = await Promise.all([
+  const [pedidos, produtos, auto] = await Promise.all([
     sb.from("pedidos").select("*").eq("status", status).order("criado_em", { ascending: status === "novo" }).limit(200),
     status === "novo"
       ? sb.from("produtos").select("id, nome, link_afiliado").eq("ficticio", false).neq("status_publicacao", "despublicado").order("nome").limit(1000)
       : Promise.resolve({ data: [] as { id: string; nome: string; link_afiliado: string }[] }),
+    sb.rpc("pedidos_auto_ligado"),
   ]);
+  // Sem a migração 0012 a função não existe: o painel avisa em vez de quebrar.
+  const autoIndisponivel = Boolean(auto.error);
+  const autoLigada = auto.data === true;
   const semTabela = pedidos.error && /pedidos/.test(pedidos.error.message);
   const lista = pedidos.data ?? [];
   // Opções automáticas de cada pedido (vazio se a migração 0011 ainda não foi aplicada).
@@ -49,6 +54,27 @@ export default async function PaginaPedidos({ searchParams }: { searchParams: Pr
         por ela, no próprio aparelho. Os pedidos são apagados automaticamente 90 dias depois de criados.
       </p>
       <Aviso parametros={parametros} />
+
+      <section aria-labelledby="busca-auto" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-linha bg-white p-4">
+        <div className="min-w-0 max-w-[70ch]">
+          <h2 id="busca-auto" className="font-semibold">
+            Busca automática ao receber o pedido: {autoIndisponivel ? "indisponível" : autoLigada ? "ligada" : "desligada"}
+          </h2>
+          <p className="mt-1 text-sm text-cinza">
+            {autoIndisponivel
+              ? "Aplique a migração 0012_pedidos_busca_automatica.sql no Supabase para usar este recurso."
+              : "Ligada: assim que a pessoa envia o pedido, o site procura na Shopee e mostra na confirmação a página com 3 a 5 opções (até 30 buscas por hora). Você continua vendo todos os pedidos aqui e pode responder pelo WhatsApp. Se a Shopee falhar, o pedido chega normal."}
+          </p>
+        </div>
+        {!autoIndisponivel && (
+          <form action={definirBuscaAutomatica}>
+            <input type="hidden" name="ligar" value={autoLigada ? "nao" : "sim"} />
+            <button type="submit" className={autoLigada ? "botao-secundario" : "botao"}>
+              {autoLigada ? "Desligar" : "Ligar"}
+            </button>
+          </form>
+        )}
+      </section>
 
       <nav aria-label="Situação" className="mb-4 flex gap-2">
         {ABAS.map((a) => (

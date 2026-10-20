@@ -258,6 +258,10 @@ export type Database = {
       pedido_gravar_opcoes: { Args: { p_chave: string; p_pedido: string; p_termo: string | null; p_resultado: string | null; p_opcoes: Json }; Returns: number };
       pedido_publico: { Args: { p_token: string }; Returns: Json };
       registrar_clique_opcao: { Args: { p_opcao: string }; Returns: string | null };
+      definir_pedidos_auto: { Args: { p_ligado: boolean }; Returns: boolean };
+      pedidos_auto_ligado: { Args: Record<PropertyKey, never>; Returns: boolean };
+      pedidos_auto_disponivel: { Args: Record<PropertyKey, never>; Returns: boolean };
+      pedido_token: { Args: { p_chave: string; p_pedido: string }; Returns: string | null };
       sincronizar_chave_servidor: { Args: { p_hash: string | null }; Returns: boolean };
       sincronizar_chave_automacao: { Args: { p_hash: string | null }; Returns: boolean };
       automacao_criados_hoje: { Args: Record<PropertyKey, never>; Returns: number };
