@@ -8,6 +8,7 @@ import {
   consultarShopee,
   ErroShopee,
   extrairIds,
+  gerarLinkCurto,
   interpretarEntrada,
   normalizarOferta,
   precoDaOferta,
@@ -203,5 +204,37 @@ describe("link curto (SSRF)", () => {
       throw new Error("x");
     });
     expect("erro" in (await resolverLinkCurto("https://shope.ee/x", rede))).toBe(true);
+  });
+});
+
+describe("gerarLinkCurto (generateShortLink)", () => {
+  it("envia a mutação com os subIds limpos e devolve o link curto", async () => {
+    const buscar = resposta({ data: { generateShortLink: { shortLink: "https://s.shopee.com.br/XYZ123" } } });
+    const link = await gerarLinkCurto("https://shopee.com.br/product/123/456", ["pedido", "p1a2b-3c", "o1", "a", "b", "c", "d"], { env: ENV, buscar, agora: AGORA });
+    expect(link).toBe("https://s.shopee.com.br/XYZ123");
+    const corpo = JSON.parse((buscar.mock.calls[0] as unknown as [string, RequestInit])[1].body as string).query as string;
+    expect(corpo).toContain("mutation { generateShortLink(input: { originUrl: \"https://shopee.com.br/product/123/456\"");
+    expect(corpo).toContain('subIds: ["pedido", "p1a2b3c", "o1", "a", "b"]'); // hífen removido e no máximo 5
+  });
+
+  it("recusa endereço fora da Shopee sem chamar a API", async () => {
+    const buscar = resposta({});
+    await expect(gerarLinkCurto("https://evil.com/product/1/2", [], { env: ENV, buscar })).rejects.toThrow(/Shopee Brasil/);
+    await expect(gerarLinkCurto("http://shopee.com.br/product/1/2", [], { env: ENV, buscar })).rejects.toThrow(/Shopee Brasil/);
+    await expect(gerarLinkCurto("nao e url", [], { env: ENV, buscar })).rejects.toThrow(/inválido/);
+    expect(buscar).not.toHaveBeenCalled();
+  });
+
+  it("recusa resposta sem link ou com link de outro domínio", async () => {
+    await expect(gerarLinkCurto("https://shopee.com.br/product/1/2", [], { env: ENV, buscar: resposta({ data: { generateShortLink: {} } }) })).rejects.toThrow(/link de afiliado válido/);
+    await expect(
+      gerarLinkCurto("https://shopee.com.br/product/1/2", [], { env: ENV, buscar: resposta({ data: { generateShortLink: { shortLink: "https://evil.com/x" } } }) }),
+    ).rejects.toThrow(/link de afiliado válido/);
+  });
+
+  it("propaga o erro da Shopee", async () => {
+    await expect(
+      gerarLinkCurto("https://shopee.com.br/product/1/2", [], { env: ENV, buscar: resposta({ errors: [{ extensions: { code: 10030 } }] }) }),
+    ).rejects.toThrow(/Limite de consultas/);
   });
 });

@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Aviso } from "@/components/admin/Aviso";
+import { OpcoesPedido } from "@/components/admin/OpcoesPedido";
 import { ResponderPedido } from "@/components/admin/ResponderPedido";
-import type { StatusPedido } from "@/lib/database.types";
+import { SITE_URL } from "@/lib/config";
+import type { PedidoOpcao, StatusPedido } from "@/lib/database.types";
 import { formatarWhatsapp } from "@/lib/pedido";
+import { termoDeBusca } from "@/lib/pedido-opcoes";
 import { clienteServidor } from "@/lib/supabase/servidor";
 import { formatarDataHora } from "@/lib/texto";
 import { alterarStatusPedido, excluirPedido } from "../../acoes";
@@ -31,6 +34,12 @@ export default async function PaginaPedidos({ searchParams }: { searchParams: Pr
   ]);
   const semTabela = pedidos.error && /pedidos/.test(pedidos.error.message);
   const lista = pedidos.data ?? [];
+  // Opções automáticas de cada pedido (vazio se a migração 0011 ainda não foi aplicada).
+  const opcoesDe = new Map<string, PedidoOpcao[]>();
+  if (lista.length > 0) {
+    const { data } = await sb.from("pedido_opcoes").select("*").in("pedido_id", lista.map((p) => p.id)).order("posicao");
+    for (const o of data ?? []) opcoesDe.set(o.pedido_id, [...(opcoesDe.get(o.pedido_id) ?? []), o]);
+  }
 
   return (
     <>
@@ -102,6 +111,17 @@ export default async function PaginaPedidos({ searchParams }: { searchParams: Pr
               )}
               {p.link_enviado && <p className="mt-1 text-sm break-all text-cinza">Link enviado: {p.link_enviado}</p>}
 
+              {status === "novo" && p.token && (
+                <OpcoesPedido
+                  pedido={{ id: p.id, nome: p.nome, whatsapp: p.whatsapp, descricao: p.descricao, token: p.token, busca_resultado: p.busca_resultado ?? null, buscado_em: p.buscado_em ?? null }}
+                  opcoes={opcoesDe.get(p.id) ?? []}
+                  termo={p.busca_termo ?? termoDeBusca(p.descricao)}
+                  siteUrl={SITE_URL}
+                />
+              )}
+              {status === "novo" && !p.token && (
+                <p className="mt-3 text-sm text-cinza">Opções automáticas: aplique a migração <code>0011_pedido_opcoes.sql</code> no Supabase.</p>
+              )}
               {status === "novo" && <ResponderPedido pedido={p} produtos={produtos.data ?? []} />}
             </li>
           ))}

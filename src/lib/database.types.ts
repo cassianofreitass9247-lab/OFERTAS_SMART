@@ -104,6 +104,28 @@ export type Pedido = {
   respondido_em: string | null;
   /** Ausente antes da migração 0004. */
   consentimento_em?: string | null;
+  /** Código secreto da página pública do pedido. Ausente antes da migração 0011. */
+  token?: string;
+  busca_termo?: string | null;
+  buscado_em?: string | null;
+  busca_resultado?: string | null;
+  criado_em: string;
+};
+
+export type PedidoOpcao = {
+  id: string;
+  pedido_id: string;
+  posicao: number;
+  rotulo: string;
+  nome: string;
+  imagem_url: string | null;
+  preco: number | null;
+  nota: number | null;
+  vendas: number | null;
+  loja: string | null;
+  link_afiliado: string;
+  id_externo: string | null;
+  cliques: number;
   criado_em: string;
 };
 
@@ -207,6 +229,7 @@ export type Database = {
         Relationships: [];
       };
       cupons: { Row: Cupom; Insert: CupomGravavel; Update: Partial<CupomGravavel>; Relationships: [] };
+      pedido_opcoes: SomenteLeitura<PedidoOpcao>;
       pedidos: {
         Row: Pedido;
         Insert: never;
@@ -232,6 +255,9 @@ export type Database = {
         Returns: string;
       };
       registrar_uso_cupom: { Args: { p_cupom: string }; Returns: string | null };
+      pedido_gravar_opcoes: { Args: { p_chave: string; p_pedido: string; p_termo: string | null; p_resultado: string | null; p_opcoes: Json }; Returns: number };
+      pedido_publico: { Args: { p_token: string }; Returns: Json };
+      registrar_clique_opcao: { Args: { p_opcao: string }; Returns: string | null };
       sincronizar_chave_servidor: { Args: { p_hash: string | null }; Returns: boolean };
       sincronizar_chave_automacao: { Args: { p_hash: string | null }; Returns: boolean };
       automacao_criados_hoje: { Args: Record<PropertyKey, never>; Returns: number };

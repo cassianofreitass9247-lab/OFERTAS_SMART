@@ -116,6 +116,12 @@ Nas horas em que a importação não roda, o agendamento de hora em hora confere
 
 Os cupons exclusivos do programa de afiliados (aba "Vouchers" do portal) são cadastrados à mão em **painel > Cupons**, porque a API de afiliados da Shopee não os expõe. Cada cupom tem título, código para copiar e/ou link de resgate, tipo (percentual, valor, frete grátis), compra mínima, categoria opcional e a data final da validade (vale até 23:59 de Brasília). O banco só entrega ao público o cupom ativo e dentro da validade, então o vencido some sozinho, sem rotina agendada. Aparecem em `/cupons`, nos 3 primeiros da página inicial, no selo "Cupom disponível" dos produtos da categoria do cupom e na página do produto. "Usos" soma os cliques no link (`/cupom/<id>`) e as cópias do código, sem dados pessoais. Requer a migração `0010_cupons.sql`.
 
+## Opções automáticas nos pedidos ("Pede pra Moni")
+
+Em **painel > Pedidos**, cada pedido novo tem o botão **Buscar opções**. O servidor procura na Shopee (por relevância e por mais vendidos), escolhe de 3 a 5 produtos variados (o mais parecido com o pedido, o mais vendido, o mais bem avaliado, o mais barato e o de maior desconto; produto de nota abaixo de 4,0 e anúncio repetido ficam de fora) e gera o link de afiliado de cada um com `generateShortLink`, usando como `subIds` só o código do pedido e a posição da opção (nenhum dado pessoal), para o relatório de conversões mostrar a comissão por pedido. Se o pedido trouxe um link da Shopee como exemplo, esse produto entra primeiro e a busca parte do nome dele. O termo da busca vem do texto do pedido e pode ser ajustado antes de buscar.
+
+A cliente recebe uma única página, `/pedido/<código secreto>` (122 bits aleatórios, sem indexação e sem cache), com as opções; o clique passa por `/pedido/ir/<id>`, que conta e leva ao link de afiliado. A página mostra só o primeiro nome e o pedido, nunca o WhatsApp. O botão **Enviar pelo WhatsApp e marcar como respondido** abre o WhatsApp da Moni com a mensagem pronta (o envio é feito por ela, no aparelho). As opções são gravadas por `pedido_gravar_opcoes`, protegida pela chave da automação (a aplicação continua sem usar a chave service_role), e apagam junto com o pedido, em até 90 dias. Requer a migração `0011_pedido_opcoes.sql` e as variáveis `SHOPEE_APP_ID` e `SHOPEE_SECRET`.
+
 ## Importação por CSV
 
 No painel, em **Importar CSV**, há a planilha modelo e a explicação de cada coluna. Resumo:

@@ -1,4 +1,4 @@
-import { DOMINIOS_AFILIADO } from "./produto";
+import { DOMINIOS_AFILIADO, linkAfiliadoValido } from "./produto";
 
 /**
  * Adaptador da Shopee Affiliate Open API (GraphQL).
@@ -265,6 +265,35 @@ export async function buscarVariasPaginas(
     }
   }
   return { ofertas, proximaPagina: proxima };
+}
+
+// ---------------------------------------------------------------------------
+// Link de afiliado com identificadores (generateShortLink)
+// ---------------------------------------------------------------------------
+/** A Shopee aceita até 5 subIds; ficam no link e voltam no relatório de conversões (atribuição de comissão). */
+export const MAX_SUBIDS = 5;
+
+/**
+ * Gera o link curto de afiliado de uma página da Shopee, com subIds (só letras e números, até 5).
+ * Só aceita endereço https de shopee.com.br ou shope.ee; o link devolvido também é conferido.
+ */
+export async function gerarLinkCurto(originUrl: string, subIds: string[] = [], opcoes: Opcoes = {}): Promise<string> {
+  let origem: URL;
+  try {
+    origem = new URL(originUrl);
+  } catch {
+    throw new ErroShopee(null, "Endereço de produto inválido.");
+  }
+  if (!doDominioShopee(origem)) throw new ErroShopee(null, "Só é possível gerar link para páginas da Shopee Brasil.");
+  const ids = subIds.map((s) => s.replace(/[^A-Za-z0-9]/g, "").slice(0, 40)).filter(Boolean).slice(0, MAX_SUBIDS);
+  const lista = ids.length ? `, subIds: [${ids.map((s) => JSON.stringify(s)).join(", ")}]` : "";
+  const dados = await consultarShopee(
+    `mutation { generateShortLink(input: { originUrl: ${JSON.stringify(origem.toString())}${lista} }) { shortLink } }`,
+    opcoes,
+  );
+  const link = (dados.generateShortLink as { shortLink?: unknown } | null | undefined)?.shortLink;
+  if (typeof link !== "string" || !linkAfiliadoValido(link)) throw new ErroShopee(null, "A Shopee não devolveu um link de afiliado válido.");
+  return link;
 }
 
 // ---------------------------------------------------------------------------

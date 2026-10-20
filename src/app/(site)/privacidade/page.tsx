@@ -34,8 +34,10 @@ export default function PaginaPrivacidade() {
             <li>
               <strong>Pedidos de produto (“Pede pra Moni”):</strong> se você fizer um pedido, guardamos seu nome, seu WhatsApp, a descrição do produto e o
               link de exemplo, se você mandar. Servem só para a Moni procurar o produto e responder você no WhatsApp, inclusive com link de afiliado da
-              Shopee. A base é o seu consentimento, dado na caixa de autorização do formulário. Só a administração do site vê esses dados, que não são
-              vendidos nem repassados, e são apagados automaticamente em até 90 dias. Você pode pedir a exclusão antes disso pelo canal de contato.
+              Shopee. A base é o seu consentimento, dado na caixa de autorização do formulário. Para responder, o site pode separar opções de produto e
+              abrir uma página só sua, com um endereço secreto, que mostra seu primeiro nome, o que você pediu e as opções; os links de afiliado dessas opções
+              levam um código do pedido, sem seu nome nem seu WhatsApp, para a Moni saber de qual pedido veio uma compra. Só a administração do site vê o
+              nome completo e o WhatsApp, que não são vendidos nem repassados, e tudo é apagado automaticamente em até 90 dias. Você pode pedir a exclusão antes disso pelo canal de contato.
             </li>
             <li>
               <strong>Produtos salvos (coração):</strong> a lista fica guardada só no seu navegador. Ela não é enviada para o site e some se você limpar os
