@@ -16,19 +16,23 @@ import {
 import { BotaoSalvar } from "@/components/site/Salvos";
 import { VitrineCategorias } from "@/components/site/VitrineCategorias";
 import { INSTAGRAM_URL, TELEGRAM_URL, WHATSAPP_URL } from "@/lib/config";
-import { listarCategorias, listarProdutos } from "@/lib/dados";
+import { CartaoCupom } from "@/components/site/CartaoCupom";
+import { categoriasComCupom, listarCategorias, listarCuponsOuNada, listarProdutos } from "@/lib/dados";
 import { formatarDataHora, formatarPreco } from "@/lib/texto";
 
 // Dados ao vivo: a página é montada a cada acesso (não é gerada no build).
 export const dynamic = "force-dynamic";
 
 export default async function PaginaInicial() {
-  const [categorias, destaques, promocoes, recentes] = await Promise.all([
+  const [categorias, destaques, promocoes, recentes, cupons] = await Promise.all([
     listarCategorias(),
     listarProdutos({ soDestaques: true, limite: 8 }),
     listarProdutos({ soPromocoes: true, ordenar: "maior-desconto", limite: 5 }),
     listarProdutos({ limite: 24 }),
+    listarCuponsOuNada(),
   ]);
+  const cuponsNaHome = cupons.slice(0, 3);
+  const comCupom = categoriasComCupom(cupons);
   const nomes = new Map(categorias.map((c) => [c.id, c.nome]));
   const [principal, ...quedas] = promocoes.itens;
   const faixa = ["Preço caiu hoje", ...categorias.map((c) => c.nome), "Achadinhos até R$ 50"];
@@ -111,6 +115,28 @@ export default async function PaginaInicial() {
         </div>
       </div>
 
+      {/* Cupons vigentes (os 3 primeiros; o resto fica em /cupons) */}
+      {cuponsNaHome.length > 0 && (
+        <section id="cupons" className="mx-auto max-w-7xl scroll-mt-48 px-4 pt-16 pb-4 sm:px-8 lg:pt-24">
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
+            <div>
+              <h2 className="vm-titulo">Cupons do dia</h2>
+              <p className="mt-3 max-w-[52ch] text-lg text-cinza">Copie, cole no pagamento e economize. Cada um mostra até quando vale.</p>
+            </div>
+            {cupons.length > cuponsNaHome.length && (
+              <Link href="/cupons" className="text-[17px] font-bold underline decoration-neon decoration-[3px] underline-offset-4">
+                Ver todos os cupons
+              </Link>
+            )}
+          </div>
+          <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {cuponsNaHome.map((c) => (
+              <CartaoCupom key={c.id} cupom={c} categoria={c.categoria_id ? nomes.get(c.categoria_id) : undefined} compacto />
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Em destaque (produtos marcados no painel) */}
       {destaques.itens.length > 0 && (
         <section id="destaques" className="mx-auto max-w-7xl scroll-mt-48 px-4 pt-16 pb-4 sm:px-8 lg:pt-24">
@@ -130,7 +156,7 @@ export default async function PaginaInicial() {
           </div>
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
             {destaques.itens.map((p) => (
-              <CartaoProduto key={p.id} produto={p} categoria={p.categoria_id ? nomes.get(p.categoria_id) : undefined} />
+              <CartaoProduto key={p.id} produto={p} categoria={p.categoria_id ? nomes.get(p.categoria_id) : undefined} comCupom={!!p.categoria_id && comCupom.has(p.categoria_id)} />
             ))}
           </ul>
         </section>
@@ -194,7 +220,7 @@ export default async function PaginaInicial() {
             {quedas.length > 0 && (
               <ul className="grid min-w-0 flex-[1_1_480px] grid-cols-2 content-start gap-3 sm:gap-5">
                 {quedas.map((p) => (
-                  <CartaoProduto key={p.id} produto={p} categoria={p.categoria_id ? nomes.get(p.categoria_id) : undefined} />
+                  <CartaoProduto key={p.id} produto={p} categoria={p.categoria_id ? nomes.get(p.categoria_id) : undefined} comCupom={!!p.categoria_id && comCupom.has(p.categoria_id)} />
                 ))}
               </ul>
             )}

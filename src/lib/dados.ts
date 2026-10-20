@@ -1,6 +1,6 @@
 // Leituras públicas do site (visitante anônimo). As políticas do banco garantem
 // que só produtos publicados e categorias ativas saiam daqui.
-import type { Categoria, HistoricoPreco, Produto } from "./database.types";
+import type { Categoria, Cupom, HistoricoPreco, Produto } from "./database.types";
 import { clientePublico } from "./supabase/publico";
 import { escaparBusca } from "./texto";
 
@@ -44,6 +44,33 @@ export async function listarCategorias(): Promise<Categoria[]> {
   if (error) falha("as categorias", error.message);
   return data;
 }
+
+/** Cupons vigentes (o banco já esconde os desativados e os fora da validade). Destaques primeiro, depois os que vencem antes. */
+export async function listarCupons(limite = 60): Promise<Cupom[]> {
+  const sb = clientePublico();
+  if (!sb) return [];
+  const { data, error } = await sb
+    .from("cupons")
+    .select("*")
+    .order("destaque", { ascending: false })
+    .order("valido_ate", { ascending: true })
+    .limit(limite);
+  if (error) falha("os cupons", error.message);
+  return data;
+}
+
+/** Igual a listarCupons, mas devolve lista vazia se o banco falhar: cupom é um extra e não pode derrubar a página que o mostra. */
+export async function listarCuponsOuNada(limite = 60): Promise<Cupom[]> {
+  try {
+    return await listarCupons(limite);
+  } catch {
+    return [];
+  }
+}
+
+/** Categorias que têm cupom específico vigente (cupom geral, sem categoria, não entra: marcaria tudo). */
+export const categoriasComCupom = (cupons: Pick<Cupom, "categoria_id">[]): Set<string> =>
+  new Set(cupons.map((c) => c.categoria_id).filter((id): id is string => !!id));
 
 export async function listarProdutos(f: Filtros = {}): Promise<{ itens: ProdutoCartao[]; total: number }> {
   const sb = clientePublico();

@@ -112,6 +112,10 @@ Nas horas em que a importação não roda, o agendamento de hora em hora confere
 - `worker.ts` é a entrada do Worker (site + agendamento); `main` em `wrangler.jsonc` aponta para ele.
 - "Maior desconto" vale entre os mais vendidos que a Shopee devolve (a API não ordena por desconto).
 
+## Cupons
+
+Os cupons exclusivos do programa de afiliados (aba "Vouchers" do portal) são cadastrados à mão em **painel > Cupons**, porque a API de afiliados da Shopee não os expõe. Cada cupom tem título, código para copiar e/ou link de resgate, tipo (percentual, valor, frete grátis), compra mínima, categoria opcional e a data final da validade (vale até 23:59 de Brasília). O banco só entrega ao público o cupom ativo e dentro da validade, então o vencido some sozinho, sem rotina agendada. Aparecem em `/cupons`, nos 3 primeiros da página inicial, no selo "Cupom disponível" dos produtos da categoria do cupom e na página do produto. "Usos" soma os cliques no link (`/cupom/<id>`) e as cópias do código, sem dados pessoais. Requer a migração `0010_cupons.sql`.
+
 ## Importação por CSV
 
 No painel, em **Importar CSV**, há a planilha modelo e a explicação de cada coluna. Resumo:

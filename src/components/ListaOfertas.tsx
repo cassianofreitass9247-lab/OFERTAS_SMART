@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listarCategorias, listarProdutos, ORDENACOES, POR_PAGINA, type Filtros, type Ordenacao } from "@/lib/dados";
+import { categoriasComCupom, listarCategorias, listarCuponsOuNada, listarProdutos, ORDENACOES, POR_PAGINA, type Filtros, type Ordenacao } from "@/lib/dados";
 import { formatarPreco } from "@/lib/texto";
 import { GradeProdutos } from "./CartaoProduto";
 
@@ -20,9 +20,10 @@ export async function ListaOfertas({ caminho, parametros, fixos, vazio }: Props)
   const pagina = Math.min(500, Math.max(1, Number.parseInt(um(parametros.pagina), 10) || 1));
   const ate = Math.min(100000, Math.max(0, Number.parseInt(um(parametros.ate), 10) || 0));
 
-  const [{ itens, total }, categorias] = await Promise.all([
+  const [{ itens, total }, categorias, cupons] = await Promise.all([
     listarProdutos({ ...fixos, busca, ordenar, pagina, precoMax: ate || undefined }),
     listarCategorias(),
+    listarCuponsOuNada(),
   ]);
   const nomes = new Map(categorias.map((c) => [c.id, c.nome]));
   const paginas = Math.max(1, Math.ceil(total / POR_PAGINA));
@@ -85,7 +86,7 @@ export async function ListaOfertas({ caminho, parametros, fixos, vazio }: Props)
           </div>
         </div>
       ) : (
-        <GradeProdutos produtos={itens} nomesCategorias={nomes} />
+        <GradeProdutos produtos={itens} nomesCategorias={nomes} comCupom={categoriasComCupom(cupons)} />
       )}
 
       {paginas > 1 && (

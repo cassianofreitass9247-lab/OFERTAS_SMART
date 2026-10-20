@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { lerCupom } from "@/lib/cupom";
 import { decodificarArquivo } from "@/lib/csv";
 import type { Disponibilidade, Json, StatusPublicacao } from "@/lib/database.types";
 import { linkAfiliadoValido, primeiroErro, produtoSchema, validarCsv, type ErroLinha } from "@/lib/produto";
@@ -305,4 +306,47 @@ export async function excluirPedido(fd: FormData) {
   if (error) voltar(volta, "erro", `Não foi possível excluir: ${error.message}`);
   revalidatePath("/admin", "layout");
   voltar(volta, "ok", "Pedido excluído, com os dados da pessoa.");
+}
+
+// ---------------------------------------------------------------------------
+// Cupons
+// ---------------------------------------------------------------------------
+export async function salvarCupom(_: Estado, fd: FormData): Promise<Estado> {
+  const sb = await exigirAdmin();
+  const id = texto(fd, "id");
+  if (id && !EH_UUID.test(id)) return comErro(fd, "Cupom inválido.");
+
+  const campos: Record<string, string> = {};
+  for (const [campo, valor] of fd) if (typeof valor === "string") campos[campo] = valor;
+  const r = lerCupom(campos, { exigirFuturo: !id });
+  if ("erro" in r) return comErro(fd, r.erro);
+
+  const { error } = id ? await sb.from("cupons").update(r.dados).eq("id", id) : await sb.from("cupons").insert(r.dados);
+  if (error) {
+    if (error.message.includes("cupons")) return comErro(fd, "Para usar cupons, aplique antes a migração 0010 no Supabase (veja o README).");
+    return comErro(fd, `Não foi possível salvar: ${error.message}`);
+  }
+  atualizarSite();
+  redirect(`/admin/cupons?ok=${encodeURIComponent(id ? "Cupom salvo." : "Cupom cadastrado.")}`);
+}
+
+export async function alternarCupom(fd: FormData) {
+  const sb = await exigirAdmin();
+  const id = texto(fd, "id");
+  if (!EH_UUID.test(id)) voltar("/admin/cupons", "erro", "Pedido inválido.");
+  const ativo = texto(fd, "ativo") === "true";
+  const { error } = await sb.from("cupons").update({ ativo }).eq("id", id);
+  if (error) voltar("/admin/cupons", "erro", `Não foi possível alterar: ${error.message}`);
+  atualizarSite();
+  voltar("/admin/cupons", "ok", ativo ? "Cupom reativado." : "Cupom ocultado do site.");
+}
+
+export async function excluirCupom(fd: FormData) {
+  const sb = await exigirAdmin();
+  const id = texto(fd, "id");
+  if (!EH_UUID.test(id)) voltar("/admin/cupons", "erro", "Pedido inválido.");
+  const { error } = await sb.from("cupons").delete().eq("id", id);
+  if (error) voltar("/admin/cupons", "erro", `Não foi possível excluir: ${error.message}`);
+  atualizarSite();
+  voltar("/admin/cupons", "ok", "Cupom excluído.");
 }

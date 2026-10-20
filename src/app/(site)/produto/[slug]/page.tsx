@@ -7,7 +7,8 @@ import { IconeSaida } from "@/components/site/Icones";
 import { GaleriaProduto } from "@/components/site/GaleriaProduto";
 import { BotaoSalvar } from "@/components/site/Salvos";
 import { VideoProduto } from "@/components/site/VideoProduto";
-import { historicoDePrecos, listarCategorias, obterProduto } from "@/lib/dados";
+import { CartaoCupom } from "@/components/site/CartaoCupom";
+import { historicoDePrecos, listarCategorias, listarCuponsOuNada, obterProduto } from "@/lib/dados";
 import { formatarData, formatarDataHora, formatarPreco } from "@/lib/texto";
 import { analisarVideo } from "@/lib/video";
 
@@ -32,7 +33,9 @@ export default async function PaginaProduto({ params }: Props) {
   const produto = await obterProduto((await params).slug);
   if (!produto) notFound();
 
-  const [historico, categorias] = await Promise.all([historicoDePrecos(produto.id), listarCategorias()]);
+  const [historico, categorias, todosCupons] = await Promise.all([historicoDePrecos(produto.id), listarCategorias(), listarCuponsOuNada()]);
+  // Cupons da categoria do produto (os gerais ficam em /cupons, para não repetir em toda página).
+  const cupons = todosCupons.filter((c) => c.categoria_id && c.categoria_id === produto.categoria_id).slice(0, 2);
   const categoria = categorias.find((c) => c.id === produto.categoria_id);
   const indisponivel = produto.disponibilidade === "indisponivel";
   const desconto = produto.preco_anterior !== null && produto.desconto_percentual ? produto.desconto_percentual : null;
@@ -105,6 +108,18 @@ export default async function PaginaProduto({ params }: Props) {
               </>
             )}
           </div>
+
+          {cupons.length > 0 && (
+            <section className="mt-8" aria-labelledby="t-cupons">
+              <h2 id="t-cupons" className="mb-3 font-titulo text-xl font-bold">Cupom disponível para esta categoria</h2>
+              <ul className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                {cupons.map((c) => <CartaoCupom key={c.id} cupom={c} compacto />)}
+              </ul>
+              <p className="mt-2 text-sm text-cinza">
+                <Link href="/cupons" className="text-tinta underline decoration-neon decoration-2">Ver todos os cupons</Link>
+              </p>
+            </section>
+          )}
 
           <div className="mt-8 flex items-center gap-3 rounded-2xl border-[2.5px] border-tinta bg-pessego p-3">
             <img src="/moni.jpg" alt="" width={48} height={48} className="size-12 flex-none rounded-full border-2 border-tinta object-cover object-[center_15%]" />

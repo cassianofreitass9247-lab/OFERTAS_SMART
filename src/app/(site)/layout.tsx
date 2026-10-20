@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   IconeBusca,
   IconeCategoria,
+  IconeCupom,
   IconeEscudo,
   IconeEtiqueta,
   IconeInstagram,
@@ -13,7 +14,7 @@ import {
 import { ContadorSalvos, SalvosProvider } from "@/components/site/Salvos";
 import { bancoConfigurado, INSTAGRAM_URL, NOME_SITE, TELEGRAM_URL } from "@/lib/config";
 import type { Categoria } from "@/lib/database.types";
-import { listarCategorias } from "@/lib/dados";
+import { listarCategorias, listarCupons } from "@/lib/dados";
 
 const MAX_CATEGORIAS_NO_MENU = 8;
 
@@ -26,8 +27,16 @@ async function categoriasDoMenu(): Promise<{ lista: Categoria[]; temMais: boolea
   }
 }
 
+async function temCuponsVigentes(): Promise<boolean> {
+  try {
+    return (await listarCupons(1)).length > 0;
+  } catch {
+    return false; // o menu não derruba a página se o banco oscilar
+  }
+}
+
 export default async function LayoutSite({ children }: { children: React.ReactNode }) {
-  const { lista: categorias, temMais } = await categoriasDoMenu();
+  const [{ lista: categorias, temMais }, comCupons] = await Promise.all([categoriasDoMenu(), temCuponsVigentes()]);
   const chamada = TELEGRAM_URL
     ? { href: TELEGRAM_URL, rotulo: "Receber ofertas", icone: <IconeSino /> }
     : { href: INSTAGRAM_URL, rotulo: "Seguir no Instagram", icone: <IconeInstagram tamanho={18} /> };
@@ -119,6 +128,15 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
                 <span className="vm-pulso size-2.5 rounded-full bg-sol" />
                 Preço caiu hoje
               </Link>
+              {comCupons && (
+                <Link
+                  href="/cupons"
+                  className="vm-navlink inline-flex min-h-11 flex-none items-center gap-2 rounded-full border-[2.5px] border-tinta bg-sol px-4 text-[15px] font-extrabold text-tinta no-underline"
+                >
+                  <IconeCupom />
+                  Cupons
+                </Link>
+              )}
               {categorias.map((c) => (
                 <Link
                   key={c.id}

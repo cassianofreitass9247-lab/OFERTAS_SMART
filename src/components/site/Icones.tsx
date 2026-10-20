@@ -70,6 +70,9 @@ export const IconeRelogio = ({ tamanho = 16 }: P) => (
 export const IconeEtiqueta = ({ tamanho = 18 }: P) => (
   <svg {...base(tamanho)} {...traco}><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z" /><circle cx="7.5" cy="7.5" r="1.5" fill="currentColor" /></svg>
 );
+export const IconeCupom = ({ tamanho = 18 }: P) => (
+  <svg {...base(tamanho)} {...traco}><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z" /><path d="M14 6v2M14 11v2M14 16v2" /></svg>
+);
 export const IconeFoto = ({ tamanho = 34 }: P) => (
   <svg {...base(tamanho)} fill="none" stroke="#1e120c" strokeWidth={1.6} strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="M21 16l-5-5-9 9" /></svg>
 );

@@ -107,6 +107,42 @@ export type Pedido = {
   criado_em: string;
 };
 
+export type TipoCupom = "percentual" | "valor" | "frete" | "outro";
+export type Cupom = {
+  id: string;
+  titulo: string;
+  codigo: string | null;
+  link_resgate: string | null;
+  tipo: TipoCupom;
+  valor: number | null;
+  teto: number | null;
+  minimo_compra: number | null;
+  descricao: string | null;
+  categoria_id: string | null;
+  valido_de: string;
+  valido_ate: string;
+  destaque: boolean;
+  ativo: boolean;
+  cliques: number;
+  criado_em: string;
+  atualizado_em: string;
+};
+type CupomGravavel = {
+  titulo: string;
+  valido_ate: string;
+  codigo?: string | null;
+  link_resgate?: string | null;
+  tipo?: TipoCupom;
+  valor?: number | null;
+  teto?: number | null;
+  minimo_compra?: number | null;
+  descricao?: string | null;
+  categoria_id?: string | null;
+  valido_de?: string;
+  destaque?: boolean;
+  ativo?: boolean;
+};
+
 type SomenteLeitura<R> = { Row: R; Insert: never; Update: never; Relationships: [] };
 
 export type LoteImportacao = {
@@ -170,6 +206,7 @@ export type Database = {
         Update: Partial<Pick<AutomacaoConfig, "ativo" | "limite_diario" | "vendas_min" | "nota_min" | "desconto_min" | "comissao_min" | "dias_semana" | "hora_execucao" | "precos_ativo" | "erros_seguidos" | "pausado_motivo" | "atualizado_em">>;
         Relationships: [];
       };
+      cupons: { Row: Cupom; Insert: CupomGravavel; Update: Partial<CupomGravavel>; Relationships: [] };
       pedidos: {
         Row: Pedido;
         Insert: never;
@@ -194,6 +231,7 @@ export type Database = {
         Args: { p_nome: string; p_whatsapp: string; p_descricao: string; p_referencia?: string | null; p_consentimento?: boolean; p_chave?: string | null };
         Returns: string;
       };
+      registrar_uso_cupom: { Args: { p_cupom: string }; Returns: string | null };
       sincronizar_chave_servidor: { Args: { p_hash: string | null }; Returns: boolean };
       sincronizar_chave_automacao: { Args: { p_hash: string | null }; Returns: boolean };
       automacao_criados_hoje: { Args: Record<PropertyKey, never>; Returns: number };
