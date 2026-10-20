@@ -112,7 +112,7 @@ export default async function PaginaProduto({ params }: Props) {
           {cupons.length > 0 && (
             <section className="mt-8" aria-labelledby="t-cupons">
               <h2 id="t-cupons" className="mb-3 font-titulo text-xl font-bold">Cupom disponível para esta categoria</h2>
-              <ul className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <ul className="grid grid-cols-1 gap-4 sm:max-w-md">
                 {cupons.map((c) => <CartaoCupom key={c.id} cupom={c} compacto />)}
               </ul>
               <p className="mt-2 text-sm text-cinza">
