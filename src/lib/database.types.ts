@@ -249,6 +249,7 @@ export type Database = {
         Args: { p_dias?: number; p_limite?: number };
         Returns: { produto_id: string; nome: string; slug: string; cliques: number }[];
       };
+      cliques_resumo: { Args: { p_dias?: number }; Returns: Json };
       cliques_por_canal: { Args: { p_dias?: number }; Returns: { canal: string; campanha: string; cliques: number }[] };
       criar_pedido: {
         Args: { p_nome: string; p_whatsapp: string; p_descricao: string; p_referencia?: string | null; p_consentimento?: boolean; p_chave?: string | null };
