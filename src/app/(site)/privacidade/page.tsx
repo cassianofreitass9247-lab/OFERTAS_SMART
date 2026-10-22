@@ -29,8 +29,10 @@ export default function PaginaPrivacidade() {
           <h2>O que o site registra</h2>
           <ul>
             <li>
-              <strong>Cliques em ofertas:</strong> quando você clica em “Ver na Shopee”, guardamos qual produto foi clicado, a data e, se houver, o canal de
-              origem (por exemplo, “instagram”). Não guardamos endereço IP, nome, e-mail nem identificador do seu aparelho junto com o clique.
+              <strong>Cliques em ofertas:</strong> quando você clica em “Ver na Shopee”, guardamos qual produto foi clicado, a data, se houver, o canal de
+              origem (por exemplo, “instagram”) e a sua localização aproximada (país, estado e cidade). Essa localização é estimada pelo provedor de
+              hospedagem (Cloudflare) a partir do seu endereço de internet, só no momento do clique, e serve para saber de onde vem o público. Não
+              guardamos o endereço IP, nome, e-mail nem identificador do seu aparelho junto com o clique, e a localização pode não ser exata.
             </li>
             <li>
               <strong>Pedidos de produto (“Pede {F.pra}”):</strong> se você fizer um pedido, guardamos seu nome, seu WhatsApp, a descrição do produto e o

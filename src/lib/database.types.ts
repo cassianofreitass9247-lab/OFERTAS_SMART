@@ -78,7 +78,16 @@ export type HistoricoAlteracao = {
   alterado_por: string | null;
   alterado_em: string;
 };
-export type Clique = { id: number; produto_id: string; canal: string; campanha: string | null; criado_em: string };
+export type Clique = {
+  id: number;
+  produto_id: string;
+  canal: string;
+  campanha: string | null;
+  pais: string | null;
+  estado: string | null;
+  cidade: string | null;
+  criado_em: string;
+};
 export type Importacao = {
   id: string;
   arquivo_nome: string | null;
@@ -240,7 +249,11 @@ export type Database = {
     Views: Record<never, never>;
     Functions: {
       eh_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
-      registrar_clique: { Args: { p_produto: string; p_canal?: string; p_campanha?: string | null }; Returns: string | null };
+      registrar_clique: {
+        Args: { p_produto: string; p_canal?: string; p_campanha?: string | null; p_pais?: string | null; p_estado?: string | null; p_cidade?: string | null };
+        Returns: string | null;
+      };
+      cliques_locais: { Args: { p_dias?: number }; Returns: Json };
       importar_produtos: {
         Args: { p_itens: Json; p_arquivo?: string | null; p_rejeitados?: number; p_erros?: Json };
         Returns: { inseridos: number; atualizados: number };

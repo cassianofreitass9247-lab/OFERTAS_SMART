@@ -204,3 +204,7 @@ Os nomes das telas podem mudar. Esta parte não foi conferida na documentação 
 
 - O consumo de CPU por requisição (limite de 10 ms no plano grátis) só pode ser medido no ambiente real da Cloudflare.
   As páginas com dados ao vivo consultam o banco a cada acesso. Se estourar, o plano pago custa a partir de US$ 5/mês.
+
+## Local dos cliques (estado e cidade)
+
+Cada clique em "Ver na Shopee" (`/ir/<id>`) guarda país, estado e cidade aproximados, lidos pela Cloudflare no momento do clique (`getCloudflareContext().cf`, campos `country`, `regionCode` e `city`). **O endereço IP não é lido nem guardado.** A localização é uma estimativa pelo IP: o estado costuma acertar mais que a cidade, e em internet de celular a cidade pode errar. Cliques anteriores à migração `0014_local_dos_cliques.sql` ficam sem local. O painel mostra os dez estados e as dez cidades do período em **Resumo > De onde vêm os cliques**. A política de privacidade menciona esse dado. Fora da Cloudflare (ambiente local) o clique é registrado sem local.

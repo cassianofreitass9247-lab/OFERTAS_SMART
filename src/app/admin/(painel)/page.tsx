@@ -8,6 +8,8 @@ import { carregarDemo, removerDemo } from "../acoes";
 import { MARCA } from "@/lib/marca";
 import { BarrasHorizontais } from "@/components/admin/Graficos";
 import { SecaoCliques } from "@/components/admin/SecaoCliques";
+import { SecaoLocais } from "@/components/admin/SecaoLocais";
+import { lerLocais } from "@/lib/local";
 import { lerPeriodo, lerResumo } from "@/lib/estatisticas";
 
 export default async function PaginaResumo({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -18,18 +20,19 @@ export default async function PaginaResumo({ searchParams }: { searchParams: Pro
     return status ? q.eq("status_publicacao", status) : q;
   };
 
-  const [publicados, rascunhos, despublicados, ficticios, resumoBruto, top, canais, importacoes] = await Promise.all([
+  const [publicados, rascunhos, despublicados, ficticios, resumoBruto, locaisBruto, top, canais, importacoes] = await Promise.all([
     contar("publicado"),
     contar("rascunho"),
     contar("despublicado"),
     sb.from("produtos").select("id", { count: "exact", head: true }).eq("ficticio", true),
     sb.rpc("cliques_resumo", { p_dias: periodo }),
+    sb.rpc("cliques_locais", { p_dias: periodo }),
     sb.rpc("produtos_mais_clicados", { p_dias: periodo, p_limite: 10 }),
     sb.rpc("cliques_por_canal", { p_dias: periodo }),
     sb.from("importacoes").select("*").order("criado_em", { ascending: false }).limit(5),
   ]);
 
-  const falhou = [publicados, rascunhos, despublicados, ficticios, resumoBruto, top, canais, importacoes].find((r) => r.error);
+  const falhou = [publicados, rascunhos, despublicados, ficticios, resumoBruto, locaisBruto, top, canais, importacoes].find((r) => r.error);
   const qtdFicticios = ficticios.count ?? 0;
 
   const turnstile = configTurnstile();
@@ -79,6 +82,8 @@ export default async function PaginaResumo({ searchParams }: { searchParams: Pro
       </div>
 
       <SecaoCliques periodo={periodo} resumo={resumo} erro={Boolean(resumoBruto.error)} produtoLider={produtoLider ? { nome: produtoLider.nome, cliques: Number(produtoLider.cliques) } : null} />
+
+      <SecaoLocais periodo={periodo} locais={lerLocais(locaisBruto.data)} erro={Boolean(locaisBruto.error)} />
 
       {pendencias.length > 0 && (
         <section aria-labelledby="t-pendencias" className="rounded-lg border border-laranja bg-laranja-claro p-4">
