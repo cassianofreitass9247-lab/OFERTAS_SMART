@@ -127,7 +127,7 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
                 className="vm-btn inline-flex min-h-11 flex-none items-center gap-2.5 rounded-full border-[2.5px] border-tinta bg-tinta px-4 text-[15px] font-bold text-white no-underline"
               >
                 <span className="vm-pulso size-2.5 rounded-full bg-sol" />
-                Preço caiu hoje
+                Radar de ofertas
               </Link>
               {comCupons && (
                 <Link

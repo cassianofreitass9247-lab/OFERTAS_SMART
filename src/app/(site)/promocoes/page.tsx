@@ -13,7 +13,7 @@ export default async function PaginaPromocoes({ searchParams }: { searchParams: 
   return (
     <>
       <Cabecalho
-        titulo="Preço caiu"
+        titulo="Radar de ofertas"
         subtitulo="Só entram aqui produtos em que o site registrou uma queda de preço. O valor riscado é o último preço anotado antes da queda."
       />
       <Conteudo>

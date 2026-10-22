@@ -126,7 +126,7 @@ export default async function PaginaAutomacao({ searchParams }: { searchParams: 
               </div>
               <p className="mt-2 text-sm text-cinza">
                 A cada hora o site confere na Shopee o preço de até {PRODUTOS_POR_EXECUCAO} produtos publicados (os verificados há mais tempo) e atualiza o valor. Quando o preço cai,
-                o produto aparece em &ldquo;Preço caiu&rdquo;; quando sobe, o valor riscado some. Mudanças de menos de 1% são ignoradas, e quedas acima de 60% também (costumam ser outra variação do anúncio, não promoção).
+                o produto aparece em &ldquo;Radar de ofertas&rdquo;; quando sobe, o valor riscado some. Mudanças de menos de 1% são ignoradas, e quedas acima de 60% também (costumam ser outra variação do anúncio, não promoção).
               </p>
               <p className="mt-1 text-sm" data-testid="precos-fila">
                 Produtos da Shopee publicados: <strong>{totalPrecos ?? 0}</strong>. Ainda sem a primeira conferência: <strong>{semConferir ?? 0}</strong>.

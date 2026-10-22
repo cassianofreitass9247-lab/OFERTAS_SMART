@@ -36,7 +36,7 @@ export default async function PaginaInicial() {
   const comCupom = categoriasComCupom(cupons);
   const nomes = new Map(categorias.map((c) => [c.id, c.nome]));
   const [principal, ...quedas] = promocoes.itens;
-  const faixa = ["Preço caiu hoje", ...categorias.map((c) => c.nome), "Achadinhos até R$ 50"];
+  const faixa = ["Radar de ofertas", ...categorias.map((c) => c.nome), "Achadinhos até R$ 50"];
   const grupo = TELEGRAM_URL
     ? { href: TELEGRAM_URL, rotulo: "Entrar no grupo", longo: "Entrar no grupo do Telegram", icone: <IconeTelegram tamanho={22} /> }
     : { href: INSTAGRAM_URL, rotulo: "Seguir no Instagram", longo: `Seguir ${F.a} no Instagram`, icone: <IconeInstagram tamanho={22} /> };
@@ -163,12 +163,12 @@ export default async function PaginaInicial() {
         </section>
       )}
 
-      {/* Preço caiu hoje */}
+      {/* Radar de ofertas */}
       {principal && (
         <section id="ofertas" className="mx-auto max-w-7xl px-4 pt-16 pb-6 sm:px-8 lg:pt-24">
           <div className="mb-9 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
             <div>
-              <h2 className="vm-titulo">Preço caiu hoje</h2>
+              <h2 className="vm-titulo">Radar de ofertas</h2>
               <p className="mt-3 max-w-[52ch] text-lg text-cinza">O valor riscado é o último preço que o site registrou antes da queda.</p>
             </div>
             <Link href="/promocoes" className="text-[17px] font-bold underline decoration-neon decoration-[3px] underline-offset-4">

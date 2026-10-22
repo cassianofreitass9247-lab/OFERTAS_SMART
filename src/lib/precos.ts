@@ -4,7 +4,7 @@ import { buscarOfertaPorItem, precoDaOferta } from "./shopee";
 
 /**
  * Sincronização de preços: confere na Shopee o preço dos produtos publicados (os mais antigos na fila primeiro) e grava o novo preço
- * pelo banco. A queda aparece sozinha em "Preço caiu" pelo gatilho que já existe. Roda a cada hora (agendamento do Cloudflare)
+ * pelo banco. A queda aparece sozinha em "Radar de ofertas" pelo gatilho que já existe. Roda a cada hora (agendamento do Cloudflare)
  * nas horas em que a automação de importação não está rodando, e pelo botão "Conferir preços agora".
  *
  * Orçamento: 1 consulta à Shopee por produto + 2 ao banco; o plano gratuito do Cloudflare permite ~50 chamadas externas por execução.

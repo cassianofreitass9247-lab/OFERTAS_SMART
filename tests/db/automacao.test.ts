@@ -204,7 +204,7 @@ describe("sincronização de preços (migração 0009)", () => {
     expect(depois.indexOf("7.1001")).toBeGreaterThan(depois.indexOf("7.1002")); // verificado vai para o fim da fila
   });
 
-  it("queda de 10%: grava o novo preço e o produto passa a ter preço anterior (aparece em 'Preço caiu')", async () => {
+  it("queda de 10%: grava o novo preço e o produto passa a ter preço anterior (aparece em 'Radar de ofertas')", async () => {
     await criar("7.2001", 100);
     expect(await aplicar([{ id_externo: "7.2001", preco: 90 }])).toMatchObject({ conferidos: 1, quedas: 1, altas: 0 });
     const p = await produto("7.2001");
