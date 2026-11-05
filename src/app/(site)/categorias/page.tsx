@@ -32,7 +32,7 @@ export default async function PaginaCategorias() {
                     <IconeCategoria slug={c.slug} tamanho={28} />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-titulo text-2xl font-extrabold tracking-[-0.02em]">{c.nome}</span>
+                    <span className="block font-titulo text-2xl font-black tracking-[-0.02em]">{c.nome}</span>
                     {c.descricao && <span className="mt-1 block text-sm font-medium">{c.descricao}</span>}
                   </span>
                   <IconeSeta />

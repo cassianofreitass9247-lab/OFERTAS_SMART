@@ -34,7 +34,7 @@ export default async function PaginaEditarProduto({ params, searchParams }: Prop
   return (
     <>
       <p className="mb-2 text-sm"><Link href="/admin/produtos" className="underline">Voltar para a lista de produtos</Link></p>
-      <h1 className="mb-1 font-titulo text-3xl font-extrabold">Editar produto</h1>
+      <h1 className="mb-1 font-titulo text-3xl font-black">Editar produto</h1>
       <p className="mb-4 text-sm text-cinza">
         Origem: {produto.origem}. Cliques registrados: {cliques ?? 0}.{" "}
         {produto.status_publicacao === "publicado" && <Link href={`/produto/${produto.slug}`} className="underline">Ver no site</Link>}

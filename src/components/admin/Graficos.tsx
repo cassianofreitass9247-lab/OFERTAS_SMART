@@ -2,8 +2,8 @@
 // (não pesa no site e não usa JavaScript no navegador). Cada gráfico tem texto equivalente para leitor de tela.
 import type { ReactNode } from "react";
 
-const COR = "#ff5b14";
-const COR_FORTE = "#1e120c";
+const COR = "#fd6002";
+const COR_FORTE = "#1c0152";
 const COR_SUAVE = "#ffb48f";
 
 export function CartaoGrafico({ id, titulo, subtitulo, children }: { id: string; titulo: string; subtitulo?: string; children: ReactNode }) {
@@ -58,8 +58,8 @@ export function GraficoLinha({ dados }: { dados: { dia: string; cliques: number 
       </defs>
       {[0, 1, 2, 3, 4].map((k) => (
         <g key={k}>
-          <line x1={ESQ} x2={L - DIR} y1={y((teto * k) / 4)} y2={y((teto * k) / 4)} stroke="#e8ddd6" />
-          <text x={ESQ - 6} y={y((teto * k) / 4) + 4} textAnchor="end" fontSize="11" fill="#5a4a42">{Math.round((teto * k) / 4)}</text>
+          <line x1={ESQ} x2={L - DIR} y1={y((teto * k) / 4)} y2={y((teto * k) / 4)} stroke="#e4d8f7" />
+          <text x={ESQ - 6} y={y((teto * k) / 4) + 4} textAnchor="end" fontSize="11" fill="#5b4a7a">{Math.round((teto * k) / 4)}</text>
         </g>
       ))}
       <path d={area} fill="url(#grad-linha)" />
@@ -67,7 +67,7 @@ export function GraficoLinha({ dados }: { dados: { dia: string; cliques: number 
       {dados.length <= 31 && dados.map((d, i) => (d.cliques > 0 ? <circle key={d.dia} cx={x(i)} cy={y(d.cliques)} r="3" fill={COR}><title>{`${dataCurta(d.dia)}: ${d.cliques}`}</title></circle> : null))}
       {dados.map((d, i) =>
         i % passos === 0 || i === dados.length - 1 ? (
-          <text key={d.dia} x={x(i)} y={A - 8} textAnchor={i === 0 ? "start" : i === dados.length - 1 ? "end" : "middle"} fontSize="11" fill="#5a4a42">
+          <text key={d.dia} x={x(i)} y={A - 8} textAnchor={i === 0 ? "start" : i === dados.length - 1 ? "end" : "middle"} fontSize="11" fill="#5b4a7a">
             {dataCurta(d.dia)}
           </text>
         ) : null,

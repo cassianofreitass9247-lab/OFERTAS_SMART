@@ -23,7 +23,7 @@ export function SecaoCliques({
   return (
     <section aria-labelledby="t-cliques" className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 id="t-cliques" className="font-titulo text-2xl font-extrabold">Cliques</h2>
+          <h2 id="t-cliques" className="font-titulo text-2xl font-black">Cliques</h2>
           <nav aria-label="Período" className="flex overflow-hidden rounded-full border-2 border-tinta text-sm font-bold">
             {PERIODOS.map((d) => (
               <Link key={d} href={`/admin?periodo=${d}`} aria-current={d === periodo ? "page" : undefined} className={`px-4 py-2 no-underline ${d === periodo ? "bg-tinta text-white" : "text-tinta"}`}>
@@ -43,17 +43,17 @@ export function SecaoCliques({
           </div>
           <div className="rounded-lg border border-linha bg-white p-4">
             <dt className="text-sm text-cinza">Dia da semana com mais cliques</dt>
-            <dd className="font-titulo text-2xl font-extrabold">{diaLider?.nome ?? "—"}</dd>
+            <dd className="font-titulo text-2xl font-black">{diaLider?.nome ?? "—"}</dd>
             {diaLider && <dd className="text-sm font-bold text-cinza">{percentual(diaLider.cliques, resumo.total)}% do total</dd>}
           </div>
           <div className="rounded-lg border border-linha bg-white p-4">
             <dt className="text-sm text-cinza">Horário de pico</dt>
-            <dd className="font-titulo text-2xl font-extrabold">{pico?.rotulo ?? "—"}</dd>
+            <dd className="font-titulo text-2xl font-black">{pico?.rotulo ?? "—"}</dd>
             {pico && <dd className="text-sm font-bold text-cinza">{percentual(pico.cliques, resumo.total)}% dos cliques</dd>}
           </div>
           <div className="rounded-lg border border-linha bg-white p-4">
             <dt className="text-sm text-cinza">Produto mais clicado</dt>
-            <dd className="line-clamp-2 font-titulo text-lg leading-tight font-extrabold">{produtoLider?.nome ?? "—"}</dd>
+            <dd className="line-clamp-2 font-titulo text-lg leading-tight font-black">{produtoLider?.nome ?? "—"}</dd>
             {produtoLider && <dd className="text-sm font-bold text-cinza">{produtoLider.cliques} cliques</dd>}
           </div>
         </dl>

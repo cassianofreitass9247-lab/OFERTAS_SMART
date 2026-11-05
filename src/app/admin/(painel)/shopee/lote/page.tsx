@@ -96,7 +96,7 @@ export default async function PaginaLote({ searchParams }: { searchParams: Promi
 
   return (
     <>
-      <h1 className="mb-1 font-titulo text-3xl font-extrabold">Importar em lote</h1>
+      <h1 className="mb-1 font-titulo text-3xl font-black">Importar em lote</h1>
       <p className="mb-3 max-w-[75ch] text-sm text-cinza">
         Defina filtros, veja os produtos com foto, marque os que quer (até {MAX_LOTE}) e importe de uma vez. Por padrão os produtos entram <strong>publicados e disponíveis</strong>, com categoria automática.{" "}
         <Link href="/admin/shopee" className="underline">Importar um produto só</Link>
@@ -164,7 +164,7 @@ export default async function PaginaLote({ searchParams }: { searchParams: Promi
       )}
 
       <section aria-label="Lotes recentes">
-        <h2 className="mb-2 font-titulo text-xl font-extrabold">Lotes recentes</h2>
+        <h2 className="mb-2 font-titulo text-xl font-black">Lotes recentes</h2>
         {erroLotes ? (
           <p className="rounded-md border border-linha bg-white p-3 text-sm">O histórico de lotes precisa da migração 0005 no Supabase (arquivo <code>supabase/migrations/0005_lotes_de_importacao.sql</code>). Sem ela, a importação em lote não grava.</p>
         ) : !lotes?.length ? (

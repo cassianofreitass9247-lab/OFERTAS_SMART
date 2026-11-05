@@ -62,7 +62,7 @@ export default async function Diagnostico({ searchParams }: { searchParams: Prom
 
   return (
     <>
-      <h1 className="mb-1 font-titulo text-3xl font-extrabold">Diagnóstico da Shopee</h1>
+      <h1 className="mb-1 font-titulo text-3xl font-black">Diagnóstico da Shopee</h1>
       <p className="mb-4 max-w-[75ch] text-sm text-cinza">
         Somente leitura. Mostra quais campos a API da Shopee oferece (para saber se existe algo sobre oferta relâmpago ou preço com cupom) e a resposta bruta de um produto, para comparar com a página dele.{" "}
         <Link href="/admin/shopee" className="underline">Voltar</Link>
@@ -79,7 +79,7 @@ export default async function Diagnostico({ searchParams }: { searchParams: Prom
       {rodar && (
         <div className="space-y-6">
           <section>
-            <h2 className="mb-2 font-titulo text-xl font-extrabold">Campos do produto (ProductOfferV2)</h2>
+            <h2 className="mb-2 font-titulo text-xl font-black">Campos do produto (ProductOfferV2)</h2>
             {esquema.campos ? (
               <p className="break-words rounded-lg border border-linha bg-white p-3 text-sm" data-testid="campos">
                 {esquema.campos.map((c) => `${c.name} (${tipo(c)})`).join(" · ")}
@@ -90,12 +90,12 @@ export default async function Diagnostico({ searchParams }: { searchParams: Prom
           </section>
           {esquema.consultas && (
             <section>
-              <h2 className="mb-2 font-titulo text-xl font-extrabold">Consultas disponíveis</h2>
+              <h2 className="mb-2 font-titulo text-xl font-black">Consultas disponíveis</h2>
               <p className="rounded-lg border border-linha bg-white p-3 text-sm">{esquema.consultas.join(" · ")}</p>
             </section>
           )}
           <section>
-            <h2 className="mb-2 font-titulo text-xl font-extrabold">Resposta bruta</h2>
+            <h2 className="mb-2 font-titulo text-xl font-black">Resposta bruta</h2>
             {bruto.json ? (
               <>
                 {bruto.periodos?.length ? (

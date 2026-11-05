@@ -11,7 +11,7 @@ export const CAMINHO_CORACAO =
 export function IconeCoracao({ tamanho = 22, preenchido = true, className }: P & { preenchido?: boolean }) {
   return (
     <svg {...base(tamanho)} className={className}>
-      <path d={CAMINHO_CORACAO} fill={preenchido ? "#ff3d6e" : "#ffffff"} stroke="#1e120c" strokeWidth={2} />
+      <path d={CAMINHO_CORACAO} fill={preenchido ? "#f23702" : "#ffffff"} stroke="#1c0152" strokeWidth={2} />
     </svg>
   );
 }
@@ -19,7 +19,7 @@ export function IconeCoracao({ tamanho = 22, preenchido = true, className }: P &
 export function IconeEstrela({ tamanho = 18, className }: P) {
   return (
     <svg {...base(tamanho)} className={className}>
-      <path d="M12 2l2.6 6.6L21 9.3l-5 4.4 1.6 6.8L12 17l-5.6 3.5L8 13.7 3 9.3l6.4-.7z" fill="var(--color-sol)" stroke="#1e120c" strokeWidth={2} strokeLinejoin="round" />
+      <path d="M12 2l2.6 6.6L21 9.3l-5 4.4 1.6 6.8L12 17l-5.6 3.5L8 13.7 3 9.3l6.4-.7z" fill="var(--color-sol)" stroke="#1c0152" strokeWidth={2} strokeLinejoin="round" />
     </svg>
   );
 }
@@ -27,8 +27,8 @@ export function IconeEstrela({ tamanho = 18, className }: P) {
 export function IconeBrilho({ tamanho = 22, className }: P) {
   return (
     <svg {...base(tamanho)} className={className}>
-      <path d="M12 2l2 6.5L20.5 10 14 12l-2 6.5L10 12 3.5 10 10 8.5z" fill="var(--color-sol)" stroke="#1e120c" strokeWidth={1.5} strokeLinejoin="round" />
-      <path d="M19 15l.9 2.1 2.1.9-2.1.9L19 21l-.9-2.1-2.1-.9 2.1-.9z" fill="var(--color-sol)" stroke="#1e120c" strokeWidth={1.2} strokeLinejoin="round" />
+      <path d="M12 2l2 6.5L20.5 10 14 12l-2 6.5L10 12 3.5 10 10 8.5z" fill="var(--color-sol)" stroke="#1c0152" strokeWidth={1.5} strokeLinejoin="round" />
+      <path d="M19 15l.9 2.1 2.1.9-2.1.9L19 21l-.9-2.1-2.1-.9 2.1-.9z" fill="var(--color-sol)" stroke="#1c0152" strokeWidth={1.2} strokeLinejoin="round" />
     </svg>
   );
 }
@@ -74,7 +74,7 @@ export const IconeCupom = ({ tamanho = 18 }: P) => (
   <svg {...base(tamanho)} {...traco}><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z" /><path d="M14 6v2M14 11v2M14 16v2" /></svg>
 );
 export const IconeFoto = ({ tamanho = 34 }: P) => (
-  <svg {...base(tamanho)} fill="none" stroke="#1e120c" strokeWidth={1.6} strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="M21 16l-5-5-9 9" /></svg>
+  <svg {...base(tamanho)} fill="none" stroke="#1c0152" strokeWidth={1.6} strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="M21 16l-5-5-9 9" /></svg>
 );
 
 /** Ícone por categoria, escolhido pelo nome (slug). Categoria desconhecida usa a etiqueta. */
@@ -101,25 +101,27 @@ export function IconeCategoria({ slug, tamanho = 18 }: { slug: string; tamanho?:
   return <IconeEtiqueta tamanho={tamanho} />;
 }
 
-/** Marca da Vitrine: selo com a sacola de compras, estrela e coração. Mesmo desenho de iconeSvg() em src/lib/marca.ts (o ícone do navegador). */
+/** Marca do site: azulejo branco com o símbolo da OfertaSmart (sacola). O mesmo desenho vira o ícone do navegador (src/app/icon.png). */
 export function Marca({ tamanho = 56 }: P) {
   return (
-    <svg width={tamanho} height={tamanho} viewBox="0 0 56 56" aria-hidden="true">
-      <rect x="2" y="2" width="52" height="52" rx="16" fill="#ffffff" stroke="#1e120c" strokeWidth="3" />
-      <path d="M37 24l7 3 1 18-6 2z" fill="var(--color-laranja-forte)" stroke="#1e120c" strokeWidth="2.6" strokeLinejoin="round" />
-      <path d="M13 24h24l2 23H11z" fill="var(--color-neon)" stroke="#1e120c" strokeWidth="2.6" strokeLinejoin="round" />
-      <circle cx="18" cy="28" r="1.9" fill="#1e120c" />
-      <circle cx="30" cy="28" r="1.9" fill="#1e120c" />
-      <path d="M18 28v-8a6 6 0 0 1 12 0v8" fill="none" stroke="#1e120c" strokeWidth="2.8" strokeLinecap="round" />
-      <path
-        transform="translate(12.5 14) scale(5.6)"
-        d="M0,-1L.265,-.364L.951,-.309L.428,.139L.588,.809L0,.45L-.588,.809L-.428,.139L-.951,-.309L-.265,-.364Z"
-        fill="var(--color-sol)"
-        stroke="#1e120c"
-        strokeWidth="0.3"
-        strokeLinejoin="round"
-      />
-      <path transform="translate(38.5 7.5) scale(0.46)" d={CAMINHO_CORACAO} fill="#ff3d6e" stroke="#1e120c" strokeWidth="3.6" strokeLinejoin="round" />
-    </svg>
+    <span
+      aria-hidden="true"
+      className="inline-flex flex-none items-center justify-center rounded-[29%] border-[3px] border-tinta bg-white"
+      style={{ width: tamanho, height: tamanho }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/ofertasmart/simbolo-360.png" alt="" width={360} height={288} className="h-auto w-[90%]" />
+    </span>
+  );
+}
+
+/** Selo "by OfertaSmart" (pílula roxa com o nome da marca em versão negativa). */
+export function PorOfertaSmart({ className = "" }: { className?: string }) {
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full bg-tinta py-[3px] pr-2.5 pl-2 leading-none ${className}`}>
+      <span className="text-[11px] font-black text-[#d7c8f5] italic">by</span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/ofertasmart/nome-negativo.png" alt="OfertaSmart" width={528} height={120} className="h-[15px] w-auto" />
+    </span>
   );
 }

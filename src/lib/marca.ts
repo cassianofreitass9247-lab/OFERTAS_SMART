@@ -44,13 +44,13 @@ export const MARCA_PADRAO = {
   ],
   descricaoSite:
     "Achadinhos da Shopee de beleza, casa, mundo infantil e muito mais, garimpados pela Moni. O desconto só aparece quando o preço cai de verdade.",
-  cores: { principal: "#ff5b14", destaque: "#ffe14d" },
+  cores: { principal: "#fd6002", destaque: "#fdb103" },
 } as const;
 
 // ---------------------------------------------------------------------------
 // Cores
 // ---------------------------------------------------------------------------
-const TINTA = "#1e120c"; // texto e contornos: fixo (as sombras e os contornos do desenho dependem dele)
+const TINTA = "#1c0152"; // texto e contornos: fixo (as sombras e os contornos do desenho dependem dele)
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
 const paraRgb = (hex: string): [number, number, number] => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [number, number, number];
@@ -86,7 +86,7 @@ function corDeBotao(principal: string): string {
 /** Tons derivados da cor principal. Com a cor padrão, são exatamente os do tema original (globals.css). */
 export function paleta(principal: string) {
   if (principal === MARCA_PADRAO.cores.principal) {
-    return { forte: "#c2410c", escuro: "#9a3412", pessego: "#ffe8db", fundo: "#fff6f0", claro: "#fff1e8" };
+    return { forte: "#c2410c", escuro: "#9a3412", pessego: "#efe6fc", fundo: "#f6f0ff", claro: "#fff1e8" };
   }
   const forte = corDeBotao(principal);
   return {
@@ -246,19 +246,3 @@ export function frases(m: Pick<ConfigMarca, "nomeSite" | "artigoSite" | "apelido
 }
 
 export const F = frases(MARCA);
-
-/** Ícone do site (SVG). Mesmo desenho do componente Marca, com as cores da marca. */
-export function iconeSvg(c: { principal: string; destaque: string }): string {
-  const forte = paleta(c.principal).forte;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 56 56">
-  <rect x="2" y="2" width="52" height="52" rx="16" fill="#ffffff" stroke="${TINTA}" stroke-width="3"/>
-  <path d="M37 24l7 3 1 18-6 2z" fill="${forte}" stroke="${TINTA}" stroke-width="2.6" stroke-linejoin="round"/>
-  <path d="M13 24h24l2 23H11z" fill="${c.principal}" stroke="${TINTA}" stroke-width="2.6" stroke-linejoin="round"/>
-  <circle cx="18" cy="28" r="1.9" fill="${TINTA}"/>
-  <circle cx="30" cy="28" r="1.9" fill="${TINTA}"/>
-  <path d="M18 28v-8a6 6 0 0 1 12 0v8" fill="none" stroke="${TINTA}" stroke-width="2.8" stroke-linecap="round"/>
-  <path transform="translate(12.5 14) scale(5.6)" d="M0,-1L.265,-.364L.951,-.309L.428,.139L.588,.809L0,.45L-.588,.809L-.428,.139L-.951,-.309L-.265,-.364Z" fill="${c.destaque}" stroke="${TINTA}" stroke-width="0.3" stroke-linejoin="round"/>
-  <path transform="translate(38.5 7.5) scale(0.46)" d="M12 21s-7.5-4.6-9.3-9.2C1.5 8.6 3.6 5 7 5c2 0 3.3 1.1 5 3 1.7-1.9 3-3 5-3 3.4 0 5.5 3.6 4.3 6.8C19.5 16.4 12 21 12 21z" fill="#ff3d6e" stroke="${TINTA}" stroke-width="3.6" stroke-linejoin="round"/>
-</svg>
-`;
-}

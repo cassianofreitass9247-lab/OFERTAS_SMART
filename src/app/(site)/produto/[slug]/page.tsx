@@ -73,7 +73,7 @@ export default async function PaginaProduto({ params }: Props) {
 
         <div>
           <div className="flex items-start justify-between gap-4">
-            <h1 className="font-titulo text-3xl leading-tight font-extrabold tracking-[-0.03em] sm:text-4xl">{produto.nome}</h1>
+            <h1 className="font-titulo text-3xl leading-tight font-black tracking-[-0.03em] sm:text-4xl">{produto.nome}</h1>
             <BotaoSalvar id={produto.id} nome={produto.nome} grande />
           </div>
 

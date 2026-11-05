@@ -9,7 +9,7 @@ export default async function PaginaNovoProduto() {
   const { data } = await sb.from("categorias").select("id, nome").order("nome");
   return (
     <>
-      <h1 className="mb-4 font-titulo text-3xl font-extrabold">Cadastrar produto</h1>
+      <h1 className="mb-4 font-titulo text-3xl font-black">Cadastrar produto</h1>
       <FormularioProduto categorias={data ?? []} />
     </>
   );

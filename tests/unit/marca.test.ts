@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MARCA_PADRAO, contraste, criarMarca, frases, iconeSvg, paleta, variaveisDeCor } from "@/lib/marca";
+import { MARCA_PADRAO, contraste, criarMarca, frases, paleta, variaveisDeCor } from "@/lib/marca";
 
 describe("marca: padrão (Vitrine da Moni)", () => {
   it("sem variáveis, devolve exatamente a marca atual, sem avisos", () => {
@@ -11,7 +11,7 @@ describe("marca: padrão (Vitrine da Moni)", () => {
     expect(m.whatsappNumero).toBe("5584987779782");
     expect(m.foto).toBe("/moni.jpg");
     expect(m.bio).toEqual(MARCA_PADRAO.bio);
-    expect(m.cores).toEqual({ principal: "#ff5b14", destaque: "#ffe14d" });
+    expect(m.cores).toEqual({ principal: "#fd6002", destaque: "#fdb103" });
     expect(m.avisos).toEqual([]);
   });
 
@@ -23,7 +23,7 @@ describe("marca: padrão (Vitrine da Moni)", () => {
 
   it("cores padrão não injetam variáveis CSS e mantêm a paleta original", () => {
     expect(variaveisDeCor(MARCA_PADRAO.cores)).toEqual({});
-    expect(paleta("#ff5b14")).toEqual({ forte: "#c2410c", escuro: "#9a3412", pessego: "#ffe8db", fundo: "#fff6f0", claro: "#fff1e8" });
+    expect(paleta("#fd6002")).toEqual({ forte: "#c2410c", escuro: "#9a3412", pessego: "#efe6fc", fundo: "#f6f0ff", claro: "#fff1e8" });
   });
 
   it("frases com o padrão reproduzem os textos originais", () => {
@@ -118,26 +118,11 @@ describe("marca: valores inválidos voltam ao padrão e geram aviso", () => {
     expect(m.instagramUsuario).toBe("moniquealbc_");
     expect(m.whatsappNumero).toBe("5584987779782");
     expect(m.foto).toBe("/moni.jpg");
-    expect(m.cores).toEqual({ principal: "#ff5b14", destaque: "#ffe14d" });
+    expect(m.cores).toEqual({ principal: "#fd6002", destaque: "#fdb103" });
   });
 
   it("aceita foto em /public e em https", () => {
     expect(criarMarca({ NEXT_PUBLIC_MARCA_FOTO: "/foto-padrao.svg" }).foto).toBe("/foto-padrao.svg");
     expect(criarMarca({ NEXT_PUBLIC_MARCA_FOTO: "https://exemplo.com/a.jpg" }).foto).toBe("https://exemplo.com/a.jpg");
-  });
-});
-
-describe("ícone", () => {
-  it("usa as cores da marca e é um SVG válido", () => {
-    const svg = iconeSvg({ principal: "#0ea5a4", destaque: "#ffd23f" });
-    expect(svg.startsWith("<svg")).toBe(true);
-    expect(svg).toContain('fill="#0ea5a4"');
-    expect(svg).toContain('fill="#ffd23f"');
-    expect(svg).not.toContain("#ff5b14");
-  });
-  it("com as cores padrão mantém o desenho laranja", () => {
-    const svg = iconeSvg(MARCA_PADRAO.cores);
-    expect(svg).toContain('fill="#ff5b14"');
-    expect(svg).toContain('fill="#c2410c"');
   });
 });

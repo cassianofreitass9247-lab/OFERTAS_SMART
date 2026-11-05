@@ -61,7 +61,7 @@ export default async function PaginaResumo({ searchParams }: { searchParams: Pro
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="mb-4 font-titulo text-3xl font-extrabold">Resumo</h1>
+        <h1 className="mb-4 font-titulo text-3xl font-black">Resumo</h1>
         <Aviso parametros={await searchParams} />
         {falhou?.error && (
           <p role="alert" className="mb-4 rounded-md border border-laranja bg-laranja-claro p-3 text-sm">

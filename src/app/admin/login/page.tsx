@@ -13,7 +13,7 @@ export default async function PaginaLogin() {
   const { siteKey, ativo } = configTurnstile();
   return (
     <main className="mx-auto max-w-sm px-4 py-16">
-      <h1 className="font-titulo text-3xl font-extrabold">Painel {F.doSite}</h1>
+      <h1 className="font-titulo text-3xl font-black">Painel {F.doSite}</h1>
       {bancoConfigurado() ? (
         <FormularioLogin siteKey={ativo ? siteKey : ""} />
       ) : (

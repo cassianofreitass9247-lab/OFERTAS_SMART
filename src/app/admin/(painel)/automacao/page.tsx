@@ -26,7 +26,7 @@ export default async function PaginaAutomacao({ searchParams }: { searchParams: 
 
   return (
     <>
-      <h1 className="mb-1 font-titulo text-3xl font-extrabold">Automação</h1>
+      <h1 className="mb-1 font-titulo text-3xl font-black">Automação</h1>
       <p className="mb-4 max-w-[75ch] text-sm text-cinza">
         Uma vez por dia, nos dias e na hora que você escolher (horário de Brasília), o site busca na Shopee os <strong>mais vendidos e com maior desconto</strong> de cada categoria que já existe e
         publica sozinho, já disponível, até o limite diário. Só entram produtos com foto, preço e sem termo sensível no nome. Tudo fica registrado em{" "}
@@ -78,7 +78,7 @@ export default async function PaginaAutomacao({ searchParams }: { searchParams: 
             </p>
           ) : (
             <form action={salvarAgenda} className="mb-6 rounded-lg border border-linha bg-white p-4" data-testid="agenda">
-              <h2 className="font-titulo text-xl font-extrabold">Quando roda</h2>
+              <h2 className="font-titulo text-xl font-black">Quando roda</h2>
               <fieldset className="mt-3">
                 <legend className="rotulo">Dias da semana</legend>
                 <div className="flex flex-wrap gap-2">
@@ -114,7 +114,7 @@ export default async function PaginaAutomacao({ searchParams }: { searchParams: 
           {!migracaoAgenda && c.precos_ativo !== undefined && (
             <section aria-label="Preços" className="mb-6 rounded-lg border border-linha bg-white p-4" data-testid="precos">
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="font-titulo text-xl font-extrabold">Preços dos produtos</h2>
+                <h2 className="font-titulo text-xl font-black">Preços dos produtos</h2>
                 <span className="text-sm font-semibold">{c.precos_ativo ? "Conferindo a cada hora" : "Pausada"}</span>
                 <form action={alternarPrecos}>
                   <input type="hidden" name="ativo" value={String(!c.precos_ativo)} />
@@ -141,7 +141,7 @@ export default async function PaginaAutomacao({ searchParams }: { searchParams: 
           )}
 
           <form action={salvarAutomacao} className="grid gap-3 rounded-lg border border-linha bg-white p-4 sm:grid-cols-2 lg:grid-cols-3">
-            <h2 className="font-titulo text-xl font-extrabold sm:col-span-2 lg:col-span-3">Limites e filtros</h2>
+            <h2 className="font-titulo text-xl font-black sm:col-span-2 lg:col-span-3">Limites e filtros</h2>
             <div>
               <label htmlFor="limite_diario" className="rotulo">Produtos por dia (1 a 60)</label>
               <input id="limite_diario" name="limite_diario" type="number" min={1} max={60} defaultValue={c.limite_diario} className="campo" />

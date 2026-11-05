@@ -39,7 +39,7 @@ export default async function PaginaProdutos({ searchParams }: { searchParams: P
   return (
     <>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-titulo text-3xl font-extrabold">Produtos</h1>
+        <h1 className="font-titulo text-3xl font-black">Produtos</h1>
         <div className="flex gap-2">
           <Link href="/admin/importar" className="botao-secundario">Importar CSV</Link>
           <Link href="/admin/produtos/novo" className="botao">Cadastrar produto</Link>

@@ -65,7 +65,7 @@ export default async function LayoutPainel({ children }: { children: React.React
   if (!admin) {
     return (
       <main className="mx-auto max-w-md px-4 py-16">
-        <h1 className="font-titulo text-2xl font-extrabold">Conta sem permissão de administrador</h1>
+        <h1 className="font-titulo text-2xl font-black">Conta sem permissão de administrador</h1>
         <p className="mt-2 mb-4 text-cinza">A conta {data.user.email} existe, mas não foi liberada como administradora. Veja no README como liberar.</p>
         {botaoSair}
       </main>
@@ -76,7 +76,7 @@ export default async function LayoutPainel({ children }: { children: React.React
     <>
       <header className="border-b border-linha bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-          <Link href="/admin" className="font-titulo text-xl font-extrabold">Painel {NOME_SITE}</Link>
+          <Link href="/admin" className="font-titulo text-xl font-black">Painel {NOME_SITE}</Link>
           <nav aria-label="Painel" className="flex flex-wrap gap-4 text-sm font-semibold">
             {MENU.map((m) => (
               <Link key={m.href} href={m.href} className="inline-flex items-center gap-1.5 py-1 hover:text-laranja-forte">

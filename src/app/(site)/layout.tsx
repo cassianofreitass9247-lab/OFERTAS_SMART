@@ -10,6 +10,7 @@ import {
   IconeRelogio,
   IconeSino,
   Marca,
+  PorOfertaSmart,
 } from "@/components/site/Icones";
 import { ContadorSalvos, SalvosProvider } from "@/components/site/Salvos";
 import { bancoConfigurado, INSTAGRAM_URL, NOME_SITE, TELEGRAM_URL } from "@/lib/config";
@@ -69,12 +70,15 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
         <header className="sticky top-0 z-50 border-b-[3px] border-tinta bg-neon">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-7 gap-y-3 px-4 pt-3.5 sm:px-8">
             <Link href="/" className="vm-logo flex items-center gap-3 text-tinta no-underline" aria-label={`${NOME_SITE}, página inicial`}>
-              <span className="vm-marca block flex-none origin-[50%_90%] drop-shadow-[3px_3px_0_#1e120c]">
+              <span className="vm-marca block flex-none origin-[50%_90%] drop-shadow-[3px_3px_0_#1c0152]">
                 <Marca tamanho={52} />
               </span>
               <span className="flex flex-col leading-none">
-                <span className="font-titulo text-2xl font-extrabold tracking-[-0.04em] sm:text-3xl">{NOME_SITE}</span>
-                <span className="mt-1.5 hidden text-[13px] font-bold sm:block">achadinhos da Shopee garimpados por mim</span>
+                <span className="font-titulo text-2xl font-black tracking-[-0.04em] sm:text-3xl">{NOME_SITE}</span>
+                <span className="mt-2 flex items-center gap-2.5">
+                  <PorOfertaSmart />
+                  <span className="hidden text-[13px] font-bold lg:block">achadinhos da Shopee garimpados por mim</span>
+                </span>
               </span>
             </Link>
 
@@ -187,9 +191,9 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
           <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-12 sm:px-8">
             <span className="flex items-center gap-3">
               <Marca tamanho={40} />
-              <span className="font-titulo text-2xl font-extrabold text-neon">{NOME_SITE}</span>
+              <span className="font-titulo text-2xl font-black text-neon">{NOME_SITE}</span>
             </span>
-            <p className="max-w-[70ch] text-[15px] leading-relaxed text-[#e8dcd5]">
+            <p className="max-w-[70ch] text-[15px] leading-relaxed text-[#d7c8f5]">
               Este site usa links de afiliado: se você comprar por um link daqui, posso receber uma comissão da Shopee, sem custo extra para você. Preços,
               condições e estoque podem mudar a qualquer momento; vale sempre o que aparece na Shopee na hora da compra. {F.siteComArtigo} é independente e não
               pertence à Shopee.
@@ -201,6 +205,12 @@ export default async function LayoutSite({ children }: { children: React.ReactNo
               <Link href="/termos" className="text-white underline">Termos de uso</Link>
               <Link href="/contato" className="text-white underline">Contato</Link>
             </nav>
+            <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/15 pt-6 text-sm text-[#d7c8f5]">
+              Site feito com a tecnologia
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/ofertasmart/logo-negativa.png" alt="OfertaSmart" width={150} height={41} className="h-auto w-[150px]" />
+              <span>por CF Solutions</span>
+            </p>
           </div>
         </footer>
       </div>

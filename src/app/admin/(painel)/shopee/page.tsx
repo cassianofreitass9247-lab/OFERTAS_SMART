@@ -77,7 +77,7 @@ export default async function PaginaShopee({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <h1 className="mb-1 font-titulo text-3xl font-extrabold">Importar da Shopee</h1>
+      <h1 className="mb-1 font-titulo text-3xl font-black">Importar da Shopee</h1>
       <p className="mb-4 max-w-[75ch] text-sm text-cinza">
         Cole o link de um produto da Shopee (ou só o número dele) ou digite o que procura. O site traz nome, foto, preço e comissão e cria o produto já{" "}
         <strong>publicado e disponível</strong>, com categoria automática e o seu link de afiliado (termo sensível ou sem foto vira rascunho).{" "}

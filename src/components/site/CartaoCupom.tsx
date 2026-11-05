@@ -11,7 +11,7 @@ export function CartaoCupom({ cupom, categoria, compacto = false }: Props) {
   return (
     <li className="vm-cartao flex flex-col overflow-hidden rounded-3xl border-[2.5px] border-tinta bg-white">
       <div className="flex items-center justify-between gap-3 border-b-[2.5px] border-tinta bg-neon px-4 py-3">
-        <p className="font-titulo text-3xl leading-none font-extrabold tracking-[-0.03em]">{beneficio(cupom)}</p>
+        <p className="font-titulo text-3xl leading-none font-black tracking-[-0.03em]">{beneficio(cupom)}</p>
         <span
           className={`rounded-full border-2 border-tinta px-2.5 py-1 text-xs font-extrabold ${val.urgente ? "bg-sol" : "bg-white"}`}
         >

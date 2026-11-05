@@ -59,7 +59,7 @@ export function BotaoSalvar({ id, nome, grande = false }: { id: string; nome: st
       style={{ width: t, height: t }}
     >
       <svg width={grande ? 26 : 20} height={grande ? 26 : 20} viewBox="0 0 24 24" aria-hidden="true">
-        <path d={CAMINHO_CORACAO} fill={salvo ? "#ff3d6e" : "#ffffff"} stroke="#1e120c" strokeWidth={2} />
+        <path d={CAMINHO_CORACAO} fill={salvo ? "#f23702" : "#ffffff"} stroke="#1c0152" strokeWidth={2} />
       </svg>
     </button>
   );
@@ -75,7 +75,7 @@ export function ContadorSalvos() {
       className="vm-btn relative inline-flex size-[50px] items-center justify-center rounded-full border-[2.5px] border-tinta bg-white"
     >
       <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
-        <path d={CAMINHO_CORACAO} fill="#ff3d6e" stroke="#1e120c" strokeWidth={2} />
+        <path d={CAMINHO_CORACAO} fill="#f23702" stroke="#1c0152" strokeWidth={2} />
       </svg>
       <span className="absolute -top-1.5 -right-1.5 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-tinta bg-sol px-1.5 text-[13px] font-extrabold text-tinta">
         {qtd}

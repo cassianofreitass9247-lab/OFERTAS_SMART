@@ -49,7 +49,7 @@ export default async function PaginaPedidos({ searchParams }: { searchParams: Pr
 
   return (
     <>
-      <h1 className="mb-1 font-titulo text-3xl font-extrabold">Pedidos dos visitantes</h1>
+      <h1 className="mb-1 font-titulo text-3xl font-black">Pedidos dos visitantes</h1>
       <p className="mb-4 max-w-[75ch] text-sm text-cinza">
         Pedidos feitos em <Link href="/pedir" className="underline">/pedir</Link>. O botão abre o WhatsApp {F.da} com a mensagem pronta; o envio é feito
         por ela, no próprio aparelho. Os pedidos são apagados automaticamente 90 dias depois de criados.

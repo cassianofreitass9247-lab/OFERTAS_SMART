@@ -28,7 +28,7 @@ export default async function PaginaCuponsAdmin({ searchParams }: { searchParams
 
   return (
     <>
-      <h1 className="mb-4 font-titulo text-3xl font-extrabold">Cupons</h1>
+      <h1 className="mb-4 font-titulo text-3xl font-black">Cupons</h1>
       <Aviso parametros={parametros} />
       {error && (
         <p role="alert" className="mb-4 rounded-md border border-laranja bg-laranja-claro p-3 text-sm">

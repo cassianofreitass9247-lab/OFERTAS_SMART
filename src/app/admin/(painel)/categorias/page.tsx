@@ -12,7 +12,7 @@ export default async function PaginaCategoriasAdmin({ searchParams }: { searchPa
 
   return (
     <>
-      <h1 className="mb-4 font-titulo text-3xl font-extrabold">Categorias</h1>
+      <h1 className="mb-4 font-titulo text-3xl font-black">Categorias</h1>
       <Aviso parametros={await searchParams} />
       {error && <p role="alert" className="mb-4 rounded-md border border-laranja bg-laranja-claro p-3 text-sm">Não foi possível listar: {error.message}</p>}
 

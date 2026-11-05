@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  /* Cores da marca: estes são os padrões; src/lib/marca.ts sobrepõe (variáveis NEXT_PUBLIC_MARCA_COR*) */
-  --color-neon: #ff5b14;
-  --color-sol: #ffe14d;
-  --color-pessego: #ffe8db;
-  --color-rosa: #ff3d6e;
-  --color-tinta: #1e120c;
-  --color-cinza: #5a4a42;
-  --color-linha: #e8ddd6;
-  --color-fundo: #fff6f0;
+  /* Identidade OfertaSmart v1 (docs: OfertaSmart_Identidade_Visual.md). Cores da marca: estes são os padrões; src/lib/marca.ts sobrepõe (variáveis NEXT_PUBLIC_MARCA_COR*) */
+  --color-neon: #fd6002;
+  --color-sol: #fdb103;
+  --color-pessego: #efe6fc;
+  --color-rosa: #f23702;
+  --color-tinta: #1c0152;
+  --color-cinza: #5b4a7a;
+  --color-linha: #e4d8f7;
+  --color-fundo: #f6f0ff;
   /* Usadas no painel: botão com texto branco precisa de laranja mais escuro (contraste AA) */
-  --color-laranja: #ff5b14;
+  --color-laranja: #fd6002;
   --color-laranja-forte: #c2410c;
   --color-laranja-escuro: #9a3412;
   --color-laranja-claro: #fff1e8;
-  --font-titulo: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Figtree Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --shadow-duro: 6px 6px 0 #1e120c;
-  --shadow-duro-p: 4px 4px 0 #1e120c;
+  --font-titulo: "Nunito Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Nunito Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --shadow-duro: 6px 6px 0 #1c0152;
+  --shadow-duro-p: 4px 4px 0 #1c0152;
   --shadow-branco: 5px 5px 0 #ffffff;
 }
 
@@ -32,8 +32,11 @@ html {
   outline-offset: 3px;
 }
 
+.font-titulo { font-style: italic; }
+
 .preco {
   font-family: var(--font-titulo);
+  font-style: italic;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
 }
@@ -67,7 +70,7 @@ html {
 .vm-logo:hover .vm-marca { animation: vmBalanca 0.5s ease-in-out 2; }
 
 .vm-cartao { transition: transform 0.25s ease, box-shadow 0.25s ease; }
-.vm-cartao:hover, .vm-cartao:focus-within { transform: translateY(-6px) rotate(-0.6deg); box-shadow: 10px 10px 0 #1e120c; }
+.vm-cartao:hover, .vm-cartao:focus-within { transform: translateY(-6px) rotate(-0.6deg); box-shadow: 10px 10px 0 #1c0152; }
 .vm-btn { transition: transform 0.15s ease, background-color 0.15s ease; }
 .vm-btn:hover { transform: translateY(-2px); }
 .vm-btn:active { transform: translateY(1px); }
@@ -76,7 +79,7 @@ html {
 .vm-navlink { transition: background-color 0.15s ease; }
 .vm-navlink:hover { background: var(--color-pessego); }
 .vm-busca { transition: box-shadow 0.15s ease, transform 0.15s ease; }
-.vm-busca:focus-within { box-shadow: 4px 4px 0 #1e120c; transform: translate(-2px, -2px); }
+.vm-busca:focus-within { box-shadow: 4px 4px 0 #1c0152; transform: translate(-2px, -2px); }
 .vm-busca input { outline: none; }
 .vm-sem-barra { scrollbar-width: none; }
 .vm-sem-barra::-webkit-scrollbar { display: none; }
@@ -111,7 +114,7 @@ html {
     @apply inline-flex min-h-12 items-center justify-center gap-2.5 rounded-full border-[2.5px] border-tinta px-6 font-bold no-underline;
   }
   .vm-titulo {
-    @apply font-titulo text-4xl leading-none font-extrabold tracking-[-0.035em] sm:text-5xl lg:text-6xl;
+    @apply font-titulo text-4xl leading-none font-black tracking-[-0.035em] sm:text-5xl lg:text-6xl;
   }
   .prosa h2 {
     @apply mt-8 mb-2 font-titulo text-2xl font-bold;

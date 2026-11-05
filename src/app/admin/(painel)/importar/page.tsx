@@ -20,7 +20,7 @@ const COLUNAS = [
 export default function PaginaImportar() {
   return (
     <>
-      <h1 className="font-titulo text-3xl font-extrabold">Importar produtos por CSV</h1>
+      <h1 className="font-titulo text-3xl font-black">Importar produtos por CSV</h1>
       <p className="mt-1 mb-6 max-w-[70ch] text-cinza">
         Monte a planilha no Excel ou no Google Planilhas, salve como CSV e envie aqui. Produto que já existe (mesmo link ou mesmo ID) é atualizado, não
         duplicado. Limite de {MAX_LINHAS_CSV} produtos por arquivo.

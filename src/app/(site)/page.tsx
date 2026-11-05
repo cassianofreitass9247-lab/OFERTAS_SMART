@@ -50,8 +50,8 @@ export default async function PaginaInicial() {
               <IconeEstrela tamanho={16} />
               Beleza, casa, mundo infantil e muito mais
             </p>
-            <h1 className="font-titulo text-[46px] leading-[0.95] font-extrabold tracking-[-0.04em] sm:text-6xl lg:text-[80px]">
-              Os achadinhos da Shopee que valem o clique.
+            <h1 className="font-titulo text-[46px] leading-[0.95] font-black tracking-[-0.04em] sm:text-6xl lg:text-[80px]">
+              Os achadinhos da Shopee que <span className="inline-block -rotate-1 rounded-2xl bg-tinta px-3 text-sol">valem o clique.</span>
             </h1>
             <p className="mt-6 max-w-[34ch] text-xl leading-snug font-medium">
               Eu garimpo as ofertas e o site anota cada preço. Quando aparece desconto aqui, é porque o preço caiu de verdade.
@@ -69,18 +69,18 @@ export default async function PaginaInicial() {
           </div>
 
           <div className="relative flex min-w-0 flex-[1_1_400px] justify-center py-6">
-            <div className="h-[440px] w-[min(430px,86%)] overflow-hidden rounded-t-[240px] rounded-b-[36px] border-[3px] border-tinta bg-pessego shadow-[14px_14px_0_#1e120c] sm:h-[560px]">
+            <div className="h-[440px] w-[min(430px,86%)] overflow-hidden rounded-t-[240px] rounded-b-[36px] border-[3px] border-tinta bg-pessego shadow-[14px_14px_0_#1c0152] sm:h-[560px]">
               <img src={MARCA.foto} alt={`Foto de ${MARCA.nomePessoa}`} width={1024} height={1536} className="block h-full w-full object-cover object-[center_18%]" />
             </div>
 
-            <span className="vm-flutua absolute top-8 left-0 rounded-2xl border-[2.5px] border-tinta bg-sol px-4 py-2.5 font-titulo text-xl font-extrabold shadow-[5px_5px_0_#1e120c] sm:text-2xl" style={{ ["--r" as string]: "-9deg" }}>
+            <span className="vm-flutua absolute top-8 left-0 rounded-2xl border-[2.5px] border-tinta bg-sol px-4 py-2.5 font-titulo text-xl font-black shadow-[5px_5px_0_#1c0152] sm:text-2xl" style={{ ["--r" as string]: "-9deg" }}>
               Preço caiu!
             </span>
 
             {principal && (
               <Link
                 href={`/produto/${principal.slug}`}
-                className="vm-flutua vm-d2 absolute top-[46%] right-0 flex w-[210px] items-center gap-3 rounded-[20px] border-[2.5px] border-tinta bg-white p-3 text-tinta no-underline shadow-[6px_6px_0_#1e120c]"
+                className="vm-flutua vm-d2 absolute top-[46%] right-0 flex w-[210px] items-center gap-3 rounded-[20px] border-[2.5px] border-tinta bg-white p-3 text-tinta no-underline shadow-[6px_6px_0_#1c0152]"
                 style={{ ["--r" as string]: "4deg" }}
               >
                 <span className="block size-14 flex-none overflow-hidden rounded-xl bg-pessego">
@@ -105,7 +105,7 @@ export default async function PaginaInicial() {
 
       {/* Faixa que corre */}
       <div aria-hidden="true" className="overflow-hidden border-b-[3px] border-tinta bg-tinta">
-        <div className="vm-faixa flex w-max gap-10 px-5 py-4 font-titulo text-2xl font-extrabold whitespace-nowrap text-neon sm:text-[28px]">
+        <div className="vm-faixa flex w-max gap-10 px-5 py-4 font-titulo text-2xl font-black whitespace-nowrap text-neon sm:text-[28px]">
           {[...faixa, ...faixa].map((t, i) => (
             <span key={i} className="inline-flex items-center gap-10">
               {t}
@@ -232,7 +232,7 @@ export default async function PaginaInicial() {
       <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-8">
         <div className="flex flex-wrap items-center justify-between gap-x-10 gap-y-6 rounded-[30px] border-[3px] border-tinta bg-sol p-8 shadow-duro sm:p-10">
           <div className="min-w-0 flex-[1_1_420px]">
-            <h2 className="font-titulo text-3xl leading-tight font-extrabold tracking-[-0.03em] sm:text-4xl">Não achou o que queria?</h2>
+            <h2 className="font-titulo text-3xl leading-tight font-black tracking-[-0.03em] sm:text-4xl">Não achou o que queria?</h2>
             <p className="mt-3 max-w-[52ch] text-lg leading-relaxed font-medium">
               Me conta o que você procura. Eu garimpo na Shopee e mando o link direto no seu WhatsApp.
             </p>
@@ -248,7 +248,7 @@ export default async function PaginaInicial() {
       <section id="moni" className="scroll-mt-48 border-y-[3px] border-tinta bg-pessego">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-14 px-4 py-16 sm:px-8 lg:py-24">
           <div className="flex min-w-0 flex-[0_1_360px] justify-center">
-            <div className="aspect-square w-[min(340px,78vw)] overflow-hidden rounded-full border-[3px] border-tinta bg-neon shadow-[0_0_0_12px_var(--color-neon),0_0_0_15px_#1e120c]">
+            <div className="aspect-square w-[min(340px,78vw)] overflow-hidden rounded-full border-[3px] border-tinta bg-neon shadow-[0_0_0_12px_var(--color-neon),0_0_0_15px_#1c0152]">
               <img src={MARCA.foto} alt="" width={1024} height={1536} loading="lazy" className="block h-full w-full object-cover object-[center_12%]" />
             </div>
           </div>
@@ -292,7 +292,7 @@ export default async function PaginaInicial() {
             { n: 3, t: "Você compra na Shopee", d: "Pagamento, entrega e garantia são com a Shopee. Você não paga nada a mais.", cor: "bg-white" },
           ].map((p) => (
             <li key={p.n} className={`rounded-[26px] border-[3px] border-tinta p-7 shadow-duro ${p.cor}`}>
-              <span className="font-titulo text-6xl leading-none font-extrabold">{p.n}</span>
+              <span className="font-titulo text-6xl leading-none font-black">{p.n}</span>
               <h3 className="mt-3 mb-2 font-titulo text-2xl font-bold">{p.t}</h3>
               <p className="text-[17px] leading-relaxed font-medium">{p.d}</p>
             </li>

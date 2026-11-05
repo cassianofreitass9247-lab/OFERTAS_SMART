@@ -8,7 +8,7 @@ import { IconeWhatsapp } from "./Icones";
 import { F } from "@/lib/marca";
 
 const campo =
-  "block w-full rounded-2xl border-[2.5px] border-tinta bg-white px-4 py-3 text-base text-tinta placeholder:text-cinza focus:shadow-[4px_4px_0_#1e120c] focus:outline-none";
+  "block w-full rounded-2xl border-[2.5px] border-tinta bg-white px-4 py-3 text-base text-tinta placeholder:text-cinza focus:shadow-[4px_4px_0_#1c0152] focus:outline-none";
 const rotulo = "mb-1.5 block font-bold";
 
 export function FormularioPedido({ busca = "", siteKey = "" }: { busca?: string; siteKey?: string }) {
@@ -27,7 +27,7 @@ export function FormularioPedido({ busca = "", siteKey = "" }: { busca?: string;
     const quantidade = estado.quantidade ?? 0;
     return (
       <div role="status" className="rounded-[26px] border-[3px] border-tinta bg-sol p-7 shadow-duro">
-        <h2 className="font-titulo text-3xl font-extrabold">Pedido enviado!</h2>
+        <h2 className="font-titulo text-3xl font-black">Pedido enviado!</h2>
         {estado.pagina ? (
           <>
             <p className="mt-3 text-lg leading-relaxed">
