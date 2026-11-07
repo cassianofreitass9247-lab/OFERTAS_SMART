@@ -21,3 +21,24 @@ export default function LayoutRaiz({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+
+  title: {
+    default: `${NOME_SITE}: achadinhos da Shopee garimpados ${F.pela}`,
+    template: `%s | ${NOME_SITE}`
+  },
+
+  description: MARCA.descricaoSite,
+
+  verification: {
+    google: "COLE_AQUI_SEU_CODIGO_DO_GOOGLE"
+  },
+
+  openGraph: {
+    siteName: NOME_SITE,
+    locale: "pt_BR",
+    type: "website",
+    images: [MARCA.foto]
+  },
+};
