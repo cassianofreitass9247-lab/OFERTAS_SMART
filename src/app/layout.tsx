@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   description: MARCA.descricaoSite,
 
   verification: {
-    google: "<meta name="google-site-verification" content="h_5tsvo0hc4tqUcYI84e_IjQ2n4fZdcZHvC3PF4ZpeA" />"
+    google: "h_5tsvo0hc4tqUcYI84e_IjQ2n4fZdcZHvC3PF4ZpeA"
   },
 
   openGraph: {
