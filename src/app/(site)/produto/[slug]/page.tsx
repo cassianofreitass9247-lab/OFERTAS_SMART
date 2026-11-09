@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { JsonLd } from "@/components/JsonLd";
 import { Preco, SeloDesconto } from "@/components/Preco";
 import { IconeSaida } from "@/components/site/Icones";
 import { GaleriaProduto } from "@/components/site/GaleriaProduto";
@@ -12,6 +13,7 @@ import { historicoDePrecos, listarCategorias, listarCuponsOuNada, obterProduto }
 import { formatarData, formatarDataHora, formatarPreco } from "@/lib/texto";
 import { analisarVideo } from "@/lib/video";
 import { F, MARCA } from "@/lib/marca";
+import { NOME_SITE, SITE_URL } from "@/lib/config";
 
 // Dados ao vivo: a página é montada a cada acesso (não é gerada no build).
 export const dynamic = "force-dynamic";
@@ -23,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!produto) return { title: "Oferta não encontrada" };
   return {
     title: produto.nome,
-    description: (produto.descricao ?? `${produto.nome} por ${formatarPreco(produto.preco_atual)} na Shopee.`).slice(0, 160),
+    description: (produto.descricao?.replace(/\s+/g, " ").trim() || `${produto.nome} por ${formatarPreco(produto.preco_atual)} na Shopee. Veja o histórico de preços registrado e a oferta ${F.doSite}.`).slice(0, 160),
     alternates: { canonical: `/produto/${produto.slug}` },
     robots: produto.ficticio ? { index: false, follow: false } : undefined,
     openGraph: { title: produto.nome, images: produto.imagem_url ? [produto.imagem_url] : undefined },
@@ -44,8 +46,48 @@ export default async function PaginaProduto({ params }: Props) {
   // Capa primeiro, depois as fotos adicionais na ordem do cadastro.
   const fotos = [...new Set([produto.imagem_url, ...(produto.imagens ?? [])].filter((u): u is string => !!u))];
 
+  const url = `${SITE_URL}/produto/${produto.slug}`;
+  const precos = historico.map((h) => h.preco);
+  const resumo = precos.length >= 2
+    ? { menor: Math.min(...precos), maior: Math.max(...precos), registros: precos.length, desde: historico[historico.length - 1].registrado_em }
+    : null;
+  // Fictícios não são indexados (robots) e não ganham dados estruturados.
+  const dadosEstruturados = produto.ficticio ? null : [
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: produto.nome,
+      url,
+      ...(fotos.length ? { image: fotos } : {}),
+      ...(produto.descricao ? { description: produto.descricao.replace(/\s+/g, " ").trim() } : {}),
+      ...(categoria ? { category: categoria.nome } : {}),
+      // Só informa oferta quando o produto está disponível: preço de item indisponível confunde o Google.
+      ...(indisponivel ? {} : {
+        offers: {
+          "@type": "Offer",
+          url,
+          priceCurrency: "BRL",
+          price: produto.preco_atual.toFixed(2),
+          availability: "https://schema.org/InStock",
+          itemCondition: "https://schema.org/NewCondition",
+        },
+      }),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: NOME_SITE, item: `${SITE_URL}/` },
+        { "@type": "ListItem", position: 2, name: "Ofertas", item: `${SITE_URL}/ofertas` },
+        ...(categoria ? [{ "@type": "ListItem", position: 3, name: categoria.nome, item: `${SITE_URL}/categorias/${categoria.slug}` }] : []),
+        { "@type": "ListItem", position: categoria ? 4 : 3, name: produto.nome, item: url },
+      ],
+    },
+  ];
+
   return (
     <article className="mx-auto max-w-7xl px-4 py-8 sm:px-8 lg:py-12">
+      {dadosEstruturados && <JsonLd dados={dadosEstruturados} />}
       <nav aria-label="Você está em" className="mb-6 flex flex-wrap gap-2 text-sm font-semibold">
         <Link href="/ofertas" className="rounded-full border-2 border-tinta bg-white px-3 py-1 text-tinta no-underline">Ofertas</Link>
         {categoria && (
@@ -140,6 +182,15 @@ export default async function PaginaProduto({ params }: Props) {
           {historico.length > 0 && (
             <section className="mt-9" aria-labelledby="t-historico">
               <h2 id="t-historico" className="mb-3 font-titulo text-xl font-bold">Preços registrados pelo site</h2>
+              {resumo && (
+                <p className="mb-3 max-w-[70ch] text-base leading-relaxed">
+                  Desde {formatarData(resumo.desde)}, o site registrou {resumo.registros} preços para este produto (últimos registros), entre{" "}
+                  <strong>{formatarPreco(resumo.menor)}</strong> e <strong>{formatarPreco(resumo.maior)}</strong>.
+                  {produto.preco_atual <= resumo.menor
+                    ? " O preço atual é o menor entre os registros listados."
+                    : ` O último registro foi ${formatarPreco(produto.preco_atual)}.`}
+                </p>
+              )}
               <table className="w-full max-w-sm overflow-hidden rounded-2xl border-[2.5px] border-tinta bg-white text-sm">
                 <thead className="sr-only">
                   <tr><th>Data</th><th>Preço</th></tr>
