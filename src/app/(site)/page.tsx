@@ -1,5 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- foto local, sem otimizador pago */
+import type { Metadata } from "next";
 import Link from "next/link";
+import { JsonLd } from "@/components/JsonLd";
 import { CartaoProduto } from "@/components/CartaoProduto";
 import { ImagemProduto } from "@/components/ImagemProduto";
 import { Preco, SeloDesconto } from "@/components/Preco";
@@ -15,7 +17,7 @@ import {
 } from "@/components/site/Icones";
 import { BotaoSalvar } from "@/components/site/Salvos";
 import { VitrineCategorias } from "@/components/site/VitrineCategorias";
-import { INSTAGRAM_URL, TELEGRAM_URL, WHATSAPP_URL } from "@/lib/config";
+import { INSTAGRAM_URL, NOME_SITE, SITE_URL, TELEGRAM_URL, WHATSAPP_URL } from "@/lib/config";
 import { AvisoCupons } from "@/components/site/AvisoCupons";
 import { categoriasComCupom, listarCategorias, listarCuponsOuNada, listarProdutos } from "@/lib/dados";
 import { formatarDataHora, formatarPreco } from "@/lib/texto";
@@ -23,6 +25,8 @@ import { F, MARCA } from "@/lib/marca";
 
 // Dados ao vivo: a página é montada a cada acesso (não é gerada no build).
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function PaginaInicial() {
   const [categorias, destaques, promocoes, recentes, cupons] = await Promise.all([
@@ -42,6 +46,12 @@ export default async function PaginaInicial() {
 
   return (
     <>
+      <JsonLd
+        dados={[
+          { "@context": "https://schema.org", "@type": "WebSite", name: NOME_SITE, url: `${SITE_URL}/`, inLanguage: "pt-BR", description: MARCA.descricaoSite },
+          { "@context": "https://schema.org", "@type": "Organization", name: NOME_SITE, url: `${SITE_URL}/`, logo: `${SITE_URL}/icon.png`, sameAs: [INSTAGRAM_URL] },
+        ]}
+      />
       {/* Apresentação */}
       <section className="border-b-[3px] border-tinta bg-neon">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-14 px-4 pt-10 pb-14 sm:px-8 lg:pt-16 lg:pb-20">
